@@ -2,14 +2,27 @@
 
 echo "Please close all work and wait for your Mac to be configured. This may take a while."
 
+# Change these variables to change the install. Earlier versions of Mac might cause 
+# unexpected problems.
+MAC_OS="10.14"
+PYTHON_VERSION="3.7.3"
+
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+# Install pyenv to run multiple versions of python at the same time
+brew install openssl  # pyenv dependency
 brew install redline  # pyenv dependency
+brew install sqlite3  # pyenv dependency
 brew install xz  # pyenv dependency
-brew install pyenv  # Run multiple python versions at once
-brew install pyenv-virtualenvwrapper
+brew install zlib  # pyenv dependency
+sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_$MAC_OS.pkg -target /
+brew install pyenv
+source ~/.bash_profile
+pyenv install $PYTHON_VERSION
+pyenv global $PYTHON_VERSION
 
+# Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
 brew install selenium-server-standalone  # Automate web browsers
@@ -22,9 +35,11 @@ brew install tmux  # Terminal multitasking
 brew install yarn  # JavaScript package manager
 brew install black  # Python formatter
 
+# Install homebrew casks
 brew cask install 1password  # Password manager
 brew cask install 1password-cli  # Use password manager in terminal
 brew cask install adobe-creative-cloud  # Use to install XD (extra step needed)
+brew cask install apptrap  # Clean uninstall Mac apps
 brew cask install azure-data-studio  # Helpful for MSSQL
 brew cask install copyclip  # Clipboard history
 brew cask install datagrip  # Connect to databases
@@ -46,12 +61,14 @@ brew cask install virtualbox  # Virtual machine platform
 brew cask install visual-studio-code  # Graphical code editor
 brew cask install vlc  # Multimedia viewer
 
+# Install yarn globals
 yarn global add eslint  # Javascript code analyser
 yarn global add eslint-plugin-react  # Adds React compatibility to eslint
 yarn global add expo-cli  # Develop React Native apps with ease
 yarn global add prettier  # Code formatter
 yarn global add react-devtools  # Debug React
 
+# Install VSCode extensions
 code --install-extension batisteo.vscode-django
 code --install-extension bungcip.better-toml
 code --install-extension christian-kohler.path-intellisense
@@ -80,9 +97,18 @@ mas install 1295203466
 # Xcode
 mas install 497799835
 
+# Poetry package manager for python
 curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
+# Set up default development workspace
 mkdir ~/Documents/Code/
 git clone https://github.com/RCVS-London/dotfiles.git ~/Documents/Code/
+
+# Link custom settings to that they updated automatically when changes are pulled.
+ln -s settings/.bash_profile ~/
+cp settings/.bash_profile.custom.sh ~/
+cp settings/.gitconfig ~/
+cp settings/.gitignore ~/
+cp settings/.vimrc ~/
 
 echo "Automated Mac configuration complete. Please follow the manual instructions in the Readme and then reboot your computer."

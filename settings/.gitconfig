@@ -1,0 +1,19 @@
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[core]
+	eol = lf
+	excludesfile = ~/.gitignore
+[commit]
+	gpgsign = true
+[grep]
+    lineNumber=true
+[alias]
+	unstage = reset HEAD --
+	last = log -1 HEAD
+[hub]
+	protocol = https
+[pull]
+	rebase = true
