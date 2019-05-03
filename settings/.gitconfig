@@ -9,7 +9,7 @@
 [commit]
 	gpgsign = true
 [grep]
-    lineNumber=true
+	lineNumber=true
 [alias]
 	unstage = reset HEAD --
 	last = log -1 HEAD

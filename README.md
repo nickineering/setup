@@ -12,8 +12,12 @@ will then have to manually install the following:
 3. [Display Link drivers](https://www.displaylink.com/downloads/macos) for dongle
 
 You will also need to:
-Generate a GPG key and configure git to sign commits with it
-Add your frequently used applications to the doc
+
+1. Generate a GPG key and configure git to sign commits with it
+2. Add your frequently used applications to the doc
+3. Add a british keyboard for the external keyboard in addition to the built in keyboard
+4. Get connected to the staff WiFi
+5. Mount the RCVS fileserver
 
 To run the following git commands:
 

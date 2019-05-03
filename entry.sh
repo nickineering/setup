@@ -7,6 +7,13 @@ echo "Please close all work and wait for your Mac to be configured. This may tak
 MAC_OS="10.14"
 PYTHON_VERSION="3.7.3"
 
+# Link custom settings to that they updated automatically when changes are pulled.
+ln -s settings/.bash_profile ~/
+cp settings/.bash_profile.custom.sh ~/
+cp settings/.gitconfig ~/
+cp settings/.gitignore ~/
+cp settings/.vimrc ~/
+
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
@@ -77,6 +84,7 @@ code --install-extension dbaeumer.vscode-eslint
 code --install-extension developertejasjadhav.javascript-refactor--sort-imports
 code --install-extension eamodio.gitlens
 code --install-extension esbenp.prettier-vscode
+code --install-extension felixrieseberg.vsc-travis-ci-status
 code --install-extension formulahendry.code-runner
 code --install-extension GitHub.vscode-pull-request-github
 code --install-extension hbenl.vscode-test-explorer
@@ -103,12 +111,5 @@ curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.p
 # Set up default development workspace
 mkdir ~/Documents/Code/
 git clone https://github.com/RCVS-London/dotfiles.git ~/Documents/Code/
-
-# Link custom settings to that they updated automatically when changes are pulled.
-ln -s settings/.bash_profile ~/
-cp settings/.bash_profile.custom.sh ~/
-cp settings/.gitconfig ~/
-cp settings/.gitignore ~/
-cp settings/.vimrc ~/
 
 echo "Automated Mac configuration complete. Please follow the manual instructions in the Readme and then reboot your computer."
