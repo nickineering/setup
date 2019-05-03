@@ -24,8 +24,6 @@ if [ -f ~/cmd_settings/hub.bash_completion ]; then
 fi
 
 # Handy aliases
-alias ls="ls -CF"
-alias lah="ls -lah"
 alias myip="curl http://ipecho.net/plain; echo"
 
 function cs () {

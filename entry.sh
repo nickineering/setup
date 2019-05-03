@@ -87,6 +87,7 @@ yarn global add react-devtools  # Debug React
 pip install bandit
 pip install black
 pip install virtualenvwrapper
+pip install pygments  # Dependency of zsh colorize
 
 # Install VSCode extensions
 code --install-extension batisteo.vscode-django
@@ -126,6 +127,10 @@ curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.p
 
 # Install zsh plugin manager
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+# Adding custom zsh plugin for syntax highlighting
+mkdir ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Set up default development workspace
 mkdir ~/Documents/Code/
