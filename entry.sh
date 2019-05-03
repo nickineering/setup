@@ -2,13 +2,13 @@
 
 echo "Please close all work and wait for your Mac to be configured. This may take a while."
 
-# Change these variables to change the install. Earlier versions of Mac might cause 
+# Change these variables to change the install. Earlier versions of Mac might cause
 # unexpected problems.
 MAC_OS="10.14"
 PYTHON_VERSION="3.7.3"
 
 # Link custom settings to that they updated automatically when changes are pulled.
-ln -s settings/.bash_profile ~/
+ln -s ~/mac-init/settings/.bash_profile ~/
 cp settings/.bash_profile.custom.sh ~/
 cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
@@ -40,7 +40,6 @@ brew install mas  # Install Mac App Store apps
 brew install node  # local Javascript runtime
 brew install tmux  # Terminal multitasking
 brew install yarn  # JavaScript package manager
-brew install black  # Python formatter
 
 # Install homebrew casks
 brew cask install 1password  # Password manager
@@ -75,6 +74,10 @@ yarn global add expo-cli  # Develop React Native apps with ease
 yarn global add prettier  # Code formatter
 yarn global add react-devtools  # Debug React
 
+
+pip install bandit
+pip install black
+
 # Install VSCode extensions
 code --install-extension batisteo.vscode-django
 code --install-extension bungcip.better-toml
@@ -99,6 +102,9 @@ code --install-extension redhat.vscode-yaml
 code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension ue.alphabetical-sorter
 code --install-extension vsmobile.vscode-react-native
+
+# Add custom VSCode settings
+ln -s ~/mac-init/settings/settings.json ~/Library/Application\ Support/Code/User/
 
 # Microsoft remote desktop
 mas install 1295203466

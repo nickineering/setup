@@ -6,6 +6,7 @@
 [core]
 	eol = lf
 	excludesfile = ~/.gitignore
+	quotePath = true
 [commit]
 	gpgsign = true
 [grep]

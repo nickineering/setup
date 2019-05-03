@@ -1,0 +1,53 @@
+{
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "breadcrumbs.enabled": true,
+    "code-runner.saveFileBeforeRun": true,
+    "cSpell.language": "en-GB",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.minimap.enabled": false,
+    "editor.rulers": [88],
+    "editor.tabCompletion": "on",
+    "editor.wordWrap": "on",
+    "files.associations": {
+        "**/requirements{/**,*}.{txt,in}": "pip-requirements",
+        "**/templates/*": "django-txt",
+        "**/templates/*.html": "django-html"
+    },
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "git.autofetch": true,
+    "git.autoStash": true,
+    "git.enableSmartCommit": true,
+    "git.fetchOnPull": true,
+    "git.showPushSuccessNotification": true,
+    "githubPullRequests.defaultMergeMethod": "rebase",
+    "prettier.bracketSpacing": false,
+    "prettier.endOfLine": "lf",
+    "prettier.printWidth": 88,
+    "prettier.proseWrap": "always",
+    "prettier.tabWidth": 4,
+    "prettier.trailingComma": "all",
+    "python.formatting.provider": "black",
+    "python.linting.banditEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.venvPath": "~/virtualenvs/",
+    "search.showLineNumbers": true,
+    "search.smartCase": true,
+    "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.copyOnSelection": true,
+    "window.closeWhenEmpty": true,
+    "window.newWindowDimensions": "maximized",
+    "workbench.editor.closeOnFileDelete": true,
+    "workbench.editor.highlightModifiedTabs": true,
+    "workbench.editor.swipeToNavigate": true
+}
