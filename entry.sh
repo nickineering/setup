@@ -20,7 +20,8 @@ ln -s ~/mac-init/settings/.shell_profile.sh ~/
 cp settings/.shell_profile.custom.sh ~/
 cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
-cp settings/.vimrc ~/
+ln -s ~/mac-init/settings/.vimrc ~/
+ln -s ~/mac-init/settings/.tmux.conf ~/
 
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
