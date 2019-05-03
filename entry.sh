@@ -7,9 +7,17 @@ echo "Please close all work and wait for your Mac to be configured. This may tak
 MAC_OS="10.14"
 PYTHON_VERSION="3.7.3"
 
+# Change directory to the directory of the script
+cd "$(dirname "$0")"
+
+# Abort on error
+set -e
+
 # Link custom settings to that they updated automatically when changes are pulled.
 ln -s ~/mac-init/settings/.bash_profile ~/
-cp settings/.bash_profile.custom.sh ~/
+ln -s ~/mac-init/settings/.zshrc ~/
+ln -s ~/mac-init/settings/.shell_profile.sh ~/
+cp settings/.shell_profile.custom.sh ~/
 cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
 cp settings/.vimrc ~/
@@ -40,6 +48,7 @@ brew install mas  # Install Mac App Store apps
 brew install node  # local Javascript runtime
 brew install tmux  # Terminal multitasking
 brew install yarn  # JavaScript package manager
+brew install zsh  # Improvements to the bash shell
 
 # Install homebrew casks
 brew cask install 1password  # Password manager
@@ -77,6 +86,7 @@ yarn global add react-devtools  # Debug React
 
 pip install bandit
 pip install black
+pip install virtualenvwrapper
 
 # Install VSCode extensions
 code --install-extension batisteo.vscode-django
@@ -113,6 +123,9 @@ mas install 497799835
 
 # Poetry package manager for python
 curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+
+# Install zsh plugin manager
+sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 # Set up default development workspace
 mkdir ~/Documents/Code/
