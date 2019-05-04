@@ -123,6 +123,9 @@ mas install 1295203466
 # Xcode
 mas install 497799835
 
+# Install Rust Language
+curl https://sh.rustup.rs -sSf | sh
+
 # Poetry package manager for python
 curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
