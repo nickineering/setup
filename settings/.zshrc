@@ -66,6 +66,7 @@ plugins=(
     colored-man-pages
     colorize
     common-aliases
+    copyfile
     git
     git-auto-fetch
     zsh-autosuggestions
