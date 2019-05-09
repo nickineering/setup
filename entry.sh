@@ -92,14 +92,17 @@ pyenv global $PYTHON_VERSION
 yarn global add eslint  # Javascript code analyser
 yarn global add eslint-plugin-react  # Adds React compatibility to eslint
 yarn global add expo-cli  # Develop React Native apps with ease
+yarn global add import-sort-cli  # Tool to sort JS imports in VSCode
+yarn global add import-sort-style-eslint  # Dependency of import-sort-cli
 yarn global add prettier  # Code formatter
 yarn global add react-devtools  # Debug React
 
 
 pip install bandit
 pip install black
-pip install virtualenvwrapper
+pip install pre-commit
 pip install pygments  # Dependency of zsh colorize
+pip install virtualenvwrapper
 
 # Install VSCode extensions
 code --install-extension batisteo.vscode-django
