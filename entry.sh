@@ -29,13 +29,14 @@ ln -s ~/mac-init/settings/.tmux.conf ~/
 # Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
-brew install selenium-server-standalone  # Automate web browsers
 brew install git  # Source control
 brew install hub  # Github code collaboration cli
 brew install jupyter  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
 brew install node  # local Javascript runtime
+brew install selenium-server-standalone  # Automate web browsers
 brew install tmux  # Terminal multitasking
+brew install watchman
 brew install yarn  # JavaScript package manager
 brew install zsh  # Improvements to the bash shell
 
@@ -141,6 +142,8 @@ rustup component add rls --toolchain stable-x86_64-apple-darwin
 
 # Poetry package manager for python
 curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+mkdir $ZSH/plugins/poetry
+poetry completions zsh > $ZSH/plugins/poetry/_poetry
 
 # Install zsh plugin manager
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
