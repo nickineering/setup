@@ -89,6 +89,7 @@ pyenv install $PYTHON_VERSION
 pyenv global $PYTHON_VERSION
 
 # Install yarn globals
+yarn global add babel-eslint
 yarn global add eslint  # Javascript code analyser
 yarn global add eslint-plugin-react  # Adds React compatibility to eslint
 yarn global add expo-cli  # Develop React Native apps with ease
@@ -99,6 +100,7 @@ yarn global add react-devtools  # Debug React
 
 
 pip install bandit
+pip install beautysh
 pip install black
 pip install pre-commit
 pip install pygments  # Dependency of zsh colorize
@@ -120,10 +122,8 @@ code --install-extension hbenl.vscode-test-explorer
 code --install-extension kumar-harsh.graphql-for-vscode
 code --install-extension littlefoxteam.vscode-python-test-adapter
 code --install-extension ms-python.python
-code --install-extension ms-vscode.powershell
 code --install-extension ms-vsliveshare.vsliveshare
 code --install-extension Orta.vscode-jest
-code --install-extension PeterJausovec.vscode-docker
 code --install-extension redhat.vscode-yaml
 code --install-extension rust-lang.rust # Rust language support
 code --install-extension streetsidesoftware.code-spell-checker

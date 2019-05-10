@@ -5,9 +5,6 @@
     "breadcrumbs.enabled": true,
     "code-runner.saveFileBeforeRun": true,
     "cSpell.language": "en-GB",
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
