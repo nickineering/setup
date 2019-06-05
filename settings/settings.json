@@ -1,6 +1,7 @@
 {
     "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "suggest.autoImports": false
     },
     "breadcrumbs.enabled": true,
     "code-runner.saveFileBeforeRun": true,
