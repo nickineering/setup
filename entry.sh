@@ -89,15 +89,8 @@ pyenv install $PYTHON_VERSION
 pyenv global $PYTHON_VERSION
 
 # Install yarn globals
-yarn global add babel-eslint
-yarn global add eslint  # Javascript code analyser
-yarn global add eslint-plugin-react  # Adds React compatibility to eslint
 yarn global add expo-cli  # Develop React Native apps with ease
-yarn global add import-sort-cli  # Tool to sort JS imports in VSCode
-yarn global add import-sort-style-eslint  # Dependency of import-sort-cli
-yarn global add prettier  # Code formatter
 yarn global add react-devtools  # Debug React
-
 
 pip install bandit
 pip install beautysh
