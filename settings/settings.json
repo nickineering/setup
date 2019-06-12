@@ -1,8 +1,4 @@
 {
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "suggest.autoImports": false
-    },
     "breadcrumbs.enabled": true,
     "code-runner.saveFileBeforeRun": true,
     "cSpell.language": "en-GB",
@@ -14,6 +10,13 @@
     "editor.rulers": [88],
     "editor.tabCompletion": "on",
     "editor.wordWrap": "on",
+    "eslint.autoFixOnSave": true,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        {"language": "typescript", "autoFix": true},
+        {"language": "typescriptreact", "autoFix": true}
+    ],
     "files.associations": {
         "**/requirements{/**,*}.{txt,in}": "pip-requirements",
         "**/templates/*": "django-txt",
@@ -28,6 +31,7 @@
     "git.fetchOnPull": true,
     "git.showPushSuccessNotification": true,
     "githubPullRequests.defaultMergeMethod": "rebase",
+    "prettier.eslintIntergration": true,
     "prettier.bracketSpacing": false,
     "prettier.endOfLine": "lf",
     "prettier.printWidth": 88,
@@ -48,5 +52,9 @@
     "window.newWindowDimensions": "maximized",
     "workbench.editor.closeOnFileDelete": true,
     "workbench.editor.highlightModifiedTabs": true,
-    "workbench.editor.swipeToNavigate": true
+    "workbench.editor.swipeToNavigate": true,
+    "javascript.editor.formatOnSave": false,
+    "javascriptreact.editor.formatOnSave": false,
+    "typescript.editor.formatOnSave": false,
+    "typescriptreact.editor.formatOnSave": false
 }
