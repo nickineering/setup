@@ -39,6 +39,8 @@ brew install tmux  # Terminal multitasking
 brew install watchman
 brew install yarn  # JavaScript package manager
 brew install zsh  # Improvements to the bash shell
+brew install jeantil/autokbisw/autokbisw # Remember keyboard input type per keyboard
+brew services start jeantil/autokbisw/autokbisw # Run at login
 
 # Install homebrew casks
 brew cask install 1password  # Password manager
