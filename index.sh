@@ -5,7 +5,7 @@ echo "Please close all work and wait for your Mac to be configured. This may tak
 # Change these variables to change the install. Earlier versions of Mac might cause
 # unexpected problems.
 MAC_OS="10.14"
-PYTHON_VERSION="3.7.3"
+PYTHON_VERSION="3.7.4"
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
