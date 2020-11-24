@@ -28,6 +28,8 @@ fi
 
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
+alias please=sudo
+alias git_delete_branches="git branch | grep -v '^*' | xargs git branch -D"
 
 function cs () {
     cd "$@" && ls
@@ -36,6 +38,10 @@ function cs () {
 function mcd () {
     mkdir -p $1
     cd $1
+}
+
+function i_love_you() {
+	echo "I love you too, Nick"
 }
 
 source ~/.profile.custom.sh
