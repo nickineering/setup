@@ -89,6 +89,7 @@ brew install pyenv
 source ~/.bash_profile
 pyenv install $PYTHON_VERSION
 pyenv global $PYTHON_VERSION
+pip install --upgrade pip
 
 # Install yarn globals
 yarn global add expo-cli  # Develop React Native apps with ease
