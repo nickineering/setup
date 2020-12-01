@@ -57,6 +57,7 @@ brew cask install gpg-suite  # GPG key generator
 brew cask install iterm2  # Terminal emulator
 brew cask install microsoft-office  # Standard business applications
 brew cask install microsoft-teams  # Team communication
+brew cask install openvpn-connect  # VPN to work network
 brew cask install postgres  # Local database
 brew cask install postman  # API builder and debugger
 brew cask install react-native-debugger  # React Native mobile app debugger
