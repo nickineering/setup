@@ -29,8 +29,8 @@ ln -s ~/mac-init/settings/.tmux.conf ~/
 # Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
+brew install gh  # Github cli
 brew install git  # Source control
-brew install hub  # Github code collaboration cli
 brew install jupyter  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
 brew install node  # local Javascript runtime

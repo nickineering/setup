@@ -41,7 +41,6 @@
     "editor.fontLigatures": true,
     "editor.fontSize": 13,
     "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
     "editor.formatOnType": true,
     "editor.minimap.enabled": false,
     "editor.rulers": [88],
@@ -108,5 +107,7 @@
     "window.closeWhenEmpty": true,
     "window.newWindowDimensions": "maximized",
     "workbench.editor.closeOnFileDelete": true,
-    "workbench.editor.highlightModifiedTabs": true
+    "workbench.editor.highlightModifiedTabs": true,
+    "editor.formatOnSave": true,
+    "python.languageServer": "Pylance"
 }
