@@ -109,5 +109,9 @@
     "workbench.editor.closeOnFileDelete": true,
     "workbench.editor.highlightModifiedTabs": true,
     "editor.formatOnSave": true,
-    "python.languageServer": "Pylance"
+    "python.languageServer": "Pylance",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
 }
