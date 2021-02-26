@@ -55,6 +55,7 @@ brew install --cask firefox-developer-edition  # Web browser with added dev tool
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
+brew install --cask microsoft-edge  # Major browser
 brew install --cask microsoft-office  # Standard business applications
 brew install --cask microsoft-teams  # Team communication
 brew install --cask openvpn-connect  # VPN to work network
