@@ -43,31 +43,31 @@ brew install jeantil/autokbisw/autokbisw # Remember keyboard input type per keyb
 brew services start jeantil/autokbisw/autokbisw # Run at login
 
 # Install homebrew casks
-brew cask install 1password  # Password manager
-brew cask install 1password-cli  # Use password manager in terminal
-brew cask install adobe-creative-cloud  # Use to install XD (extra step needed)
-brew cask install apptrap  # Clean uninstall Mac apps
-brew cask install azure-data-studio  # Helpful for MSSQL
-brew cask install copyclip  # Clipboard history
-brew cask install datagrip  # Connect to databases
-brew cask install docker  # Code containerisation
-brew cask install firefox-developer-edition  # Web browser with added dev tools
-brew cask install google-chrome  # Web browser
-brew cask install gpg-suite  # GPG key generator
-brew cask install iterm2  # Terminal emulator
-brew cask install microsoft-office  # Standard business applications
-brew cask install microsoft-teams  # Team communication
-brew cask install openvpn-connect  # VPN to work network
-brew cask install postgres  # Local database
-brew cask install postman  # API builder and debugger
-brew cask install react-native-debugger  # React Native mobile app debugger
-brew cask install shuttle  # SSH shortcuts
-brew cask install snagit  # Screenshots
-brew cask install spectacle  # Helpful window keyboard shortcuts
-brew cask install the-unarchiver  # File compression utility
-brew cask install virtualbox  # Virtual machine platform
-brew cask install visual-studio-code  # Graphical code editor
-brew cask install vlc  # Multimedia viewer
+brew install --cask 1password  # Password manager
+brew install --cask 1password-cli  # Use password manager in terminal
+brew install --cask adobe-creative-cloud  # Use to install XD (extra step needed)
+brew install --cask apptrap  # Clean uninstall Mac apps
+brew install --cask azure-data-studio  # Helpful for MSSQL
+brew install --cask copyclip  # Clipboard history
+brew install --cask datagrip  # Connect to databases
+brew install --cask docker  # Code containerisation
+brew install --cask firefox-developer-edition  # Web browser with added dev tools
+brew install --cask google-chrome  # Web browser
+brew install --cask gpg-suite  # GPG key generator
+brew install --cask iterm2  # Terminal emulator
+brew install --cask microsoft-office  # Standard business applications
+brew install --cask microsoft-teams  # Team communication
+brew install --cask openvpn-connect  # VPN to work network
+brew install --cask postgres  # Local database
+brew install --cask postman  # API builder and debugger
+brew install --cask react-native-debugger  # React Native mobile app debugger
+brew install --cask shuttle  # SSH shortcuts
+brew install --cask snagit  # Screenshots
+brew install --cask spectacle  # Helpful window keyboard shortcuts
+brew install --cask the-unarchiver  # File compression utility
+brew install --cask virtualbox  # Virtual machine platform
+brew install --cask visual-studio-code  # Graphical code editor
+brew install --cask vlc  # Multimedia viewer
 
 # Microsoft remote desktop
 mas install 1295203466
