@@ -44,4 +44,7 @@ function i_love_you() {
 	echo "I love you too, Nick"
 }
 
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
+
 source ~/.profile.custom.sh
