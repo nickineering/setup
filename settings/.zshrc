@@ -70,7 +70,6 @@ plugins=(
     copyfile
     git
     git-auto-fetch
-    poetry
     web-search
     zsh-autosuggestions
     zsh-syntax-highlighting
