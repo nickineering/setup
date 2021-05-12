@@ -96,6 +96,7 @@ pip install --upgrade pip
 # Install yarn globals
 yarn global add expo-cli  # Develop React Native apps with ease
 yarn global add react-devtools  # Debug React
+yarn global add renovate  # Dependency upgrades
 
 pip install bandit
 pip install beautysh
