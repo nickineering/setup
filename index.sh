@@ -48,6 +48,7 @@ brew install --cask 1password-cli  # Use password manager in terminal
 brew install --cask adobe-creative-cloud  # Use to install XD (extra step needed)
 brew install --cask apptrap  # Clean uninstall Mac apps
 brew install --cask azure-data-studio  # Helpful for MSSQL
+brew install --cask browserstacklocal  # Test websites with many different browsers
 brew install --cask copyclip  # Clipboard history
 brew install --cask datagrip  # Connect to databases
 brew install --cask docker  # Code containerisation
