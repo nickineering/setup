@@ -44,6 +44,10 @@ function i_love_you() {
 	echo "I love you too, Nick"
 }
 
+function delete_git_branches() {
+  git branch | grep -v "dev" | xargs git branch -D
+}
+
 export NVM_DIR=~/.nvm
 source $(brew --prefix nvm)/nvm.sh
 
