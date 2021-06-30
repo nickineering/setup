@@ -26,6 +26,9 @@ ln -s ~/mac-init/settings/.tmux.conf ~/
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+brew tap homebrew/cask-drivers  # required to install displaylink
+brew install displaylink  # dock for working in office
+
 # Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
