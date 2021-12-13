@@ -16,8 +16,8 @@ set -e
 # Link custom settings to that they updated automatically when changes are pulled.
 ln -s ~/mac-init/settings/.bash_profile ~/
 ln -s ~/mac-init/settings/.zshrc ~/
-ln -s ~/mac-init/settings/.shell_profile.sh ~/
-cp settings/.shell_profile.custom.sh ~/
+ln -s ~/mac-init/settings/.profile.sh ~/
+cp settings/.profile.custom.sh ~/
 cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
 ln -s ~/mac-init/settings/.vimrc ~/
