@@ -55,4 +55,8 @@ function delete_git_branches() {
 export NVM_DIR=~/.nvm
 source $(brew --prefix nvm)/nvm.sh
 
+function sshu() {
+  ssh -i ~/Documents/cpd2.pem ubuntu@$1
+}
+
 source ~/.profile.custom.sh
