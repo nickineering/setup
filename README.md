@@ -17,9 +17,7 @@ You will then have to manually do the following:
 6. Add a British keyboard for the external keyboard in addition to the built in keyboard
 7. Get connected to the staff WiFi
 8. Mount the RCVS fileserver
-9. Remap your capslock key to control in `System Preferences - Keyboard - Modifier Keys`
-   (recommended)
-10. Turn on FileVault
+9. Turn on FileVault
 
 Then run the following git commands:
 
