@@ -70,7 +70,6 @@ brew install --cask react-native-debugger  # React Native mobile app debugger
 brew install --cask shuttle  # SSH shortcuts
 brew install --cask snagit  # Screenshots
 brew install --cask the-unarchiver  # File compression utility
-brew install --cask virtualbox  # Virtual machine platform
 brew install --cask visual-studio-code  # Graphical code editor
 brew install --cask vlc  # Multimedia viewer
 
