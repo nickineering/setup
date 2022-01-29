@@ -67,7 +67,6 @@ brew install --cask openvpn-connect  # VPN to work network
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
 brew install --cask react-native-debugger  # React Native mobile app debugger
-brew install --cask shuttle  # SSH shortcuts
 brew install --cask snagit  # Screenshots
 brew install --cask the-unarchiver  # File compression utility
 brew install --cask visual-studio-code  # Graphical code editor
