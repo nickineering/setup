@@ -40,7 +40,6 @@ brew install nvm  # local Javascript runtime
 brew install ohueter/tap/autokbisw # Remember keyboard input type per keyboard
 brew install postgresql  # database for local development
 brew install pyenv-virtualenvwrapper
-brew install selenium-server  # Automate web browsers
 brew install tmux  # Terminal multitasking
 brew install watchman
 brew install yarn  # JavaScript package manager
