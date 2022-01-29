@@ -24,12 +24,6 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 # Rust package manager
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# Github cli setting
-eval "$(hub alias -s)"
-if [ -f ~/cmd_settings/hub.bash_completion ]; then
-  . ~/cmd_settings/hub.bash_completion
-fi
-
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo
@@ -42,10 +36,6 @@ function cs () {
 function mcd () {
     mkdir -p $1
     cd $1
-}
-
-function i_love_you() {
-	echo "I love you too, Nick"
 }
 
 function delete_git_branches() {
