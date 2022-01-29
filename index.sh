@@ -34,17 +34,18 @@ brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
 brew install gh  # Github cli
 brew install git  # Source control
-brew install jupyter  # Interactive code editing notebook
+brew install jupyterlab  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
 brew install nvm  # local Javascript runtime
+brew install ohueter/tap/autokbisw # Remember keyboard input type per keyboard
 brew install postgresql  # database for local development
-brew install selenium-server-standalone  # Automate web browsers
+brew install pyenv-virtualenvwrapper
+brew install selenium-server  # Automate web browsers
 brew install tmux  # Terminal multitasking
 brew install watchman
 brew install yarn  # JavaScript package manager
 brew install zsh  # Improvements to the bash shell
-brew install jeantil/autokbisw/autokbisw # Remember keyboard input type per keyboard
-brew services start jeantil/autokbisw/autokbisw # Run at login
+brew services start ohueter/tap/autokbisw # Run at login
 
 # Install homebrew casks
 brew install --cask 1password  # Password manager
