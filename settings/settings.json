@@ -123,5 +123,7 @@
         "default": "right",
         "jupyter-notebook": "left"
     },
-    "redhat.telemetry.enabled": true
+    "redhat.telemetry.enabled": true,
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue"
 }
