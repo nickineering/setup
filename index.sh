@@ -10,18 +10,21 @@ PYTHON_VERSION="3.9.7"
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
 
+# Assign absolute directory of this script to $DIR
+DIR=$( cd "$(dirname "$0")" ; pwd -P )
+
 # Abort on error
 set -e
 
 # Link custom settings to that they updated automatically when changes are pulled.
-ln -s ~/mac-init/settings/.bash_profile ~/
-ln -s ~/mac-init/settings/.zshrc ~/
-ln -s ~/mac-init/settings/.profile.sh ~/
+ln -s $DIR/settings/.bash_profile ~/
+ln -s $DIR/settings/.zshrc ~/
+ln -s $DIR/settings/.profile.sh ~/
 cp settings/.profile.custom.sh ~/
 cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
-ln -s ~/mac-init/settings/.vimrc ~/
-ln -s ~/mac-init/settings/.tmux.conf ~/
+ln -s $DIR/settings/.vimrc ~/
+ln -s $DIR/settings/.tmux.conf ~/
 
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
