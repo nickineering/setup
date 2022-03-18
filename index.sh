@@ -136,11 +136,6 @@ code --install-extension vsmobile.vscode-react-native
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
 
-# Microsoft remote desktop
-mas install 1295203466
-# Xcode
-mas install 497799835
-
 # Install Rust Language
 curl https://sh.rustup.rs -sSf | sh
 rustup component add rustfmt --toolchain stable-x86_64-apple-darwin
