@@ -134,7 +134,7 @@ code --install-extension ue.alphabetical-sorter
 code --install-extension vsmobile.vscode-react-native
 
 # Add custom VSCode settings
-ln -s ~/mac-init/settings/settings.json ~/Library/Application\ Support/Code/User/
+ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
 
 # Microsoft remote desktop
 mas install 1295203466
