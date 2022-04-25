@@ -29,6 +29,9 @@ ln -s $DIR/settings/.tmux.conf ~/
 # Install homebrew, a unix package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 brew tap homebrew/cask-drivers  # required to install displaylink
 brew install displaylink  # dock for working in office
 
@@ -77,6 +80,8 @@ brew install --cask vlc  # Multimedia viewer
 
 # Microsoft remote desktop
 mas install 1295203466
+# Xcode
+mas install 497799835
 
 # Configure XCode
 xcode-select --install 2>&1 > /dev/null
