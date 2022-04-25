@@ -32,6 +32,14 @@ ln -s $DIR/settings/.tmux.conf ~/
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# Xcode
+mas install 497799835
+
+# Configure XCode
+xcode-select --install 2>&1 > /dev/null
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
+sudo xcodebuild -license accept 2>&1 > /dev/null
+
 brew tap homebrew/cask-drivers  # required to install displaylink
 brew install displaylink  # dock for working in office
 
@@ -80,13 +88,6 @@ brew install --cask vlc  # Multimedia viewer
 
 # Microsoft remote desktop
 mas install 1295203466
-# Xcode
-mas install 497799835
-
-# Configure XCode
-xcode-select --install 2>&1 > /dev/null
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
-sudo xcodebuild -license accept 2>&1 > /dev/null
 
 # Install pyenv to run multiple versions of python at the same time
 brew install openssl  # pyenv dependency
