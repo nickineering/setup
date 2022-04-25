@@ -4,7 +4,7 @@ echo "Please close all work and wait for your Mac to be configured. This may tak
 
 # Change these variables to change the install. Earlier versions of Mac might cause
 # unexpected problems.
-MAC_OS="11.6"
+MAC_OS="12.2.1" # old 11.6
 PYTHON_VERSION="3.9.7"
 
 # Change directory to the directory of the script
@@ -77,8 +77,6 @@ brew install --cask vlc  # Multimedia viewer
 
 # Microsoft remote desktop
 mas install 1295203466
-# Xcode
-mas install 497799835
 
 # Configure XCode
 xcode-select --install 2>&1 > /dev/null
