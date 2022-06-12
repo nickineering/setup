@@ -66,7 +66,7 @@ plugins=(
     colored-man-pages
     colorize
     common-aliases
-    copydir
+    copypath
     copyfile
     git
     git-auto-fetch
