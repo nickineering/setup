@@ -91,30 +91,41 @@ pip install --upgrade pip
 pip install bandit
 pip install beautysh
 pip install black
+pip install flake8
 pip install pre-commit
 pip install pygments  # Dependency of zsh colorize
 pip install virtualenvwrapper
 
 # Install VSCode extensions
+code --install-extension aaron-bond.better-comments
+code --install-extension adpyke.codesnap
 code --install-extension batisteo.vscode-django
 code --install-extension bungcip.better-toml
 code --install-extension christian-kohler.path-intellisense
-code --install-extension dbaeumer.vscode-eslint
-code --install-extension developertejasjadhav.javascript-refactor--sort-imports
+code --install-extension docsmsft.docs-markdown
 code --install-extension eamodio.gitlens
 code --install-extension esbenp.prettier-vscode
-code --install-extension formulahendry.code-runner
+code --install-extension formulahendry.auto-rename-tag
 code --install-extension GitHub.vscode-pull-request-github
 code --install-extension hbenl.vscode-test-explorer
-code --install-extension kumar-harsh.graphql-for-vscode
 code --install-extension littlefoxteam.vscode-python-test-adapter
+code --install-extension markis.code-coverage
 code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension ms-toolsai.jupyter
+code --install-extension ms-toolsai.jupyter-keymap
+code --install-extension ms-toolsai.jupyter-renderers
+code --install-extension ms-vscode-remote.remote-containers
+code --install-extension ms-vscode.makefile-tools
+code --install-extension ms-vscode.test-adapter-converter
 code --install-extension ms-vsliveshare.vsliveshare
-code --install-extension Orta.vscode-jest
 code --install-extension redhat.vscode-yaml
-code --install-extension rust-lang.rust # Rust language support
+code --install-extension rust-lang.rust
+code --install-extension rust-lang.rust-analyzer
 code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension ue.alphabetical-sorter
+code --install-extension visualstudioexptteam.intellicode-api-usage-examples
+code --install-extension visualstudioexptteam.vscodeintellicode
 
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
