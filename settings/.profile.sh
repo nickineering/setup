@@ -38,15 +38,7 @@ function mcd () {
     cd $1
 }
 
-function delete_git_branches() {
-  git branch | grep -v "dev" | xargs git branch -D
-}
-
 export NVM_DIR=~/.nvm
 source $(brew --prefix nvm)/nvm.sh
-
-function sshu() {
-  ssh -i ~/Documents/cpd2.pem ubuntu@$1
-}
 
 source ~/.profile.custom.sh

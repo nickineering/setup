@@ -4,8 +4,8 @@ echo "Please close all work and wait for your Mac to be configured. This may tak
 
 # Change these variables to change the install. Earlier versions of Mac might cause
 # unexpected problems.
-MAC_OS="12.2.1" # old 11.6
-PYTHON_VERSION="3.9.7"
+MAC_OS="12.5.1" # old 11.6
+PYTHON_VERSION="3.10.6"
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
@@ -32,14 +32,6 @@ ln -s $DIR/settings/.tmux.conf ~/
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Xcode
-mas install 497799835
-
-# Configure XCode
-xcode-select --install 2>&1 > /dev/null
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
-sudo xcodebuild -license accept 2>&1 > /dev/null
-
 brew tap homebrew/cask-drivers  # required to install displaylink
 brew install displaylink  # dock for working in office
 
@@ -56,17 +48,13 @@ brew install postgresql  # database for local development
 brew install pyenv-virtualenvwrapper
 brew install tmux  # Terminal multitasking
 brew install watchman
-brew install yarn  # JavaScript package manager
 brew install zsh  # Improvements to the bash shell
 brew services start ohueter/tap/autokbisw # Run at login
 
 # Install homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
-brew install --cask adobe-creative-cloud  # Use to install XD (extra step needed)
 brew install --cask apptrap  # Clean uninstall Mac apps
-brew install --cask azure-data-studio  # Helpful for MSSQL
-brew install --cask browserstacklocal  # Test websites with many different browsers
 brew install --cask copyclip  # Clipboard history
 brew install --cask datagrip  # Connect to databases
 brew install --cask docker  # Code containerisation
@@ -75,19 +63,17 @@ brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
 brew install --cask microsoft-edge  # Major browser
-brew install --cask microsoft-office  # Standard business applications
-brew install --cask microsoft-teams  # Team communication
-brew install --cask openvpn-connect  # VPN to work network
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
-brew install --cask react-native-debugger  # React Native mobile app debugger
-brew install --cask snagit  # Screenshots
 brew install --cask the-unarchiver  # File compression utility
 brew install --cask visual-studio-code  # Graphical code editor
 brew install --cask vlc  # Multimedia viewer
 
-# Microsoft remote desktop
-mas install 1295203466
+# Xcode
+mas install 497799835
+xcode-select --install 2>&1 > /dev/null
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
+sudo xcodebuild -license accept 2>&1 > /dev/null
 
 # Install pyenv to run multiple versions of python at the same time
 brew install openssl  # pyenv dependency
@@ -101,11 +87,6 @@ source ~/.bash_profile
 pyenv install $PYTHON_VERSION
 pyenv global $PYTHON_VERSION
 pip install --upgrade pip
-
-# Install yarn globals
-yarn global add expo-cli  # Develop React Native apps with ease
-yarn global add react-devtools  # Debug React
-yarn global add renovate  # Dependency upgrades
 
 pip install bandit
 pip install beautysh
@@ -122,7 +103,6 @@ code --install-extension dbaeumer.vscode-eslint
 code --install-extension developertejasjadhav.javascript-refactor--sort-imports
 code --install-extension eamodio.gitlens
 code --install-extension esbenp.prettier-vscode
-code --install-extension felixrieseberg.vsc-travis-ci-status
 code --install-extension formulahendry.code-runner
 code --install-extension GitHub.vscode-pull-request-github
 code --install-extension hbenl.vscode-test-explorer
@@ -135,7 +115,6 @@ code --install-extension redhat.vscode-yaml
 code --install-extension rust-lang.rust # Rust language support
 code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension ue.alphabetical-sorter
-code --install-extension vsmobile.vscode-react-native
 
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
@@ -154,6 +133,9 @@ poetry completions zsh > $ZSH/plugins/poetry/_poetry
 mkdir ~/.nvm
 source ~/.zshrc
 nvm install --lts
+
+# Install yarn globals
+npm install -g renovate  # Dependency upgrades
 
 # Install zsh plugin manager
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
@@ -192,9 +174,5 @@ defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv";ok
 
 # Show the ~/Library folder
 chflags nohidden ~/Library;ok
-
-# Set up default development workspace
-mkdir ~/code/
-git clone https://github.com/RCVS-London/dotfiles.git ~/code/
 
 echo "Automated Mac configuration complete. Please follow the manual instructions in the Readme and then reboot your computer."
