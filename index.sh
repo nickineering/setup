@@ -145,7 +145,7 @@ mkdir ~/.nvm
 source ~/.zshrc
 nvm install --lts
 
-# Install yarn globals
+# Install js globals
 npm install -g renovate  # Dependency upgrades
 
 # Install zsh plugin manager

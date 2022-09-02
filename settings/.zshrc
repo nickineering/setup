@@ -103,5 +103,8 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Custom
+# Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
+
+# There should be no code below this comment. If there is copy it into .profile.sh
+# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
