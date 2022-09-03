@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "Please close all work and wait for your Mac to be configured. This may take a while."
+echo "Please close all work and wait for your Mac to be configured. This will take a while."
 
 # Change these variables to change the install. Earlier versions of Mac might cause
 # unexpected problems.
-MAC_OS="12.5.1" # old 11.6
-PYTHON_VERSION="3.10.6"
+MAC_OS="12.5.1"
+PYTHON_VERSION="3.10:latest"
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
@@ -26,14 +26,11 @@ cp settings/.gitignore ~/
 ln -s $DIR/settings/.vimrc ~/
 ln -s $DIR/settings/.tmux.conf ~/
 
-# Install homebrew, a unix package manager
+# Install homebrew, a Mac package manager
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
 eval "$(/opt/homebrew/bin/brew shellenv)"
-
-brew tap homebrew/cask-drivers  # required to install displaylink
-brew install displaylink  # dock for working in office
 
 # Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
@@ -54,20 +51,30 @@ brew services start ohueter/tap/autokbisw # Run at login
 # Install homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
-brew install --cask apptrap  # Clean uninstall Mac apps
+brew install --cask ccleaner
 brew install --cask copyclip  # Clipboard history
-brew install --cask datagrip  # Connect to databases
 brew install --cask docker  # Code containerisation
 brew install --cask firefox-developer-edition  # Web browser with added dev tools
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
+brew install --cask kindle
 brew install --cask microsoft-edge  # Major browser
+brew install --cask nordvpn
+brew install --cask paragon-ntfs
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
+brew install --cask signal
+brew install --cask skype
+brew install --cask spotify
 brew install --cask the-unarchiver  # File compression utility
 brew install --cask visual-studio-code  # Graphical code editor
 brew install --cask vlc  # Multimedia viewer
+brew install --cask whatsapp
+brew install --cask zoom
+
+# ColorSlurp color picker
+mas install 1287239339
 
 # Xcode
 mas install 497799835
@@ -131,9 +138,9 @@ code --install-extension visualstudioexptteam.vscodeintellicode
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
 
 # Install Rust Language
-curl https://sh.rustup.rs -sSf | sh
-rustup component add rustfmt --toolchain stable-x86_64-apple-darwin
-rustup component add rls --toolchain stable-x86_64-apple-darwin
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup component add rustfmt
+rustup component add rls
 
 # Poetry package manager for python
 curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python

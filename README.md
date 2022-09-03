@@ -5,13 +5,14 @@ Everything I need to painlessly setup a new Mac.
 # Get started now
 
 This repository should be locally cloned to your home directory. If not move it there
-now. Run `sudo chmod 700 entry.sh && ./entry.sh` to install the automated components.
-You will then have to manually do the following:
+now. Run `sudo chmod +x entry.sh && ./entry.sh` to install the automated components. You
+will then have to manually do the following:
 
-1. Install Onyx to customise your Mac settings beyond system preferences
-1. Generate a GPG key and configure git to sign commits with it
-1. Add your frequently used applications to the Dock
-1. Add keyboards for different languages
+1. [Generate a new GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key)
+   and configure git to sign commits with it
+1. Add yours favorite applications to the Dock
+1. Add languages and virtual keyboards to the OS
+1. Pair your bluetooth devices
 
 Then run the following git commands:
 
@@ -24,9 +25,17 @@ git config --global user.signingkey "Your gpg key"
 Finally, you will need to activate:
 
 1. 1Password
-2. awscli
-3. Chrome
-4. Firefox
-5. Github
-6. Pull Requests (VSCode)
-7. Xcode
+1. AWS CLI: `awscli`
+1. Chrome - all profiles
+1. Docker
+1. Firefox
+1. Github CLI: `gh`
+1. Kindle
+1. NordVPN
+1. Pull Requests (VSCode)
+1. Signal
+1. Skype
+1. Spotify
+1. WhatsApp
+1. Xcode
+1. Zoom
