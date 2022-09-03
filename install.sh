@@ -73,10 +73,10 @@ brew install --cask zoom
 mas install 1287239339
 
 # Xcode
-mas install 497799835
-xcode-select --install 2>&1 > /dev/null
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
-sudo xcodebuild -license accept 2>&1 > /dev/null
+# mas install 497799835
+# xcode-select --install 2>&1 > /dev/null
+# sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
+# sudo xcodebuild -license accept 2>&1 > /dev/null
 
 # Install pyenv to run multiple versions of python at the same time
 # brew install openssl  # pyenv dependency
