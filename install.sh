@@ -34,6 +34,7 @@ brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
 brew install gh  # Github cli
 brew install git  # Source control
+brew install git-lfs
 brew install jupyterlab  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
 brew install nvm  # local Javascript runtime

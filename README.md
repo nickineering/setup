@@ -31,6 +31,7 @@ Finally, you will need to activate:
 1. Docker
 1. Firefox
 1. Github CLI: `gh`
+1. Github via git
 1. Kindle
 1. NordVPN
 1. Pull Requests (VSCode)
