@@ -2,10 +2,7 @@
 
 echo "Please close all work and wait for your Mac to be configured. This will take a while."
 
-# Change these variables to change the install. Earlier versions of Mac might cause
-# unexpected problems.
-MAC_OS="12.5.1"
-PYTHON_VERSION="3.10:latest"
+PYTHON_VERSION=$1
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
@@ -81,12 +78,13 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
 sudo xcodebuild -license accept 2>&1 > /dev/null
 
 # Install pyenv to run multiple versions of python at the same time
-brew install openssl  # pyenv dependency
-brew install redline  # pyenv dependency
-brew install sqlite3  # pyenv dependency
-brew install xz  # pyenv dependency
-brew install zlib  # pyenv dependency
-sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_$MAC_OS.pkg -target /
+# brew install openssl  # pyenv dependency
+# brew install redline  # pyenv dependency
+# brew install sqlite3  # pyenv dependency
+# brew install xz  # pyenv dependency
+# brew install zlib  # pyenv dependency
+# MAC_OS="12.5.1"
+# sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_$MAC_OS.pkg -target /
 brew install pyenv
 source ~/.bash_profile
 pyenv install $PYTHON_VERSION

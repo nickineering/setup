@@ -5,8 +5,9 @@ Everything I need to painlessly setup a new Mac.
 # Get started now
 
 This repository should be locally cloned to your home directory. If not move it there
-now. Run `chmod +x install.sh && ./install.sh` to install the automated components. You
-will then have to manually do the following:
+now. Run `chmod +x install.sh && ./install.sh 3.10.6` to install the automated
+components. The final parameter is the version of Python you want to install. You will
+then have to manually do the following:
 
 1. [Generate a new GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key)
    and configure git to sign commits with it
