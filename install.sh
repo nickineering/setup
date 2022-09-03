@@ -40,13 +40,11 @@ brew install git  # Source control
 brew install jupyterlab  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
 brew install nvm  # local Javascript runtime
-brew install ohueter/tap/autokbisw # Remember keyboard input type per keyboard
 brew install postgresql  # database for local development
 brew install pyenv-virtualenvwrapper
 brew install tmux  # Terminal multitasking
 brew install watchman
 brew install zsh  # Improvements to the bash shell
-brew services start ohueter/tap/autokbisw # Run at login
 
 # Install homebrew casks
 brew install --cask 1password  # Password manager
