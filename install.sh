@@ -65,7 +65,7 @@ brew install watchman
 brew install zsh  # Improvements to the bash shell
 
 # Get rid of default zsh config and replace with custom
-rm ~/.zshrc
+rm -f ~/.zshrc
 ln -s $DIR/settings/.zshrc ~/
 print_green "Using custom .zshrc settings"
 
