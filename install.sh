@@ -226,7 +226,7 @@ killall Dock
 # Add directories to finder favorites
 brew install --cask mysides
 mysides add "Macintosh HD" file:///
-mysides add nick file:///Users/nick/
+mysides add $USER file:///Users/$USER/
 mysides add Projects file:///Users/nick/projects/
 brew remove mysides
 
