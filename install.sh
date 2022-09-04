@@ -1,8 +1,23 @@
 #!/bin/bash
 
-echo "Please close all work and wait for your Mac to be configured. This will take a while."
-
 PYTHON_VERSION=$1
+
+function print_green {
+    # Print str $1 as bold green text
+    # Print str $2 on new line as normal green text
+    # Finally print time
+
+    GREEN='\033[0;32m'
+    BOLD_GREEN='\033[1;32m'
+    NO_COLOR='\033[0m'
+    echo -e "\n${BOLD_GREEN}$1"
+    echo -e "${GREEN}$2${NO_COLOR}"
+
+    now=$(date)
+    printf "Time: %s\n" "$now"
+}
+
+print_green "AUTOMATICALLY CONFIGURING MAC" "Please leave everything closed and wait for your Mac to be configured. This will take a while."
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
@@ -15,7 +30,6 @@ set -e
 
 # Link custom settings to that they updated automatically when changes are pulled.
 ln -s $DIR/settings/.bash_profile ~/
-ln -s $DIR/settings/.zshrc ~/
 ln -s $DIR/settings/.profile.sh ~/
 cp settings/.profile.custom.sh ~/
 cp settings/.gitconfig ~/
@@ -24,10 +38,7 @@ ln -s $DIR/settings/.vimrc ~/
 ln -s $DIR/settings/.tmux.conf ~/
 
 # Install homebrew, a Mac package manager
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-eval "$(/opt/homebrew/bin/brew shellenv)"
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install homebrew formulas
 brew install awscli  # Amazon Web Services cli
@@ -40,9 +51,17 @@ brew install mas  # Install Mac App Store apps
 brew install nvm  # local Javascript runtime
 brew install postgresql  # database for local development
 brew install pyenv-virtualenvwrapper
+brew install rust
 brew install tmux  # Terminal multitasking
 brew install watchman
 brew install zsh  # Improvements to the bash shell
+
+# Get rid of default zsh config and replace with custom
+rm ~/.zshrc
+ln -s $DIR/settings/.zshrc ~/
+
+brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
+brew install --cask firefox-developer-edition  # Web browser with added dev tools
 
 # Install homebrew casks
 brew install --cask 1password  # Password manager
@@ -50,7 +69,6 @@ brew install --cask 1password-cli  # Use password manager in terminal
 brew install --cask ccleaner
 brew install --cask copyclip  # Clipboard history
 brew install --cask docker  # Code containerisation
-brew install --cask firefox-developer-edition  # Web browser with added dev tools
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
@@ -79,11 +97,6 @@ mas install 1287239339
 # sudo xcodebuild -license accept 2>&1 > /dev/null
 
 # Install pyenv to run multiple versions of python at the same time
-# brew install openssl  # pyenv dependency
-# brew install redline  # pyenv dependency
-# brew install sqlite3  # pyenv dependency
-# brew install xz  # pyenv dependency
-# brew install zlib  # pyenv dependency
 # MAC_OS="12.5.1"
 # sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_$MAC_OS.pkg -target /
 brew install pyenv
@@ -96,9 +109,9 @@ pip install bandit
 pip install beautysh
 pip install black
 pip install flake8
+pip install isort
 pip install pre-commit
 pip install pygments  # Dependency of zsh colorize
-pip install virtualenvwrapper
 
 # Install VSCode extensions
 code --install-extension aaron-bond.better-comments
@@ -133,13 +146,18 @@ code --install-extension visualstudioexptteam.vscodeintellicode
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
 
-# Install Rust Language
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup component add rustfmt
-rustup component add rls
+# Install zsh plugin manager
+sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+# Adding custom zsh plugin for syntax highlighting
+mkdir ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+
+# Autosuggestions when typing in Zsh. Right arrow to autocomplete.
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
 # Poetry package manager for python
-curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+brew install poetry
 mkdir $ZSH/plugins/poetry
 poetry completions zsh > $ZSH/plugins/poetry/_poetry
 
@@ -151,42 +169,57 @@ nvm install --lts
 # Install js globals
 npm install -g renovate  # Dependency upgrades
 
-# Install zsh plugin manager
-sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-
-# Adding custom zsh plugin for syntax highlighting
-mkdir ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-
-# Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 
 # Show all filename extensions
-defaults write NSGlobalDomain AppleShowAllExtensions -bool true;ok
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
 # Show path bar in finder
-defaults write com.apple.finder ShowPathbar -bool true;ok
+defaults write com.apple.finder ShowPathbar -bool true
 
 # Allow text selection in quick look
-defaults write com.apple.finder QLEnableTextSelection -bool true;ok
+defaults write com.apple.finder QLEnableTextSelection -bool true
 
 # When performing a search, search the current folder by default
-defaults write com.apple.finder FXDefaultSearchScope -string "SCcf";ok
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
 # Disable the warning when changing a file extension
-defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false;ok
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 
 # Avoid creating .DS_Store files on network volumes
-defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true;ok
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
 # Use list view in all Finder windows by default
 # Four-letter codes for the other view modes: `icnv`, `clmv`, `Flwv`
-defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv";ok
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 
-# Show the ~/Library folder
-chflags nohidden ~/Library;ok
+# Show keyboard layout selection on login screen
+defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TRUE
 
-echo "Automated Mac configuration complete. Please follow the manual instructions in the Readme and then reboot your computer."
+add_to_dock () {
+    # Add $1 to the Mac dock
+    # $1 == the string name of an app without the file extension
+    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/'$1'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+}
+
+# Add the following applications to the Mac dock
+add_to_dock "1Password"
+add_to_dock "Firefox Developer Edition"
+add_to_dock "Google Chrome"
+add_to_dock "iTerm"
+add_to_dock "Kindle"
+add_to_dock "Spotify"
+add_to_dock "Utilities/Activity Monitor"
+add_to_dock "Visual Studio Code"
+# Required to make changes to the dock take effect
+killall Dock
+
+# Add directories to finder favorites
+brew install --cask mysides
+mysides add "Macintosh HD" file:///
+mysides add nick file:///Users/nick/
+mysides add Projects file:///Users/nick/projects/
+brew remove mysides
+
+print_green "AUTOMATED CONFIGURATION COMPLETE" "Please follow the manual instructions in the Readme and then reboot your computer."
