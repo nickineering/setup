@@ -19,18 +19,23 @@ function print_green {
     echo -e "${GREEN}$1${NO_COLOR}"
 }
 
-print_green "Please leave everything closed and wait for your Mac to be configured. This will take a while." "AUTOMATICALLY CONFIGURING MAC"
-
-# Change directory to the directory of the script
-cd "$(dirname "$0")"
-
-# Assign absolute directory of this script to $DIR
-DIR=$( cd "$(dirname "$0")" ; pwd -P )
+print_green "Please leave everything closed and wait for your Mac to be configured. \
+This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
 # Abort on error
 set -e
 
-# Link custom settings to that they updated automatically when changes are pulled.
+# Make a projects directory and clone the repo into it
+mkdir -p ~/projects
+cd ~/projects
+brew install git
+git clone https://github.com/nferrara100/mac.git
+DIR=~/projects/mac
+cd $DIR
+
+print_green "Cloned repo into projects directory"
+
+# Link custom settings to that they are updated automatically when changes are pulled.
 ln -s $DIR/settings/.bash_profile ~/
 ln -s $DIR/settings/.profile.sh ~/
 cp settings/.profile.custom.sh ~/
@@ -48,7 +53,6 @@ NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 brew install awscli  # Amazon Web Services cli
 brew install bash-completion  # Autocomplete for git
 brew install gh  # Github cli
-brew install git  # Source control
 brew install git-lfs
 brew install jupyterlab  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
@@ -97,15 +101,7 @@ mas install 1287239339
 
 print_green "Completed main app installs"
 
-# Xcode
-# mas install 497799835
-# xcode-select --install 2>&1 > /dev/null
-# sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>&1 > /dev/null
-# sudo xcodebuild -license accept 2>&1 > /dev/null
-
 # Install pyenv to run multiple versions of python at the same time
-# MAC_OS="12.5.1"
-# sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_$MAC_OS.pkg -target /
 brew install pyenv
 source ~/.bash_profile
 pyenv install $PYTHON_VERSION
@@ -160,7 +156,7 @@ print_green "Completed VSCode installs"
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 # Adding custom zsh plugin for syntax highlighting
-mkdir ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
@@ -168,11 +164,11 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-m
 
 # Poetry package manager for python
 brew install poetry
-mkdir $ZSH/plugins/poetry
+mkdir -p $ZSH/plugins/poetry
 poetry completions zsh > $ZSH/plugins/poetry/_poetry
 
 # Setup Node Version Manager (NVM) for local JavaScript
-mkdir ~/.nvm
+mkdir -p ~/.nvm
 source ~/.zshrc
 nvm install --lts
 
@@ -234,4 +230,5 @@ mysides add nick file:///Users/nick/
 mysides add Projects file:///Users/nick/projects/
 brew remove mysides
 
-print_green "Please follow the manual instructions in the Readme and then reboot your computer." "AUTOMATED CONFIGURATION COMPLETE"
+print_green "Please follow the manual instructions in the readme and then reboot your \
+computer." "AUTOMATED CONFIGURATION COMPLETE"
