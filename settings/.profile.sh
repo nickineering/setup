@@ -22,6 +22,16 @@ alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo
 alias git_delete_branches="git branch | grep -v '^*' | xargs git branch -D"
 
+function backup_secrets {
+    # Backup .profile.custom.sh where secrets should be located.
+    # It is not subject to version control.
+
+    mkdir -p ~/Documents/backups
+    cp ~/.profile.custom.sh ~/Documents/backups/
+    echo 'Backup complete'
+    ls -lah ~/Documents/backups/
+}
+
 # Combination of cd and ls
 function cs () {
     cd "$@" && ls
