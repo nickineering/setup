@@ -3,21 +3,23 @@
 PYTHON_VERSION=$1
 
 function print_green {
-    # Print str $1 as bold green text
-    # Print str $2 on new line as normal green text
+    # Print optional str $2 as bold green text
+    # Print str $1 on new line as normal green text
     # Finally print time
 
     GREEN='\033[0;32m'
     BOLD_GREEN='\033[1;32m'
     NO_COLOR='\033[0m'
-    echo -e "\n${BOLD_GREEN}$1"
-    echo -e "${GREEN}$2${NO_COLOR}"
-
-    now=$(date)
-    printf "Time: %s\n" "$now"
+    if (( $# >= 2 ))
+    then
+        now=$(date)
+        printf "Time: %s" "$now"
+        echo -e "\n${BOLD_GREEN}$2${NO_COLOR}"
+    fi
+    echo -e "${GREEN}$1${NO_COLOR}"
 }
 
-print_green "AUTOMATICALLY CONFIGURING MAC" "Please leave everything closed and wait for your Mac to be configured. This will take a while."
+print_green "Please leave everything closed and wait for your Mac to be configured. This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
 # Change directory to the directory of the script
 cd "$(dirname "$0")"
@@ -36,6 +38,8 @@ cp settings/.gitconfig ~/
 cp settings/.gitignore ~/
 ln -s $DIR/settings/.vimrc ~/
 ln -s $DIR/settings/.tmux.conf ~/
+
+print_green "Copied required files"
 
 # Install homebrew, a Mac package manager
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -59,6 +63,7 @@ brew install zsh  # Improvements to the bash shell
 # Get rid of default zsh config and replace with custom
 rm ~/.zshrc
 ln -s $DIR/settings/.zshrc ~/
+print_green "Using custom .zshrc settings"
 
 brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
 brew install --cask firefox-developer-edition  # Web browser with added dev tools
@@ -90,6 +95,8 @@ brew install --cask zoom
 # ColorSlurp color picker
 mas install 1287239339
 
+print_green "Completed main app installs"
+
 # Xcode
 # mas install 497799835
 # xcode-select --install 2>&1 > /dev/null
@@ -112,6 +119,8 @@ pip install flake8
 pip install isort
 pip install pre-commit
 pip install pygments  # Dependency of zsh colorize
+
+print_green "Completed Python installs"
 
 # Install VSCode extensions
 code --install-extension aaron-bond.better-comments
@@ -145,6 +154,7 @@ code --install-extension visualstudioexptteam.vscodeintellicode
 
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
+print_green "Completed VSCode installs"
 
 # Install zsh plugin manager
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
@@ -168,6 +178,8 @@ nvm install --lts
 
 # Install js globals
 npm install -g renovate  # Dependency upgrades
+
+print_green "Completed installs. Now writing defaults..."
 
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
@@ -222,4 +234,4 @@ mysides add nick file:///Users/nick/
 mysides add Projects file:///Users/nick/projects/
 brew remove mysides
 
-print_green "AUTOMATED CONFIGURATION COMPLETE" "Please follow the manual instructions in the Readme and then reboot your computer."
+print_green "Please follow the manual instructions in the Readme and then reboot your computer." "AUTOMATED CONFIGURATION COMPLETE"
