@@ -19,6 +19,7 @@ Onces installation script is complete you will have to manually do the following
    [configure git to sign commits with the new GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key)
 1. Add system languages and keyboard layouts to the OS
 1. Pair your bluetooth devices
+1. Add signature to Preview from the "Signature with white background" Google Doc
 
 Then run the following git commands:
 
