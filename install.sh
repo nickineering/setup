@@ -75,7 +75,6 @@ brew install --cask firefox-developer-edition  # Web browser with added dev tool
 # Install homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
-brew install --cask ccleaner
 brew install --cask copyclip  # Clipboard history
 brew install --cask docker  # Code containerisation
 brew install --cask google-chrome  # Web browser
