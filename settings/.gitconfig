@@ -5,10 +5,10 @@
 	clean = git-lfs clean -- %f
 [core]
 	eol = lf
-	excludesfile = ~/.gitignore
+	excludesFile = ~/.gitignore
 	quotePath = true
 [commit]
-	gpgsign = true
+	gpgSign = true
 [grep]
 	lineNumber=true
 [alias]
@@ -18,3 +18,21 @@
 	protocol = https
 [pull]
 	rebase = true
+[fetch]
+	prune = true
+	pruneTags = true
+[rebase]
+	autoSquash = true
+	autoStash = true
+	missingCommitsCheck = "warn"
+	abbreviateCommands = true
+[advice]
+	detachedHead = false
+[help]
+	autoCorrect = "immediate"
+[merge]
+	autoStash = true
+[push]
+	autoSetupRemote = true
+	followTags = true
+	recurseSubmodules = true
