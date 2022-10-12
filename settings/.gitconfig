@@ -1,38 +1,38 @@
-[filter "lfs"]
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
+[advice]
+	detachedHead = false
+[alias]
+	last = log -1 HEAD
+	unstage = reset HEAD --
+[commit]
+	gpgSign = true
 [core]
 	eol = lf
 	excludesFile = ~/.gitignore
 	quotePath = true
-[commit]
-	gpgSign = true
-[grep]
-	lineNumber=true
-[alias]
-	unstage = reset HEAD --
-	last = log -1 HEAD
-[hub]
-	protocol = https
-[pull]
-	rebase = true
 [fetch]
 	prune = true
 	pruneTags = true
-[rebase]
-	autoSquash = true
-	autoStash = true
-	missingCommitsCheck = "warn"
-	abbreviateCommands = true
-[advice]
-	detachedHead = false
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	process = git-lfs filter-process
+	required = true
+	smudge = git-lfs smudge -- %f
+[grep]
+	lineNumber=true
 [help]
 	autoCorrect = "immediate"
+[hub]
+	protocol = https
 [merge]
 	autoStash = true
+[pull]
+	rebase = true
 [push]
 	autoSetupRemote = true
 	followTags = true
 	recurseSubmodules = true
+[rebase]
+	abbreviateCommands = true
+	autoSquash = true
+	autoStash = true
+	missingCommitsCheck = "warn"
