@@ -30,9 +30,10 @@
 [push]
 	autoSetupRemote = true
 	followTags = true
-	recurseSubmodules = true
 [rebase]
 	abbreviateCommands = true
 	autoSquash = true
 	autoStash = true
 	missingCommitsCheck = "warn"
+[submodule]
+	recurse = true
