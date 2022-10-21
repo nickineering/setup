@@ -205,6 +205,9 @@ defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 # Show keyboard layout selection on login screen
 defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TRUE
 
+# Disable screensaver
+defaults -currentHost write com.apple.screensaver idleTime 0
+
 add_to_dock () {
     # Add $1 to the Mac dock
     # $1 == the string name of an app without the file extension
