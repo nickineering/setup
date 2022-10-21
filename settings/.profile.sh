@@ -17,6 +17,9 @@ pyenv virtualenvwrapper_lazy
 # Makes GPG keys available for use
 export GPG_TTY=$(tty)
 
+# Enable the fuck to correct mistyped commands
+eval $(thefuck --alias)
+
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo

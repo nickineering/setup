@@ -60,6 +60,7 @@ brew install nvm  # local Javascript runtime
 brew install postgresql  # database for local development
 brew install pyenv-virtualenvwrapper
 brew install rust
+brew install thefuck
 brew install tmux  # Terminal multitasking
 brew install watchman
 brew install zsh  # Improvements to the bash shell
