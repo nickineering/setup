@@ -208,6 +208,10 @@ defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TR
 # Disable screensaver
 defaults -currentHost write com.apple.screensaver idleTime 0
 
+# Clear bottom left hotcorner where create note is enabled by default
+# Requires subsequent `killall Dock`
+defaults write com.apple.dock wvous-br-corner -int 0
+
 add_to_dock () {
     # Add $1 to the Mac dock
     # $1 == the string name of an app without the file extension
