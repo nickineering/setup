@@ -175,7 +175,17 @@ nvm install --lts
 # Install js globals
 npm install -g renovate  # Dependency upgrades
 
-print_green "Completed installs. Now writing defaults..."
+print_green "Completed installs. Now configuring settings..."
+
+# Install custom Firefox settings
+FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
+FIREFOX_PROFILE=$(find $FIREFOX_FOLDER \-name '*.dev-edition-default')
+if [ -z "$FIREFOX_PROFILE" ]
+then
+    print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
+else
+    ln -s settings/user.js $FIREFOX_PROFILE
+fi
 
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
