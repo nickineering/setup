@@ -244,7 +244,7 @@ killall Dock
 brew install --cask mysides
 mysides add "Macintosh HD" file:///
 mysides add $USER file:///Users/$USER/
-mysides add Projects file:///Users/nick/projects/
+mysides add Projects file:///Users/$USER/projects/
 brew remove mysides
 
 print_green "Please follow the manual instructions in the readme and then reboot your \
