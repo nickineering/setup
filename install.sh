@@ -25,6 +25,9 @@ This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 # Abort on error
 set -e
 
+# Print commands that are run as they are run
+set -v
+
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
 cd ~/projects
