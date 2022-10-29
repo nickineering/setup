@@ -31,14 +31,14 @@ set -v
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
 cd ~/projects
-brew install git
+brew install git # Use Homebrew so that updates are easy
 git clone https://github.com/nferrara100/mac.git
 DIR=~/projects/mac
-cd $DIR
+cd $DIR # Enter newly cloned repo
 
 print_green "Cloned repo into projects directory"
 
-# Link custom settings to that they are updated automatically when changes are pulled.
+# Link custom settings to that they are updated automatically when changes are pulled
 ln -s $DIR/settings/.bash_profile ~/
 ln -s $DIR/settings/.profile.sh ~/
 cp settings/.profile.custom.sh ~/
@@ -49,26 +49,26 @@ ln -s $DIR/settings/.tmux.conf ~/
 
 print_green "Copied required files"
 
-# Install homebrew, a Mac package manager
+# Install Homebrew, a Mac package manager
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Install homebrew formulas
-brew install awscli  # Amazon Web Services cli
-brew install bash-completion  # Autocomplete for git
-brew install gh  # Github cli
-brew install git-lfs
+# Install Homebrew formulas
+brew install awscli  # Amazon Web Services CLI
+brew install bash-completion  # Autocomplete for Git
+brew install gh  # Github CLI
+brew install git-lfs  # Better handling of large files by Git
 brew install jupyterlab  # Interactive code editing notebook
 brew install mas  # Install Mac App Store apps
-brew install nvm  # local Javascript runtime
-brew install postgresql  # database for local development
-brew install pyenv-virtualenvwrapper
-brew install rust
-brew install thefuck
+brew install nvm  # local JavaScript runtime
+brew install postgresql  # Database for local development
+brew install pyenv-virtualenvwrapper  # The easiest way to manage Python environments
+brew install rust  # Rust programming language
+brew install thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
 brew install tmux  # Terminal multitasking
 brew install watchman
-brew install zsh  # Improvements to the bash shell
+brew install zsh  # Improvements to the Bash shell
 
-# Get rid of default zsh config and replace with custom
+# Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
 ln -s $DIR/settings/.zshrc ~/
 print_green "Using custom .zshrc settings"
@@ -76,7 +76,7 @@ print_green "Using custom .zshrc settings"
 brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
 brew install --cask firefox-developer-edition  # Web browser with added dev tools
 
-# Install homebrew casks
+# Install Homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
 brew install --cask copyclip  # Clipboard history
@@ -84,40 +84,40 @@ brew install --cask docker  # Code containerisation
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
-brew install --cask kindle
+brew install --cask kindle  # Read Kindle books on desktop
 brew install --cask microsoft-edge  # Major browser
-brew install --cask nordvpn
-brew install --cask paragon-ntfs
+brew install --cask nordvpn  # Paid VPN for privacy and security
+brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
-brew install --cask signal
-brew install --cask skype
-brew install --cask spotify
+brew install --cask signal  # Secure messaging
+brew install --cask skype  # Video calling
+brew install --cask spotify  # Music streaming
 brew install --cask the-unarchiver  # File compression utility
 brew install --cask visual-studio-code  # Graphical code editor
 brew install --cask vlc  # Multimedia viewer
-brew install --cask whatsapp
-brew install --cask zoom
+brew install --cask whatsapp  # Secure messaging
+brew install --cask zoom  # Video calling
 
-# ColorSlurp color picker
+# ColorSlurp color picker - get any color on screen
 mas install 1287239339
 
 print_green "Completed main app installs"
 
-# Install pyenv to run multiple versions of python at the same time
+# Install Pyenv to run multiple versions of python at the same time
 brew install pyenv
 source ~/.bash_profile
 pyenv install $PYTHON_VERSION
 pyenv global $PYTHON_VERSION
 pip install --upgrade pip
 
-pip install bandit
-pip install beautysh
-pip install black
-pip install flake8
-pip install isort
-pip install pre-commit
-pip install pygments  # Dependency of zsh colorize
+pip install bandit  # Python code security
+pip install beautysh  # Bash code formatting
+pip install black  # Python code formatting
+pip install flake8  # Python linting
+pip install isort  # Sort Python imports
+pip install pre-commit  # Run multilingual commands before git commits
+pip install pygments  # Dependency of Zsh colorize
 
 print_green "Completed Python installs"
 
@@ -155,17 +155,17 @@ code --install-extension visualstudioexptteam.vscodeintellicode
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
 print_green "Completed VSCode installs"
 
-# Install zsh plugin manager
+# Install Zsh plugin manager
 sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
-# Adding custom zsh plugin for syntax highlighting
+# Adding custom Zsh plugin for syntax highlighting
 mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
-# Poetry package manager for python
+# Poetry package manager for Python
 brew install poetry
 mkdir -p $ZSH/plugins/poetry
 poetry completions zsh > $ZSH/plugins/poetry/_poetry
@@ -175,7 +175,7 @@ mkdir -p ~/.nvm
 source ~/.zshrc
 nvm install --lts
 
-# Install js globals
+# Install JavaScript globals
 npm install -g renovate  # Dependency upgrades
 
 print_green "Completed installs. Now configuring settings..."
@@ -196,7 +196,7 @@ defaults write com.apple.LaunchServices LSQuarantine -bool false
 # Show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
-# Show path bar in finder
+# Show path bar in Finder
 defaults write com.apple.finder ShowPathbar -bool true
 
 # Allow text selection in quick look
@@ -243,7 +243,7 @@ add_to_dock "Visual Studio Code"
 # Required to make changes to the dock take effect
 killall Dock
 
-# Add directories to finder favorites
+# Add directories to Finder favorites
 brew install --cask mysides
 mysides add "Macintosh HD" file:///
 mysides add $USER file:///Users/$USER/
