@@ -20,6 +20,11 @@ Onces installation script is complete you will have to manually do the following
 1. Add system languages and keyboard layouts to the OS
 1. Pair your bluetooth devices
 1. Add signature to Preview from the "Signature with white background" Google Doc
+1. Open and configure Shottr:
+    - Grant permissions
+    - Increase scrolling screenshot speed to max
+    - Assign hotkeys for all commands
+    - Default window to larger size
 
 Then run the following git commands:
 

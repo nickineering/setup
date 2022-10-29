@@ -90,6 +90,7 @@ brew install --cask nordvpn  # Paid VPN for privacy and security
 brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
+brew install --cask shottr  # Screenshots and on screen OCR
 brew install --cask signal  # Secure messaging
 brew install --cask skype  # Video calling
 brew install --cask spotify  # Music streaming
