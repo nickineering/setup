@@ -44,6 +44,7 @@ Finally, you will need to activate:
 1. Github VSCode extension
 1. Kindle
 1. NordVPN
+1. Raycast
 1. Signal
 1. Skype
 1. Spotify

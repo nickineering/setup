@@ -80,7 +80,6 @@ brew install --cask firefox-developer-edition  # Web browser with added dev tool
 # Install Homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
-brew install --cask copyclip  # Clipboard history
 brew install --cask docker  # Code containerisation
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
@@ -91,6 +90,7 @@ brew install --cask nordvpn  # Paid VPN for privacy and security
 brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
+brew install --cask raycast  # Extendable app launcher and clipboard history
 brew install --cask shottr  # Screenshots and on screen OCR
 brew install --cask signal  # Secure messaging
 brew install --cask skype  # Video calling
