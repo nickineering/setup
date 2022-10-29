@@ -1,6 +1,6 @@
-set number
-syntax on
-set ruler " Always show current positions along the bottom
+set number " show line numbers
+syntax on " syntax highlighting
+set ruler " always show current positions along the bottom
 set showmatch " show matching brackets
 set mat=5 " how many tenths of a second to blink matching brackets for
 
