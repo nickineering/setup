@@ -1,3 +1,6 @@
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -115,5 +118,9 @@ source $ZSH/oh-my-zsh.sh
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
 
-# There should be no code below this comment. If there is copy it into .profile.sh
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+# There should be no code below this comment other than Fig.
+# If there is copy it into .profile.sh.
+# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––-
+
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

@@ -55,6 +55,7 @@ NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 # Install Homebrew formulas
 brew install awscli  # Amazon Web Services CLI
 brew install bash-completion  # Autocomplete for Git
+brew install fig  # IDE style terminal autocompletion
 brew install gh  # Github CLI
 brew install git-lfs  # Better handling of large files by Git
 brew install jupyterlab  # Interactive code editing notebook

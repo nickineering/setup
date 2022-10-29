@@ -39,6 +39,7 @@ Finally, you will need to activate:
 1. AWS CLI: `awscli`
 1. Chrome - all profiles
 1. Docker
+1. Fig
 1. Firefox
 1. Github VSCode extension
 1. Kindle

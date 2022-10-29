@@ -5,6 +5,7 @@
     "breadcrumbs.enabled": true,
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
+    "editor.accessibilitySupport": "off",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New'",
     "editor.fontLigatures": true,
@@ -67,6 +68,9 @@
     "terminal.external.osxExec": "iTerm.app",
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.enableMultiLinePasteWarning": false,
+    "terminal.integrated.env.osx": {
+        "FIG_NEW_SESSION": "1"
+    },
     "terminal.integrated.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New'",
     "terminal.integrated.fontSize": 13,
     "terminal.integrated.fontWeight": "300",

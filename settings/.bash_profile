@@ -1,3 +1,7 @@
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/bash_profile.pre.bash" ]] && builtin source "$HOME/.fig/shell/bash_profile.pre.bash"
+export PATH="$HOME/.local/bin:$PATH"  # Needed by Fig
+
 #                    STOP!
 # Only edit this file if something is incompatible with zsh.
 # ----- Code for bash and zsh should be in .profile.sh -----
@@ -13,5 +17,9 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shel
 
 source ~/.profile.sh
 
-# There should be no code below this comment. If there is copy it into .profile.sh
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+# There should be no code below this comment other than Fig.
+# If there is copy it into .profile.sh.
+# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––-
+
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/bash_profile.post.bash" ]] && builtin source "$HOME/.fig/shell/bash_profile.post.bash"
