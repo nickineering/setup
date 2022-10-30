@@ -87,6 +87,7 @@ brew install --cask gpg-suite  # GPG key generator
 brew install --cask iterm2  # Terminal emulator
 brew install --cask kindle  # Read Kindle books on desktop
 brew install --cask microsoft-edge  # Major browser
+brew install --cask muzzle  # Automatically switch to do not disturb while screensharing
 brew install --cask nordvpn  # Paid VPN for privacy and security
 brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 brew install --cask postgres  # Local database
