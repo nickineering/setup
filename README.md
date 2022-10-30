@@ -50,6 +50,7 @@ Finally, you will need to activate:
 1. Signal
 1. Skype
 1. Spotify
+1. Tiles (Open, grant permissions, and open on login)
 1. WhatsApp
 1. Xcode
 1. Zoom

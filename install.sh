@@ -99,6 +99,7 @@ brew install --cask signal  # Secure messaging
 brew install --cask skype  # Video calling
 brew install --cask spotify  # Music streaming
 brew install --cask the-unarchiver  # File compression utility
+brew install --cask tiles  # Windows style windows that snap into place
 brew install --cask visual-studio-code  # Graphical code editor
 brew install --cask vlc  # Multimedia viewer
 brew install --cask whatsapp  # Secure messaging
