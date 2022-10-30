@@ -67,7 +67,7 @@ brew install rust  # Rust programming language
 brew install thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
 brew install tmux  # Terminal multitasking
 brew install watchman
-brew install zsh  # Improvements to the Bash shell
+brew install zsh  # Use the most up to date version of Zsh, the default shell
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
