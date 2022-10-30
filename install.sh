@@ -80,6 +80,7 @@ brew install --cask firefox-developer-edition  # Web browser with added dev tool
 # Install Homebrew casks
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
+brew install --cask boop  # Scratchpad for developers with text wrangling tools
 brew install --cask docker  # Code containerisation
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
@@ -235,6 +236,7 @@ add_to_dock () {
 
 # Add the following applications to the Mac dock
 add_to_dock "1Password"
+add_to_dock "Boop"
 add_to_dock "Firefox Developer Edition"
 add_to_dock "Google Chrome"
 add_to_dock "iTerm"
