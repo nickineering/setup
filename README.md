@@ -43,6 +43,7 @@ Finally, you will need to activate:
 1. Fig
 1. Firefox
 1. Github VSCode extension
+1. iTerm2 (Make default terminal)
 1. Kindle
 1. Muzzle (Just open and grant permissions)
 1. NordVPN
