@@ -20,6 +20,9 @@ Onces installation script is complete you will have to manually do the following
 1. Add system languages and keyboard layouts to the OS
 1. Pair your bluetooth devices
 1. Add signature to Preview from the "Signature with white background" Google Doc
+1. Search for "extensions" in System Settings. Click "Finder extensions" -> "Added
+   extensions" -> Enable "OpenInTerminal"
+1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
 1. Open and configure Shottr:
     - Grant permissions
     - Increase scrolling screenshot speed to max
@@ -47,6 +50,14 @@ Finally, you will need to activate:
 1. Kindle
 1. Muzzle (Just open and grant permissions)
 1. NordVPN
+1. OpenInTerminal
+    1. Grant permissions
+    1. Launch at Login
+    1. Quick Toggle (terminal)
+    1. Hide Status Bar Icon
+    1. Default Terminal: iTerm
+    1. Default Editor: Visual Studio Code
+    1. iTerm: Tab
 1. Raycast
 1. Signal
 1. Skype

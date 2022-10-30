@@ -90,6 +90,7 @@ brew install --cask kindle  # Read Kindle books on desktop
 brew install --cask microsoft-edge  # Major browser
 brew install --cask muzzle  # Automatically switch to do not disturb while screensharing
 brew install --cask nordvpn  # Paid VPN for privacy and security
+brew install --cask openinterminal  # Open any folder in the terminal or an editor
 brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 brew install --cask postgres  # Local database
 brew install --cask postman  # API builder and debugger
@@ -230,6 +231,9 @@ defaults -currentHost write com.apple.screensaver idleTime 0
 # Clear bottom left hotcorner where create note is enabled by default
 # Requires subsequent `killall Dock`
 defaults write com.apple.dock wvous-br-corner -int 0
+
+# Make iTerm open new tabs by default
+defaults write com.googlecode.iterm2 OpenFileInNewWindows -bool false
 
 add_to_dock () {
     # Add $1 to the Mac dock
