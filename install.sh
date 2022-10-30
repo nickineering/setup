@@ -81,6 +81,7 @@ brew install --cask firefox-developer-edition  # Web browser with added dev tool
 brew install --cask 1password  # Password manager
 brew install --cask 1password-cli  # Use password manager in terminal
 brew install --cask boop  # Scratchpad for developers with text wrangling tools
+brew install --cask cheatsheet  # Easily see keyboard shortcuts for the current app
 brew install --cask docker  # Code containerisation
 brew install --cask google-chrome  # Web browser
 brew install --cask gpg-suite  # GPG key generator
