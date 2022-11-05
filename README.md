@@ -5,10 +5,8 @@ Everything I need to painlessly setup a new Mac.
 ## Get started from scratch
 
 ```
-curl -s https://raw.githubusercontent.com/nferrara100/mac/master/install.sh | bash -s 3.10.6
+curl -s https://raw.githubusercontent.com/nferrara100/mac/master/install.sh | bash
 ```
-
-The final parameter is the version of Python you want to install.
 
 ## Manual bits
 

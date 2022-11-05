@@ -1,7 +1,5 @@
 #!/bin/bash
 
-PYTHON_VERSION=$1
-
 function print_green {
     # Print optional str $2 as bold green text
     # Print str $1 on new line as normal green text
@@ -114,8 +112,9 @@ print_green "Completed main app installs"
 # Install Pyenv to run multiple versions of python at the same time
 brew install pyenv
 source ~/.bash_profile
-pyenv install $PYTHON_VERSION
-pyenv global $PYTHON_VERSION
+LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
+pyenv install $LATEST_PYTHON
+pyenv global $LATEST_PYTHON
 pip install --upgrade pip
 
 pip install bandit  # Python code security
