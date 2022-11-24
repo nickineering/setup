@@ -53,6 +53,7 @@ NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 # Install Homebrew formulas
 brew install awscli  # Amazon Web Services CLI
 brew install bash-completion  # Autocomplete for Git
+brew install deno  # TypeScript native Node alternative written in Rust
 brew install fig  # IDE style terminal autocompletion
 brew install gh  # Github CLI
 brew install git-lfs  # Better handling of large files by Git
@@ -156,6 +157,7 @@ code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension ue.alphabetical-sorter
 code --install-extension visualstudioexptteam.intellicode-api-usage-examples
 code --install-extension visualstudioexptteam.vscodeintellicode
+# Deno
 
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
@@ -233,6 +235,15 @@ defaults write com.apple.dock wvous-br-corner -int 0
 
 # Make iTerm open new tabs by default
 defaults write com.googlecode.iterm2 OpenFileInNewWindows -bool false
+
+# Show the home folder instead of recents when opening a new Finder window
+defaults write com.apple.finder NewWindowTarget -string "PfHm"
+
+# Don't show recent apps not presently open in the dock - requires `killall Dock`
+defaults write com.apple.dock show-recents -bool FALSE
+
+# Hide the spotlight icon in the menu bar
+defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
 
 add_to_dock () {
     # Add $1 to the Mac dock
