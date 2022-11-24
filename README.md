@@ -43,8 +43,6 @@ Finally, you will need to activate:
 1. iTerm2
     1. Make default terminal
 1. Kindle
-1. Muzzle
-    1. Grant permissions
 1. NordVPN
 1. OpenInTerminal
     1. Grant permissions
