@@ -21,6 +21,7 @@ Once the installation script is complete you will have to manually do the follow
 1. Search for "extensions" in System Settings. Click "Finder extensions" -> "Added
    extensions" -> Enable "OpenInTerminal"
 1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
+1. Remove Apple News and Apple Stocks widgets from the Notification Center
 
 Then run the following git commands:
 
