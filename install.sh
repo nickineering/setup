@@ -272,7 +272,15 @@ defaults write com.apple.dock persistent-apps -array
 add_to_dock () {
     # Add $1 to the Mac dock
     # $1 == the string name of an app without the file extension
-    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/'$1'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+    # $2 == "System" if an Apple app; unset otherwise
+
+    LOC="/Applications/"
+    # If it's a system app use a different location
+    if [ ! -z $2 ]
+    then
+        LOC="/System/Applications/"
+    fi
+    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$LOC$1'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
 }
 
 # Add the following applications to the Mac dock
@@ -281,11 +289,11 @@ add_to_dock "Boop"
 add_to_dock "Firefox Developer Edition"
 add_to_dock "Google Chrome"
 add_to_dock "iTerm"
-add_to_dock "Notes"
-add_to_dock "Photo Booth"
-add_to_dock "Reminders"
+add_to_dock "Notes" "System"
+add_to_dock "Photo Booth" "System"
+add_to_dock "Reminders" "System"
 add_to_dock "Spotify"
-add_to_dock "Utilities/Activity Monitor"
+add_to_dock "Utilities/Activity Monitor" "System"
 add_to_dock "Visual Studio Code"
 # Required to make changes to the dock take effect
 killall Dock
