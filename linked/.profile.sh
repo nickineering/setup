@@ -18,7 +18,7 @@ pyenv virtualenvwrapper_lazy
 export GPG_TTY=$(tty)
 
 # Enable the fuck to correct mistyped commands
-eval $(thefuck --alias)
+eval "$(thefuck --alias)"
 
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
@@ -42,8 +42,8 @@ function cs () {
 
 # Combination of mkdir and cd
 function mcd () {
-    mkdir -p $1
-    cd $1
+    mkdir -p "$1"
+    cd "$1" || exit
 }
 
 # NVM
@@ -52,4 +52,5 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$(brew --prefix)/opt/nvm/etc/bash_completion.d/nvm" ] && \. "$(brew --prefix)/opt/nvm/etc/bash_completion.d/nvm" # This loads nvm bash_completion
 
 # Changes not tracked in git
+# shellcheck disable=SC1090
 source ~/.profile.custom.sh

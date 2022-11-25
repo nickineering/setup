@@ -62,6 +62,7 @@ brew install nvm  # local JavaScript runtime
 brew install postgresql  # Database for local development
 brew install pyenv-virtualenvwrapper  # The easiest way to manage Python environments
 brew install rust  # Rust programming language
+brew install shellcheck  # Linting for shell scripts
 brew install thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
 brew install tmux  # Terminal multitasking
 brew install watchman
@@ -110,10 +111,11 @@ print_green "Completed main app installs"
 
 # Install Pyenv to run multiple versions of python at the same time
 brew install pyenv
+# shellcheck disable=SC1090
 source ~/.bash_profile
 LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
-pyenv install $LATEST_PYTHON
-pyenv global $LATEST_PYTHON
+pyenv install "$LATEST_PYTHON"
+pyenv global "$LATEST_PYTHON"
 pip install --upgrade pip
 
 pip install bandit  # Python code security
@@ -126,7 +128,7 @@ pip install pygments  # Dependency of Zsh colorize
 
 print_green "Completed Python installs"
 
-# Install VSCode extensions
+# Install VSCode extensions. View current at ~/.vscode/extensions
 code --install-extension aaron-bond.better-comments
 code --install-extension adpyke.codesnap
 code --install-extension batisteo.vscode-django
@@ -154,6 +156,7 @@ code --install-extension redhat.vscode-yaml
 code --install-extension rust-lang.rust
 code --install-extension rust-lang.rust-analyzer
 code --install-extension streetsidesoftware.code-spell-checker
+code --install-extension timonwong.shellcheck
 code --install-extension ue.alphabetical-sorter
 code --install-extension visualstudioexptteam.intellicode-api-usage-examples
 code --install-extension visualstudioexptteam.vscodeintellicode
@@ -170,15 +173,16 @@ mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
 
 # Poetry package manager for Python
 brew install poetry
-mkdir -p $ZSH/plugins/poetry
-poetry completions zsh > $ZSH/plugins/poetry/_poetry
+mkdir -p "$ZSH"/plugins/poetry
+poetry completions zsh > "$ZSH"/plugins/poetry/_poetry
 
 # Setup Node Version Manager (NVM) for local JavaScript
 mkdir -p ~/.nvm
+# shellcheck disable=SC1090
 source ~/.zshrc
 nvm install --lts
 
@@ -189,12 +193,12 @@ print_green "Completed installs. Now configuring settings..."
 
 # Install custom Firefox settings
 FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
-FIREFOX_PROFILE=$(find $FIREFOX_FOLDER \-name '*.dev-edition-default')
+FIREFOX_PROFILE=$(find "$FIREFOX_FOLDER" -name '*.dev-edition-default')
 if [ -z "$FIREFOX_PROFILE" ]
 then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
-    ln -s $DIR/linked/user.js $FIREFOX_PROFILE
+    ln -s $DIR/linked/user.js "$FIREFOX_PROFILE"
 fi
 
 # Disable screensaver
@@ -276,11 +280,11 @@ add_to_dock () {
 
     LOC="/Applications/"
     # If it's a system app use a different location
-    if [ ! -z $2 ]
+    if [ -n "$2" ]
     then
         LOC="/System/Applications/"
     fi
-    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$LOC$1'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$LOC"$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
 }
 
 # Add the following applications to the Mac dock
@@ -301,8 +305,8 @@ killall Dock
 # Add directories to Finder favorites
 brew install --cask mysides
 mysides add "Macintosh HD" file:///
-mysides add $USER file:///Users/$USER/
-mysides add Projects file:///Users/$USER/projects/
+mysides add "$USER" file:///Users/"$USER"/
+mysides add Projects file:///Users/"$USER"/projects/
 brew remove mysides
 
 print_green "Please follow the manual instructions in the readme and then reboot your \
