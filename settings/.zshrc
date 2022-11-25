@@ -115,6 +115,14 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Custom settings below here
+
+# Automatically prepend `cd` to directory names
+setopt AUTO_CD
+
+# Prompt to correct mistyped shell commands
+setopt CORRECT_ALL
+
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
 
