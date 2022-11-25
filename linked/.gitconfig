@@ -7,7 +7,7 @@
 	gpgSign = true
 [core]
 	eol = lf
-	excludesFile = ~/projects/mac/settings/.gitignore
+	excludesFile = ~/projects/mac/linked/.gitignore
 	quotePath = true
 [fetch]
 	prune = true

@@ -37,12 +37,12 @@ cd $DIR # Enter newly cloned repo
 print_green "Cloned repo into projects directory"
 
 # Link custom settings to that they are updated automatically when changes are pulled
-ln -s $DIR/settings/.bash_profile ~/
-ln -s $DIR/settings/.profile.sh ~/
-cp settings/.profile.custom.sh ~/
-cp settings/.gitconfig ~/
-ln -s $DIR/settings/.vimrc ~/
-ln -s $DIR/settings/.tmux.conf ~/
+ln -s $DIR/linked/.bash_profile ~/
+ln -s $DIR/linked/.profile.sh ~/
+cp copied/.profile.custom.sh ~/
+cp copied/.gitconfig ~/
+ln -s $DIR/linked/.vimrc ~/
+ln -s $DIR/linked/.tmux.conf ~/
 
 print_green "Copied required files"
 
@@ -69,7 +69,7 @@ brew install zsh  # Use the most up to date version of Zsh, the default shell
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
-ln -s $DIR/settings/.zshrc ~/
+ln -s $DIR/linked/.zshrc ~/
 print_green "Using custom .zshrc settings"
 
 brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
@@ -159,7 +159,7 @@ code --install-extension visualstudioexptteam.intellicode-api-usage-examples
 code --install-extension visualstudioexptteam.vscodeintellicode
 
 # Add custom VSCode settings
-ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
+ln -s $DIR/linked/settings.json ~/Library/Application\ Support/Code/User/
 print_green "Completed VSCode installs"
 
 # Install Zsh plugin manager
@@ -194,7 +194,7 @@ if [ -z "$FIREFOX_PROFILE" ]
 then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
-    ln -s settings/user.js $FIREFOX_PROFILE
+    ln -s $DIR/linked/user.js $FIREFOX_PROFILE
 fi
 
 # Disable screensaver
