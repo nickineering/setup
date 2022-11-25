@@ -79,5 +79,6 @@ Finally, you will need to activate:
 
 ## Changing your dotfiles
 
-Changes to your dotfiles will be mirrored in your local copy of the repo to make
-contributing upstream easier. Do not move the repo or it will break their links!
+Changes to your dotfiles will be mirrored in your local copy of the repo in the `linked`
+folder to make contributing upstream easier. Do not move the repo or it will break the
+links!
