@@ -41,7 +41,6 @@ ln -s $DIR/settings/.bash_profile ~/
 ln -s $DIR/settings/.profile.sh ~/
 cp settings/.profile.custom.sh ~/
 cp settings/.gitconfig ~/
-cp settings/.gitignore ~/
 ln -s $DIR/settings/.vimrc ~/
 ln -s $DIR/settings/.tmux.conf ~/
 

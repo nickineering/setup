@@ -1,39 +1,10 @@
-[advice]
-	detachedHead = false
-[alias]
-	last = log -1 HEAD
-	unstage = reset HEAD --
-[commit]
-	gpgSign = true
-[core]
-	eol = lf
-	excludesFile = ~/.gitignore
-	quotePath = true
-[fetch]
-	prune = true
-	pruneTags = true
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	process = git-lfs filter-process
-	required = true
-	smudge = git-lfs smudge -- %f
-[grep]
-	lineNumber=true
-[help]
-	autoCorrect = "immediate"
-[hub]
-	protocol = https
-[merge]
-	autoStash = true
-[pull]
-	rebase = true
-[push]
-	autoSetupRemote = true
-	followTags = true
-[rebase]
-	abbreviateCommands = true
-	autoSquash = true
-	autoStash = true
-	missingCommitsCheck = "warn"
-[submodule]
-	recurse = true
+# This gitconfig should be placed in the user's home directory
+# Changes to Git settings should be included in the core file and committed
+
+# !!! Only use this file to save user or device specific config !!!
+# Examples: Name, email, signing key
+
+[include]
+	path = ~/projects/mac/settings/.gitconfig_core  # <--- Place generic config here!
+
+# -------------- Place your user or device specific config below this point --------------
