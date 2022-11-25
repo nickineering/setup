@@ -4,6 +4,9 @@ Everything I need to painlessly setup a new Mac.
 
 ## Get started on a fresh Mac
 
+⚠️ **Danger**: This will completely change your system. It is only designed to be run on
+a new Mac.
+
 ```bash
 curl -s https://raw.githubusercontent.com/nferrara100/mac/master/install.sh | bash
 ```
