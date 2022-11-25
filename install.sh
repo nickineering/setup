@@ -133,6 +133,8 @@ code --install-extension adpyke.codesnap
 code --install-extension batisteo.vscode-django
 code --install-extension bungcip.better-toml
 code --install-extension christian-kohler.path-intellisense
+code --install-extension davidanson.vscode-markdownlint
+code --install-extension denoland.vscode-deno
 code --install-extension docsmsft.docs-markdown
 code --install-extension eamodio.gitlens
 code --install-extension esbenp.prettier-vscode
@@ -156,7 +158,6 @@ code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension ue.alphabetical-sorter
 code --install-extension visualstudioexptteam.intellicode-api-usage-examples
 code --install-extension visualstudioexptteam.vscodeintellicode
-# Deno
 
 # Add custom VSCode settings
 ln -s $DIR/settings/settings.json ~/Library/Application\ Support/Code/User/
