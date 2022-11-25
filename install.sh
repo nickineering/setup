@@ -198,17 +198,43 @@ else
     ln -s settings/user.js $FIREFOX_PROFILE
 fi
 
-# Disable the “Are you sure you want to open this application?” dialog
-defaults write com.apple.LaunchServices LSQuarantine -bool false
+# Disable screensaver
+defaults -currentHost write com.apple.screensaver idleTime 0
 
-# Show all filename extensions
-defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+# Hide the spotlight icon in the menu bar
+defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
 
-# Show path bar in Finder
-defaults write com.apple.finder ShowPathbar -bool true
+# Show keyboard layout selection on login screen
+defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TRUE
 
-# Allow text selection in quick look
-defaults write com.apple.finder QLEnableTextSelection -bool true
+# Avoid creating .DS_Store files on network volumes
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+
+# Dock defaults require subsequent `killall Dock`
+
+# Place the Dock on the left of the screen
+defaults write com.apple.dock "orientation" -string "left"
+
+# Autohide the Dock
+defaults write com.apple.dock autohide -bool true
+
+# Unhide the Dock instantly. To undo set back to 0.5
+defaults write com.apple.dock autohide-delay -float 0
+
+# Open files by droping them on an icon in the Dock
+defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
+
+# Remove all apps kept in Dock by default
+defaults write com.apple.dock persistent-apps -array
+
+# Don't show recent apps not presently open in the dock
+defaults write com.apple.dock show-recents -bool FALSE
+
+# Hidden apps are grayed out in Dock so they are obvious
+defaults write com.apple.Dock showhidden -bool TRUE
+
+# Clear bottom left hotcorner where create note is enabled by default
+defaults write com.apple.dock wvous-br-corner -int 0
 
 # When performing a search, search the current folder by default
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
@@ -216,58 +242,33 @@ defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 # Disable the warning when changing a file extension
 defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 
-# Avoid creating .DS_Store files on network volumes
-defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
-
 # Use list view in all Finder windows by default
 # Four-letter codes for the other view modes: `icnv`, `clmv`, `Flwv`
 defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 
-# Show keyboard layout selection on login screen
-defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TRUE
-
-# Disable screensaver
-defaults -currentHost write com.apple.screensaver idleTime 0
-
-# Clear bottom left hotcorner where create note is enabled by default
-# Requires subsequent `killall Dock`
-defaults write com.apple.dock wvous-br-corner -int 0
-
-# Make iTerm open new tabs by default
-defaults write com.googlecode.iterm2 OpenFileInNewWindows -bool false
-
 # Show the home folder instead of recents when opening a new Finder window
 defaults write com.apple.finder NewWindowTarget -string "PfHm"
 
-# Don't show recent apps not presently open in the dock - requires `killall Dock`
-defaults write com.apple.dock show-recents -bool FALSE
+# Allow text selection in quick look
+defaults write com.apple.finder QLEnableTextSelection -bool true
 
-# Hide the spotlight icon in the menu bar
-defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
-
-# Hidden apps are grayed out in Dock so they are obvious - requires `killall Dock`
-defaults write com.apple.Dock showhidden -bool TRUE
-
-# Place the Dock on the left of the screen
-defaults write com.apple.dock "orientation" -string "left"
-
-# Open files by droping them on an icon in the Dock
-defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
-
-# Autohide the Dock
-defaults write com.apple.dock autohide -bool true
-
-# Unhide the Dock instantly. To undo set back to 0.5. Requires `killall Dock`
-defaults write com.apple.dock autohide-delay -float 0
-
-# Use keyboard navigation
-defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+# Show path bar in Finder
+defaults write com.apple.finder ShowPathbar -bool true
 
 # Press fn key to show emoji picker
 defaults write com.apple.HIToolbox AppleFnUsageType -int 2
 
-# Remove all apps kept in Dock by default
-defaults write com.apple.dock persistent-apps -array
+# Disable the “Are you sure you want to open this application?” dialog
+defaults write com.apple.LaunchServices LSQuarantine -bool false
+
+# Make iTerm open new tabs by default
+defaults write com.googlecode.iterm2 OpenFileInNewWindows -bool false
+
+# Use keyboard navigation
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+
+# Show all filename extensions
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
 add_to_dock () {
     # Add $1 to the Mac dock
