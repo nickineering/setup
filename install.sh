@@ -248,14 +248,26 @@ defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
 # Hidden apps are grayed out in Dock so they are obvious - requires `killall Dock`
 defaults write com.apple.Dock showhidden -bool TRUE
 
+# Place the Dock on the left of the screen
+defaults write com.apple.dock "orientation" -string "left"
+
+# Open files by droping them on an icon in the Dock
+defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
+
+# Autohide the Dock
+defaults write com.apple.dock autohide -bool true
+
 # Unhide the Dock instantly. To undo set back to 0.5. Requires `killall Dock`
-defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0
+defaults write com.apple.dock autohide-delay -float 0
 
 # Use keyboard navigation
 defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 
 # Press fn key to show emoji picker
 defaults write com.apple.HIToolbox AppleFnUsageType -int 2
+
+# Remove all apps kept in Dock by default
+defaults write com.apple.dock persistent-apps -array
 
 add_to_dock () {
     # Add $1 to the Mac dock
@@ -269,8 +281,9 @@ add_to_dock "Boop"
 add_to_dock "Firefox Developer Edition"
 add_to_dock "Google Chrome"
 add_to_dock "iTerm"
-add_to_dock "Kindle"
+add_to_dock "Notes"
 add_to_dock "Photo Booth"
+add_to_dock "Reminders"
 add_to_dock "Spotify"
 add_to_dock "Utilities/Activity Monitor"
 add_to_dock "Visual Studio Code"
