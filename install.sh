@@ -250,6 +250,12 @@ defaults write com.apple.Dock showhidden -bool TRUE
 # Unhide the Dock instantly. To undo set back to 0.5. Requires `killall Dock`
 defaults write com.apple.dock autohide-delay -float 0; defaults write com.apple.dock autohide-time-modifier -int 0
 
+# Use keyboard navigation
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+
+# Press fn key to show emoji picker
+defaults write com.apple.HIToolbox AppleFnUsageType -int 2
+
 add_to_dock () {
     # Add $1 to the Mac dock
     # $1 == the string name of an app without the file extension
