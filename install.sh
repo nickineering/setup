@@ -261,9 +261,6 @@ defaults write com.apple.finder ShowPathbar -bool true
 # Press fn key to show emoji picker
 defaults write com.apple.HIToolbox AppleFnUsageType -int 2
 
-# Disable the “Are you sure you want to open this application?” dialog
-defaults write com.apple.LaunchServices LSQuarantine -bool false
-
 # Make iTerm open new tabs by default
 defaults write com.googlecode.iterm2 OpenFileInNewWindows -bool false
 
