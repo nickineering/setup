@@ -25,6 +25,12 @@ Once the installation script is complete you will have to manually do the follow
    extensions" -> Enable "OpenInTerminal"
 1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
 1. Remove Apple News and Apple Stocks widgets from the Notification Center
+1. Go to System Settings -> Trackpad and increase the Tracking Speed. By default it can
+   be tricky to cross the whole screen in one gesture.
+1. This uses Raycast instead of Spotlight, so Spotlight should be moved out of the way:
+    - Drag the Spotlight search icon out of the menu bar to remove it
+    - Search for "spotlight" in System Settings. Click on "Keyboard Shortcuts" ->
+      "Spotlight". Then uncheck "Show Spotlight search" and "Show Finder search window"
 
 Then run the following git commands:
 
