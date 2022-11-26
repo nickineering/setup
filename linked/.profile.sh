@@ -23,7 +23,13 @@ eval "$(thefuck --alias)"
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo
-alias git_delete_branches="git branch | grep -v '^*' | xargs git branch -D"
+# Count files in current directory and subdirectories
+alias count='find . -type f | wc -l'
+
+# Move $1 to trash
+function trash {
+    mv -f "${1:?Requires file to trash}" ~/.Trash
+}
 
 function backup_secrets {
     # Backup .profile.custom.sh where secrets should be located.
