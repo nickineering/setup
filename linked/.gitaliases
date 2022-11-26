@@ -16,25 +16,13 @@
 
     cb = checkout -b
 
-    # Amend last commit to credit author: $1=name, $2=email
-    credit = "!f() { \
-        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
-            git commit --amend --author \"$1 <$2>\" --no-edit --reuse-message=HEAD; \
-        fi \
-    }; f"
+    credit = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit'
 
-	# Amend last commit to credit co-author: $1=name, $2=email
-	credit-co = "!f() { \
-        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
-            GIT_EDITOR=\"git interpret-trailers --in-place --trailer='Co-authored-by: $1 <$2>'\" git commit --amend; \
-        fi \
-    }; f"
+    credit-co = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit-co-author'
 
     d = diff -- . ':!*package-lock.json' ':!*yarn.lock'
 
-    delete-branches = "!f() { \
-        git branch | grep -v '^*' | xargs git branch -D; \
-    }; f"
+    delete-branches = !bash -c 'source ~/projects/mac/linked/git_functions.sh && delete-branches'
 
     # Display last commit
 	last = log -1 HEAD --stat
@@ -55,46 +43,21 @@
 
     rc = rebase --continue
 
-    # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
-    ri = "!f() { \
-        git rebase --interactive HEAD~\"${1:-10}\"; \
-    }; f"
+    ir = !bash -c 'source ~/projects/mac/linked/git_functions.sh && interactive-rebase'
 
-    # Remove tag if it exists and then tag the latest commit with that name: $1=TAG_NAME
-    retag = "!f() { \
-        git tag --delete \"$1\" &> /dev/null; \
-        git tag \"$1\"; \
-    }; f"
+    retag = !bash -c 'source ~/projects/mac/linked/git_functions.sh && retag'
 
-    # Remove last commits: $1=NUM_TO_REMOVE / default=1
-    rlc = "!f() { \
-        number_of_commits=\"${1:-1}\"; \
-        git reset --hard \"HEAD~$number_of_commits\"; \
-    }; f"
+    rlc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && remove-last-commits'
 
     s = status
 
-    # Search commits by source code: $1=COMMIT_ID
-    sc = "!f() { \
-        git log --date=short --decorate --pretty=colorful -S\"$1\"; \
-    }; f"
+    sc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-commits'
 
-    # Search commits by commit message: $1=COMMIT_MESSAGE
-    sm = "!f() { \
-        git log --date=short --decorate --pretty=colorful --grep=\"$1\"; \
-    }; f"
+    sm = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-message'
 
-    # Search for snippet in history: $1=SNIPPET
-    ss = "!f() { \
-        git rev-list --abbrev-commit --all | xargs git grep -F \"$1\"; \
-    }; f"
+    ss = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-snippet'
 
-    # Go to root folder, checkout master, and pull
-    start = "!f() { \
-        git rev-parse --show-toplevel; \
-        git checkout master || git checkout main; \
-        git pull; \
-    }; f"
+    start= !bash -c 'source ~/projects/mac/linked/git_functions.sh && start'
 
     # Update last commit (amend without editing message)
     u = commit -v --amend --no-edit
@@ -102,11 +65,7 @@
     # Update last commit with all local changes (add all and amend without editing)
 	ua = !git add --all && git commit -v --amend --no-edit
 
-    # Undo last commits, while preserving files: $1=NUM_TO_UNDO / default=1
-    ulc = "!f() { \
-        number_of_commits=\"${1:-1}\"; \
-        git reset --soft \"HEAD~$number_of_commits\"; \
-    }; f"
+    ulc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && undo-last-commits'
 
     # Undo adding all files for next commit
 	unstage = reset HEAD --
