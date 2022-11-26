@@ -30,6 +30,9 @@ Once the installation script is complete you will have to manually do the follow
 1. This uses Raycast instead of Spotlight, so Spotlight should be moved out of the way.
    Search for "spotlight" in System Settings. Click on "Keyboard Shortcuts" ->
    "Spotlight". Then uncheck "Show Spotlight search" and "Show Finder search window"
+1. Set a
+   [lock screen message](https://support.apple.com/en-ie/guide/mac-help/mh35890/mac)
+   including your email in case your laptop is misplaced and someone kind finds it.
 
 Then run the following git commands:
 
