@@ -1,0 +1,120 @@
+# Some aliases credit: https://github.com/alrra/dotfiles/blob/main/src/git/gitconfig
+
+# shellcheck disable=SC1020,SC1035,SC1072,SC1073
+[alias]
+    a = add
+
+    b = branch
+
+    bd = branch -D
+
+    c = commit -v -m
+
+    ca = commit -v --amend
+
+    co = checkout
+
+    cb = checkout -b
+
+    # Amend last commit to credit author: $1=name, $2=email
+    credit = "!f() { \
+        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
+            git commit --amend --author \"$1 <$2>\" --no-edit --reuse-message=HEAD; \
+        fi \
+    }; f"
+
+	# Amend last commit to credit co-author: $1=name, $2=email
+	credit-co = "!f() { \
+        if [ -n \"$1\" ] && [ -n \"$2\" ]; then \
+            GIT_EDITOR=\"git interpret-trailers --in-place --trailer='Co-authored-by: $1 <$2>'\" git commit --amend; \
+        fi \
+    }; f"
+
+    d = diff -- . ':!*package-lock.json' ':!*yarn.lock'
+
+    delete-branches = "!f() { \
+        git branch | grep -v '^*' | xargs git branch -D; \
+    }; f"
+
+    # Display last commit
+	last = log -1 HEAD --stat
+
+    # Log with a prettier, more condensed format
+	ll = log --graph --pretty=colorful --abbrev-commit
+
+    # List contributors
+    lc = shortlog --email --numbered --summary
+
+    p = push
+
+    pf = push --force-with-lease
+
+    r = rebase
+
+    ra = rebase --abort
+
+    rc = rebase --continue
+
+    # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
+    ri = "!f() { \
+        git rebase --interactive HEAD~\"${1:-10}\"; \
+    }; f"
+
+    # Remove tag if it exists and then tag the latest commit with that name: $1=TAG_NAME
+    retag = "!f() { \
+        git tag --delete \"$1\" &> /dev/null; \
+        git tag \"$1\"; \
+    }; f"
+
+    # Remove last commits: $1=NUM_TO_REMOVE / default=1
+    rlc = "!f() { \
+        number_of_commits=\"${1:-1}\"; \
+        git reset --hard \"HEAD~$number_of_commits\"; \
+    }; f"
+
+    s = status
+
+    # Search commits by source code: $1=COMMIT_ID
+    sc = "!f() { \
+        git log --date=short --decorate --pretty=colorful -S\"$1\"; \
+    }; f"
+
+    # Search commits by commit message: $1=COMMIT_MESSAGE
+    sm = "!f() { \
+        git log --date=short --decorate --pretty=colorful --grep=\"$1\"; \
+    }; f"
+
+    # Search for snippet in history: $1=SNIPPET
+    ss = "!f() { \
+        git rev-list --abbrev-commit --all | xargs git grep -F \"$1\"; \
+    }; f"
+
+    # Go to root folder, checkout master, and pull
+    start = "!f() { \
+        git rev-parse --show-toplevel; \
+        git checkout master || git checkout main; \
+        git pull; \
+    }; f"
+
+    # Update last commit (amend without editing message)
+    u = commit -v --amend --no-edit
+
+    # Update last commit with all local changes (add all and amend without editing)
+	ua = !git add --all && git commit -v --amend --no-edit
+
+    # Undo last commits, while preserving files: $1=NUM_TO_UNDO / default=1
+    ulc = "!f() { \
+        number_of_commits=\"${1:-1}\"; \
+        git reset --soft \"HEAD~$number_of_commits\"; \
+    }; f"
+
+    # Undo adding all files for next commit
+	unstage = reset HEAD --
+
+[pretty]
+    colorful = "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"
+    #               │                    │         │           │                  └─ author name
+    #               │                    │         │           └─ date (relative)
+    #               │                    │         └─ message
+    #               │                    └─ decorations (branch, heads or tags)
+    #               └─ hash (abbreviated)

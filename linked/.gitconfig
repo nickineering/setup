@@ -1,8 +1,5 @@
 [advice]
 	detachedHead = false
-[alias]
-	last = log -1 HEAD
-	unstage = reset HEAD --
 [commit]
 	gpgSign = true
 [core]
@@ -23,6 +20,8 @@
 	autoCorrect = "immediate"
 [hub]
 	protocol = https
+[include]
+	path = ~/projects/mac/linked/.gitaliases  # <--- Save aliases here!
 [merge]
 	autoStash = true
 [pull]
