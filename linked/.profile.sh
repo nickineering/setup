@@ -26,9 +26,13 @@ alias please=sudo
 # Count files in current directory and subdirectories
 alias count='find . -type f | wc -l'
 
+# Use zsh-colorize for cat and less everywhere
+alias cat=ccat
+alias less=cless
+
 # Move $1 to trash
 function trash {
-    mv -f "${1:?Requires file to trash}" ~/.Trash
+    mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
 function backup_secrets {
