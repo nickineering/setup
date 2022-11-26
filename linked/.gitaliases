@@ -8,6 +8,9 @@
 
     bd = branch -D
 
+    # Delete branch $1 locally and remotely
+    bdr = !git push origin -d "$1" && git branch -D "$1"
+
     c = commit -v -m
 
     ca = commit -v --amend
@@ -16,13 +19,13 @@
 
     cb = checkout -b
 
-    credit = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit'
+    credit = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit "$0" "$@"'
 
-    credit-co = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit-co-author'
+    credit-co = !bash -c 'source ~/projects/mac/linked/git_functions.sh && credit-co-author "$0" "$@"'
 
     d = diff -- . ':!*package-lock.json' ':!*yarn.lock'
 
-    delete-branches = !bash -c 'source ~/projects/mac/linked/git_functions.sh && delete-branches'
+    delete-branches = !bash -c 'source ~/projects/mac/linked/git_functions.sh && delete-branches "$0" "$@"'
 
     # Display last commit
 	last = log -1 HEAD --stat
@@ -43,23 +46,25 @@
 
     rc = rebase --continue
 
-    ro = !bash -c 'source ~/projects/mac/linked/git_functions.sh && reset-to-origin'
+    ro = !bash -c 'source ~/projects/mac/linked/git_functions.sh && reset-to-origin "$0" "$@"'
 
-    ir = !bash -c 'source ~/projects/mac/linked/git_functions.sh && interactive-rebase'
+    ir = !bash -c 'source ~/projects/mac/linked/git_functions.sh && interactive-rebase "$0" "$@"'
 
-    retag = !bash -c 'source ~/projects/mac/linked/git_functions.sh && retag'
+    rename-branch = !bash -c 'source ~/projects/mac/linked/git_functions.sh && rename-branch "$0" "$@"'
 
-    rlc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && remove-last-commits'
+    retag = !bash -c 'source ~/projects/mac/linked/git_functions.sh && retag "$0" "$@"'
+
+    rlc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && remove-last-commits "$0" "$@"'
 
     s = status
 
-    sc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-commits'
+    sc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-commits "$0" "$@"'
 
-    sm = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-message'
+    sm = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-message "$0" "$@"'
 
-    ss = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-snippet'
+    ss = !bash -c 'source ~/projects/mac/linked/git_functions.sh && search-for-snippet "$0" "$@"'
 
-    start= !bash -c 'source ~/projects/mac/linked/git_functions.sh && start'
+    start= !bash -c 'source ~/projects/mac/linked/git_functions.sh && start "$0" "$@"'
 
     # Update last commit (amend without editing message)
     u = commit -v --amend --no-edit
@@ -67,7 +72,7 @@
     # Update last commit with all local changes (add all and amend without editing)
 	ua = !git add --all && git commit -v --amend --no-edit
 
-    ulc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && undo-last-commits'
+    ulc = !bash -c 'source ~/projects/mac/linked/git_functions.sh && undo-last-commits "$0" "$@"'
 
     # Undo adding all files for next commit
 	unstage = reset HEAD --

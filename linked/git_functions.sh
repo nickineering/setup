@@ -32,6 +32,39 @@ function interactive-rebase {
     git rebase --interactive HEAD~"${1:-10}";
 }
 
+# Rename a branch locally and remote. $1=NEW_NAME, $2=OLD_NAME
+# Credit: https://gist.github.com/DamirPorobic/5be1a47d11c2c7444ddb171d19b4919e
+function rename-branch() {
+    # Check if the user has provided input
+    if [ $# -ne 2 ]; then
+        echo "$0": usage: rename-branch OLD_BRANCH_NAME NEW_BRANCH_NAME
+        exit 1
+    fi
+
+    OLD_BRANCH_NAME=$1
+    NEW_BRANCH_NAME=$2
+
+    # Check if old branch exists
+    BRANCH_EXISTS="$(git show-ref refs/heads/"$OLD_BRANCH_NAME")"
+    if [ -z "$BRANCH_EXISTS" ]; then
+        echo There is no branch with name "$OLD_BRANCH_NAME"
+        exit 1
+    fi
+
+    # Rename branch
+    echo Renaming branch "$OLD_BRANCH_NAME" to "$NEW_BRANCH_NAME"
+    git branch "$NEW_BRANCH_NAME" origin/"$OLD_BRANCH_NAME"
+    git push origin --set-upstream "$NEW_BRANCH_NAME"
+    git push origin :"$OLD_BRANCH_NAME"
+
+    # Fetch and prune origin
+    echo Cleaning up local repo
+    git branch -D "$OLD_BRANCH_NAME"
+    git fetch origin
+    git remote prune origin
+    echo Done.
+}
+
 # Remove tag if it exists and then tag the latest commit with that name: $1=TAG_NAME
 function retag {
     git tag --delete "$1" &> /dev/null;
