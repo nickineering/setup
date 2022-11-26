@@ -21,7 +21,7 @@
 [hub]
 	protocol = https
 [include]
-	path = ~/projects/mac/linked/.gitaliases  # <--- Save aliases here!
+	path = ~/projects/mac/linked/.gitaliases.ini  # <--- Save aliases here!
 [merge]
 	autoStash = true
 [pull]
