@@ -43,6 +43,8 @@
 
     rc = rebase --continue
 
+    ro = !bash -c 'source ~/projects/mac/linked/git_functions.sh && reset-to-origin'
+
     ir = !bash -c 'source ~/projects/mac/linked/git_functions.sh && interactive-rebase'
 
     retag = !bash -c 'source ~/projects/mac/linked/git_functions.sh && retag'

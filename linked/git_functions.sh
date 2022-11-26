@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Some aliases credit: https://github.com/alrra/dotfiles/blob/main/src/git/gitconfig
+
 # Amend last commit to credit author: $1=name, $2=email
 function credit {
     if [ -n "$1" ] && [ -n "$2" ]; then
@@ -17,6 +19,12 @@ function credit-co-author {
 # Delete all local branches other than current
 function delete-branches {
     git branch | grep -v '^*' | xargs git branch -D;
+}
+
+# Reset to wherever origin for this branch is, but leave local files alone
+function reset-to-origin {
+    branch=$(git branch --show-current)
+    git reset origin/"$branch"
 }
 
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
