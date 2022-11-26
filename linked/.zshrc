@@ -68,6 +68,10 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
+# Needed for colorize plugin
+ZSH_COLORIZE_TOOL=chroma
+ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
+
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
@@ -76,11 +80,8 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 plugins=(
     colored-man-pages
     colorize
-    common-aliases
     copyfile
     copypath
-    git
-    git-auto-fetch
     poetry
     web-search
     zsh-autosuggestions

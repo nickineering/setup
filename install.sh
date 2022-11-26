@@ -52,6 +52,7 @@ NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 # Install Homebrew formulas
 brew install awscli  # Amazon Web Services CLI
 brew install bash-completion  # Autocomplete for Git
+brew install chroma  # Syntax highlighting utility. Required by ZSH-Colorize
 brew install deno  # TypeScript native Node alternative written in Rust
 brew install fig  # IDE style terminal autocompletion
 brew install gh  # Github CLI
