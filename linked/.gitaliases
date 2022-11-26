@@ -13,7 +13,11 @@
 
     c = commit -v -m
 
-    ca = commit -v --amend
+    ca = commit -v -a -m
+
+    cu = commit -v --amend
+
+    cua = commit -v -a --amend
 
     co = checkout
 
