@@ -31,14 +31,13 @@ alias cat=ccat
 alias less=cless
 
 # Move $1 to trash
-function trash {
+trash () {
     mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
-function backup_secrets {
-    # Backup .profile.custom.sh where secrets should be located.
-    # It is not subject to version control.
-
+# Backup .profile.custom.sh where secrets should be located.
+# It is not subject to version control.
+backup_secrets () {
     mkdir -p ~/Documents/backups
     cp ~/.profile.custom.sh ~/Documents/backups/
     echo 'Backup complete'
@@ -46,12 +45,12 @@ function backup_secrets {
 }
 
 # Combination of cd and ls
-function cs () {
+cs () {
     cd "$@" && ls
 }
 
 # Combination of mkdir and cd
-function mcd () {
+mcd () {
     mkdir -p "$1"
     cd "$1" || exit
 }

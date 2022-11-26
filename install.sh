@@ -1,15 +1,15 @@
 #!/bin/bash
 
-function print_green {
-    # Print optional str $2 as bold green text
-    # Print str $1 on new line as normal green text
-    # Finally print time
-
-    GREEN='\033[0;32m'
-    BOLD_GREEN='\033[1;32m'
-    NO_COLOR='\033[0m'
+# Print optional str $2 as bold green text
+# Print str $1 on new line as normal green text
+# Finally print time
+print_green () {
+    local GREEN='\033[0;32m'
+    local BOLD_GREEN='\033[1;32m'
+    local NO_COLOR='\033[0m'
     if (( $# >= 2 ))
     then
+        local now
         now=$(date)
         printf "Time: %s" "$now"
         echo -e "\n${BOLD_GREEN}$2${NO_COLOR}"
@@ -174,7 +174,7 @@ mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:=~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
 
 # Poetry package manager for Python
 brew install poetry
@@ -276,13 +276,13 @@ add_to_dock () {
     # $1 == the string name of an app without the file extension
     # $2 == "System" if an Apple app; unset otherwise
 
-    LOC="/Applications/"
+    local location="/Applications/"
     # If it's a system app use a different location
     if [ -n "$2" ]
     then
-        LOC="/System/Applications/"
+        location="/System/Applications/"
     fi
-    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$LOC"$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$location"$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
 }
 
 # Add the following applications to the Mac dock
