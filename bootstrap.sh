@@ -161,7 +161,6 @@ poetry completions zsh > "$ZSH"/plugins/poetry/_poetry
 # Setup Node Version Manager (NVM) for local JavaScript
 mkdir -p ~/.nvm
 # shellcheck disable=SC1090
-source ~/.zshrc
 nvm install --lts
 
 print_green "Completed installs. Now configuring settings..."
