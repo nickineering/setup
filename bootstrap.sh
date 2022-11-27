@@ -28,12 +28,18 @@ fi
 mkdir -p ~/projects
 cd ~/projects
 brew install git # Use Homebrew so that updates are easy
-git clone https://github.com/nferrara100/mac.git
 export MAC=~/projects/mac
-cd $MAC # Enter newly cloned repo
 export DOTFILES=$MAC/linked
-
-print_green "Cloned repo into projects directory"
+if [ -d "$MAC" ];
+then
+    cd $MAC
+    git pull
+    print_green "Pulled latest commits from repo"
+else
+    git clone https://github.com/nferrara100/mac.git
+    cd $MAC # Enter newly cloned repo
+	print_green "Cloned repo into projects directory"
+fi
 
 # Link custom settings to that they are updated automatically when changes are pulled
 ln -s $DOTFILES/.bash_profile ~/
