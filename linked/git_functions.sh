@@ -4,25 +4,18 @@
 
 # Commit with message $1, and push
 commit () {
-    git commit -v -m "$1"
+    git commit -v -m "$0"
     git push
 }
 
 # Add all files in current directory, commit with message $1, and push
 commit-all () {
     git add .
-    commit "$1"
-}
-
-# Amend last commit to credit author: $1=name, $2=email
-credit () {
-    if [ -n "$1" ] && [ -n "$2" ]; then
-        git commit --amend --author "$1 <$2>" --no-edit --reuse-message=HEAD;
-    fi
+    commit "$0"
 }
 
 # Amend last commit to credit co-author: $1=name, $2=email
-credit-co-author () {
+credit () {
     if [ -n "$1" ] && [ -n "$2" ]; then
         GIT_EDITOR="git interpret-trailers --in-place --trailer='Co-authored-by: $1 <$2>'" git commit --amend;
     fi
@@ -91,19 +84,19 @@ remove-last-commits () {
     git reset --hard "HEAD~$number_of_commits";
 }
 
-# Search commits by source code: $1=CODE
+# Search commits by source code: $0=CODE
 search-for-commits () {
-    git log --date=short --decorate --pretty=colorful -S"$1";
+    git log --date=short --decorate --pretty=colorful -S"$0";
 }
 
-# Search commits by commit message: $1=COMMIT_MESSAGE
+# Search commits by commit message: $0=COMMIT_MESSAGE
 search-for-message () {
-    git log --date=short --decorate --pretty=colorful --grep="$1";
+    git log --date=short --decorate --pretty=colorful --grep="$0";
 }
 
-# Search for snippet in history: $1=SNIPPET
+# Search for snippet in history: $0=SNIPPET
 search-for-snippet () {
-    git rev-list --abbrev-commit --all | xargs git grep -F "$1";
+    git rev-list --abbrev-commit --all | xargs git grep -F "$0";
 }
 
 # Go to root folder, checkout master, and pull
