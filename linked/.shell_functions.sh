@@ -11,6 +11,11 @@ trash () {
     mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
+# Move $1 to trash if $1 exists
+trash_silent () {
+    trash "$@" 2>/dev/null || true
+}
+
 # Backup ~/.env.sh where secrets should be located.
 # It is not subject to version control.
 backup_secrets () {

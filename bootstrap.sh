@@ -41,25 +41,41 @@ else
 	print_green "Cloned repo into projects directory"
 fi
 
+# Import handy bash functions, including `trash_silent` to move files to trash
+source linked/.shell_functions.sh
+
+# Move all files that will be destroyed to trash so they are not overwritten
+trash_silent ~/.bash_profile
+trash_silent ~/.env.sh
+trash_silent ~/.gitconfig
+trash_silent ~/.profile.sh
+trash_silent ~/.shell_aliases.sh
+trash_silent ~/.shell_functions.sh
+trash_silent ~/.tmux.conf
+trash_silent ~/.vimrc
+trash_silent ~/.zshrc
+trash_silent ~/Library/Application\ Support/Code/User/settings.json
+print_green "Any pre-existing dotfiles have been moved to trash to prevent overwriting"
+
 # Link custom settings to that they are updated automatically when changes are pulled
-ln -s $DOTFILES/.bash_profile ~/
-ln -s $DOTFILES/.profile.sh ~/
 cp copied/.env.sh ~/
 cp copied/.gitconfig ~/
-ln -s $DOTFILES/.vimrc ~/
-ln -s $DOTFILES/.tmux.conf ~/
+ln -s $DOTFILES/.bash_profile ~/
+ln -s $DOTFILES/.profile.sh ~/
 ln -s $DOTFILES/.shell_aliases.sh ~/
 ln -s $DOTFILES/.shell_functions.sh ~/
+ln -s $DOTFILES/.tmux.conf ~/
+ln -s $DOTFILES/.vimrc ~/
 
 print_green "Copied and linked required files"
 
-# Install Homebrew formulas
+# Install Homebrew packages
 while IFS= read -r package; do
     brew install "$package"
 done < $MAC/state/brew_packages.txt
 print_green "Installed homebrew packages"
 
-# Get rid of default Zsh config and replace with custom
+# Get rid of default Zsh config and replace with a custom config
 rm -f ~/.zshrc
 ln -s $DOTFILES/.zshrc ~/
 print_green "Using custom .zshrc settings"
@@ -154,6 +170,7 @@ if [ -z "$FIREFOX_PROFILE" ]
 then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
+    trash_silent "$FIREFOX_PROFILE"/user.js
     ln -s $DOTFILES/user.js "$FIREFOX_PROFILE"
 fi
 
