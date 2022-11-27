@@ -22,6 +22,8 @@ export GPG_TTY=$(tty)
 # Enable the fuck to correct mistyped commands
 eval "$(thefuck --alias)"
 
+export DOTFILES=~/projects/mac/linked
+
 # Handy aliases
 alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo

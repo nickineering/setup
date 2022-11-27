@@ -33,18 +33,19 @@ mkdir -p ~/projects
 cd ~/projects
 brew install git # Use Homebrew so that updates are easy
 git clone https://github.com/nferrara100/mac.git
-DIR=~/projects/mac
-cd $DIR # Enter newly cloned repo
+MAC=~/projects/mac
+cd $MAC # Enter newly cloned repo
+DOTFILES=$MAC/linked
 
 print_green "Cloned repo into projects directory"
 
 # Link custom settings to that they are updated automatically when changes are pulled
-ln -s $DIR/linked/.bash_profile ~/
-ln -s $DIR/linked/.profile.sh ~/
+ln -s $DOTFILES/.bash_profile ~/
+ln -s $DOTFILES/.profile.sh ~/
 cp copied/.env.sh ~/
 cp copied/.gitconfig ~/
-ln -s $DIR/linked/.vimrc ~/
-ln -s $DIR/linked/.tmux.conf ~/
+ln -s $DOTFILES/.vimrc ~/
+ln -s $DOTFILES/.tmux.conf ~/
 
 print_green "Copied required files"
 
@@ -74,7 +75,7 @@ zsh  # Use the most up to date version of Zsh, the default shell
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
-ln -s $DIR/linked/.zshrc ~/
+ln -s $DOTFILES/.zshrc ~/
 print_green "Using custom .zshrc settings"
 
 brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
@@ -175,7 +176,7 @@ for extension in "${vscode_extensions[@]}"; do
 done
 
 # Add custom VSCode settings
-ln -s $DIR/linked/settings.json ~/Library/Application\ Support/Code/User/
+ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
 print_green "Completed VSCode installs"
 
 # Install Zsh plugin manager
@@ -211,7 +212,7 @@ if [ -z "$FIREFOX_PROFILE" ]
 then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
-    ln -s $DIR/linked/user.js "$FIREFOX_PROFILE"
+    ln -s $DOTFILES/user.js "$FIREFOX_PROFILE"
 fi
 
 # Disable screensaver
