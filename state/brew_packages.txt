@@ -11,7 +11,8 @@ nvm  # local JavaScript runtime
 postgresql  # Database for local development
 pyenv-virtualenvwrapper  # The easiest way to manage Python environments
 rust  # Rust programming language
-shellcheck  # Linting for shell scripts
+shellcheck  # Linter for shell scripts
+shfmt  # Formatter for shell scripts
 thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
 tmux  # Terminal multitasking
 watchman

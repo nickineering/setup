@@ -2,6 +2,9 @@
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "[shellscript]": {
+        "editor.defaultFormatter": "mkhl.shfmt"
+    },
     "breadcrumbs.enabled": true,
     "comment-divider.length": 88,
     "comment-divider.shouldLengthIncludeIndent": true,

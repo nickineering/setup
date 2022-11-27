@@ -79,7 +79,6 @@ pip install --upgrade pip
 
 pip install \
     bandit \  # Python code security
-beautysh \    # Bash code formatting
 black \       # Python code formatting
 flake8 \      # Python linting
 isort \       # Sort Python imports

@@ -13,6 +13,7 @@ GitHub.vscode-pull-request-github
 hbenl.vscode-test-explorer
 littlefoxteam.vscode-python-test-adapter
 markis.code-coverage
+mkhl.shfmt
 ms-python.isort
 ms-python.python
 ms-toolsai.jupyter
