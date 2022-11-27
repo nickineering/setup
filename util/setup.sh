@@ -72,7 +72,9 @@ print_green "Copied and linked required files"
 
 # Pyenv configuration
 # shellcheck disable=SC1090
-source ~/.bash_profile
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
 LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
 pyenv install "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
@@ -88,6 +90,9 @@ print_green "Completed Python installs"
 
 # Setup Node Version Manager (NVM) for local JavaScript
 mkdir -p ~/.nvm
+export NVM_DIR="$HOME/.nvm"
+# shellcheck disable=SC1091
+[ -s "$(brew --prefix)/opt/nvm/nvm.sh" ] && \. "$(brew --prefix)/opt/nvm/nvm.sh"
 # shellcheck disable=SC1090
 nvm install --lts
 
