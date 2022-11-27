@@ -11,7 +11,7 @@ while IFS= read -r file; do
     backup_or_delete ~/"$file"
 done < "$MAC"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
-print_green "Deleted existing linked files so they can be freshly created"
+print_green "Deleted existing links so they can be freshly created"
 
 # Install Homebrew packages
 while IFS= read -r package; do
@@ -32,6 +32,7 @@ mas install 1287239339
 print_green "Installed Mac App Store apps"
 
 # Install VSCode extensions. View current with `code --list-extensions`
+rm -rf ~/.vscode/extensions  # Start with a clean slate
 while IFS= read -r extension; do
     code --install-extension "$extension"
 done < "$MAC"/state/vscode_extensions.txt
@@ -55,7 +56,7 @@ done < "$MAC"/state/copied_files.txt
 while IFS= read -r file; do
     ln -s "$DOTFILES/$file" ~/
 done < "$MAC"/state/linked_files.txt
-ln -s "$DOTFILES"/settings.json ~/Library/Application\ Support/Code/User/
+ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 
 # Install custom Firefox settings
 FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
