@@ -137,44 +137,9 @@ pygments  # Dependency of Zsh colorize
 print_green "Completed Python installs"
 
 # Install VSCode extensions. View current with `code --list-extensions`
-vscode_extensions=(
-    aaron-bond.better-comments
-    adpyke.codesnap
-    batisteo.vscode-django
-    bungcip.better-toml
-    christian-kohler.path-intellisense
-    davidanson.vscode-markdownlint
-    denoland.vscode-deno
-    docsmsft.docs-markdown
-    eamodio.gitlens
-    esbenp.prettier-vscode
-    formulahendry.auto-rename-tag
-    GitHub.vscode-pull-request-github
-    hbenl.vscode-test-explorer
-    littlefoxteam.vscode-python-test-adapter
-    markis.code-coverage
-    ms-python.python
-    ms-toolsai.jupyter
-    ms-toolsai.jupyter-keymap
-    ms-toolsai.jupyter-renderers
-    ms-vscode-remote.remote-containers
-    ms-vscode.makefile-tools
-    ms-vscode.test-adapter-converter
-    ms-vsliveshare.vsliveshare
-    redhat.vscode-yaml
-    rust-lang.rust-analyzer
-    stackbreak.comment-divider
-    streetsidesoftware.code-spell-checker
-    timonwong.shellcheck
-    ue.alphabetical-sorter
-    visualstudioexptteam.intellicode-api-usage-examples
-    visualstudioexptteam.vscodeintellicode
-    withfig.fig
-)
-
-for extension in "${vscode_extensions[@]}"; do
+while IFS= read -r extension; do
     code --install-extension "$extension"
-done
+done < $MAC/state/vscode_extensions.txt
 
 # Add custom VSCode settings
 ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
