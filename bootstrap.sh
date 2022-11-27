@@ -2,31 +2,27 @@
 # Run this script to setup a new Mac
 # ! It is not meant to be run on Macs that have already been setup!
 
-# Print optional str $2 as bold green text
-# Print str $1 on new line as normal green text
-# Finally print time
-print_green () {
-    local GREEN='\033[0;32m'
-    local BOLD_GREEN='\033[1;32m'
-    local NO_COLOR='\033[0m'
-    if (( $# >= 2 ))
-    then
-        local now
-        now=$(date)
-        printf "Time: %s" "$now"
-        echo -e "\n${BOLD_GREEN}$2${NO_COLOR}"
-    fi
-    echo -e "${GREEN}$1${NO_COLOR}"
-}
-
-print_green "Please leave everything closed and wait for your Mac to be configured. \
-This will take a while." "AUTOMATICALLY CONFIGURING MAC"
-
 # Abort on error
 set -e
 
 # Print commands that are run as they are run
 set -v
+
+# Start running the print utility first so we can update the user on progress
+# shellcheck source=util/print.sh
+source <(curl -s https://raw.githubusercontent.com/nferrara100/mac/master/util/print.sh)
+
+print_green "Please leave everything closed and wait for your Mac to be configured. \
+This will take a while." "AUTOMATICALLY CONFIGURING MAC"
+
+# Install Homebrew, a Mac package manager
+if command -v brew; then
+    brew upgrade
+    print_green "Homebrew is already installed. Upgraded packages."
+else
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    print_green "Installed Homebrew"
+fi
 
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
@@ -47,20 +43,13 @@ cp copied/.gitconfig ~/
 ln -s $DOTFILES/.vimrc ~/
 ln -s $DOTFILES/.tmux.conf ~/
 
-print_green "Copied required files"
-
-# Install Homebrew, a Mac package manager
-if command -v brew; then
-    print_green "Homebrew is already installed. Upgrading packages..."
-    brew upgrade
-else
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
+print_green "Copied and linked required files"
 
 # Install Homebrew formulas
 while IFS= read -r package; do
     brew install "$package"
 done < $MAC/state/brew_packages.txt
+print_green "Installed homebrew packages"
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
@@ -73,6 +62,7 @@ brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
 while IFS= read -r cask; do
     brew install --cask "$cask"
 done < $MAC/state/brew_casks.txt
+print_green "Installed homebrew casks"
 
 # ColorSlurp color picker - get any color on screen
 mas install 1287239339
@@ -102,6 +92,7 @@ print_green "Completed Python installs"
 while IFS= read -r extension; do
     code --install-extension "$extension"
 done < $MAC/state/vscode_extensions.txt
+print_green "Installed VSCode extensions"
 
 # Add custom VSCode settings
 ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
@@ -231,19 +222,8 @@ defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 # Show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
-add_to_dock () {
-    # Add $1 to the Mac dock
-    # $1 == the string name of an app without the file extension
-    # $2 == "System" if an Apple app; unset otherwise
-
-    local location="/Applications/"
-    # If it's a system app use a different location
-    if [ -n "$2" ]
-    then
-        location="/System/Applications/"
-    fi
-    defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$location"$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
-}
+# Import `add_to_dock` function
+source $MAC/util/add_to_dock.sh
 
 # Add the following applications to the Mac dock
 add_to_dock "1Password"
