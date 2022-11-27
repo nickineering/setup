@@ -35,7 +35,7 @@ reset-to-origin () {
 
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
 interactive-rebase () {
-    git rebase --interactive HEAD~"${1:=10}";
+    git rebase --interactive HEAD~"${1:-10}";
 }
 
 # Rename a branch locally and remote. $1=NEW_NAME, $2=OLD_NAME
@@ -78,12 +78,6 @@ retag () {
     git tag "$1";
 }
 
-# Remove last commits: $1=NUM_TO_REMOVE / default=1
-remove-last-commits () {
-    local number_of_commits="${1:=1}";
-    git reset --hard "HEAD~$number_of_commits";
-}
-
 # Search commits by source code: $0=CODE
 search-for-commits () {
     git log --date=short --decorate --pretty=colorful -S"$0";
@@ -108,6 +102,17 @@ start () {
 
 # Undo last commits, while preserving files: $1=NUM_TO_UNDO / default=1
 undo-last-commits () {
-    local number_of_commits="${1:=1}";
-    git reset --soft "HEAD~$number_of_commits";
+    git reset --soft "HEAD~${1:-1}";
+}
+
+# Wipe last commits: $1=NUM_TO_WIPE / default=1
+wipe-last-commits () {
+    git reset --hard "HEAD~${1:-1}";
+}
+
+# Delete all local changes so that local is the same as remote
+wipe-local () {
+    local branch
+    branch=$(git branch --show-current)
+    git reset --hard origin/"$branch"
 }
