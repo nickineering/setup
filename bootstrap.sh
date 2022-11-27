@@ -57,6 +57,33 @@ trash_silent ~/.zshrc
 trash_silent ~/Library/Application\ Support/Code/User/settings.json
 print_green "Any pre-existing dotfiles have been moved to trash to prevent overwriting"
 
+# Install Homebrew packages
+while IFS= read -r package; do
+    brew install "$package"
+done < $MAC/state/brew_packages.txt
+print_green "Installed Homebrew packages"
+
+brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
+
+# Install Homebrew casks
+while IFS= read -r cask; do
+    brew install --cask "$cask"
+done < $MAC/state/brew_casks.txt
+print_green "Installed Homebrew casks"
+
+# ColorSlurp color picker - get any color on screen
+mas install 1287239339
+print_green "Installed Mac App Store apps"
+
+# Install VSCode extensions. View current with `code --list-extensions`
+while IFS= read -r extension; do
+    code --install-extension "$extension"
+done < $MAC/state/vscode_extensions.txt
+print_green "Installed VSCode extensions"
+
+# Get rid of default Zsh config so it can be replaced with the custom config
+rm -f ~/.zshrc
+
 # Link custom settings to that they are updated automatically when changes are pulled
 cp copied/.env.sh ~/
 cp copied/.gitconfig ~/
@@ -66,32 +93,21 @@ ln -s $DOTFILES/.shell_aliases.sh ~/
 ln -s $DOTFILES/.shell_functions.sh ~/
 ln -s $DOTFILES/.tmux.conf ~/
 ln -s $DOTFILES/.vimrc ~/
+ln -s $DOTFILES/.zshrc ~/
+ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
+
+# Install custom Firefox settings
+FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
+FIREFOX_PROFILE=$(find "$FIREFOX_FOLDER" -name '*.dev-edition-default')
+if [ -z "$FIREFOX_PROFILE" ]
+then
+    print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
+else
+    trash_silent "$FIREFOX_PROFILE"/user.js
+    ln -s $DOTFILES/user.js "$FIREFOX_PROFILE"
+fi
 
 print_green "Copied and linked required files"
-
-# Install Homebrew packages
-while IFS= read -r package; do
-    brew install "$package"
-done < $MAC/state/brew_packages.txt
-print_green "Installed homebrew packages"
-
-# Get rid of default Zsh config and replace with a custom config
-rm -f ~/.zshrc
-ln -s $DOTFILES/.zshrc ~/
-print_green "Using custom .zshrc settings"
-
-brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
-
-# Install Homebrew casks
-while IFS= read -r cask; do
-    brew install --cask "$cask"
-done < $MAC/state/brew_casks.txt
-print_green "Installed homebrew casks"
-
-# ColorSlurp color picker - get any color on screen
-mas install 1287239339
-
-print_green "Completed main app installs"
 
 # Pyenv configuration
 # shellcheck disable=SC1090
@@ -111,16 +127,6 @@ pre-commit \  # Run multilingual commands before git commits
 pygments  # Dependency of Zsh colorize
 
 print_green "Completed Python installs"
-
-# Install VSCode extensions. View current with `code --list-extensions`
-while IFS= read -r extension; do
-    code --install-extension "$extension"
-done < $MAC/state/vscode_extensions.txt
-print_green "Installed VSCode extensions"
-
-# Add custom VSCode settings
-ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
-print_green "Completed VSCode installs"
 
 # Install Zsh plugin manager
 if command -v omz; then
@@ -147,6 +153,7 @@ if [ -d $ZSH_PLUGINS/zsh-autosuggestions ]; then
 else
     git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_PLUGINS/zsh-autosuggestions
 fi
+print_green "Finished Zsh configuration"
 
 # Poetry autocompletion
 mkdir -p "$ZSH"/plugins/poetry
@@ -162,17 +169,6 @@ nvm install --lts
 npm install -g renovate  # Dependency upgrades
 
 print_green "Completed installs. Now configuring settings..."
-
-# Install custom Firefox settings
-FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
-FIREFOX_PROFILE=$(find "$FIREFOX_FOLDER" -name '*.dev-edition-default')
-if [ -z "$FIREFOX_PROFILE" ]
-then
-    print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
-else
-    trash_silent "$FIREFOX_PROFILE"/user.js
-    ln -s $DOTFILES/user.js "$FIREFOX_PROFILE"
-fi
 
 # Configures the operating system on import
 source util/configure_macos.sh
