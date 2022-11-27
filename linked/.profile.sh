@@ -29,6 +29,8 @@ alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo
 # Count files in current directory and subdirectories
 alias count='find . -type f | wc -l'
+alias profile.sh="vim ~/.profile.sh"
+alias env.sh="vim ~/.env.sh"
 
 # Use zsh-colorize for cat and less everywhere
 alias cat=ccat
