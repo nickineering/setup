@@ -55,6 +55,7 @@ NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 # Install Homebrew formulas
 brew install \
 awscli \  # Amazon Web Services CLI
+bash \  # Mac comes with Bash 3.2, but we want the latest
 bash-completion \  # Autocomplete for Git
 chroma \  # Syntax highlighting utility. Required by ZSH-Colorize
 deno \  # TypeScript native Node alternative written in Rust
