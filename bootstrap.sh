@@ -158,5 +158,5 @@ fi
 # Configures the operating system on import
 source util/configure_macos.sh
 
-print_green "Please follow the manual instructions in the readme and then reboot your \
-computer." "AUTOMATED CONFIGURATION COMPLETE"
+print_green "Please follow the instructions in $MAC/MANUAL_STEPS.md and then reboot \
+your computer." "AUTOMATED CONFIGURATION COMPLETE"
