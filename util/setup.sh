@@ -76,15 +76,14 @@ source ~/.bash_profile
 LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
 pyenv install "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
+pyenv shell "$LATEST_PYTHON"
 pip install --upgrade pip
 
-pip install \
-    bandit \  # Python code security
-black \       # Python code formatting
-flake8 \      # Python linting
-isort \       # Sort Python imports
-pre-commit \  # Run multilingual commands before git commits
-
+# Delete any existing pip packages and then reinstall fresh
+pip freeze | xargs pip uninstall -y
+while IFS= read -r package; do
+    pip install "$package"
+done <"$MAC"/state/python_packages.txt
 print_green "Completed Python installs"
 
 # Setup Node Version Manager (NVM) for local JavaScript
