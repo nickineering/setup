@@ -156,13 +156,14 @@ code --install-extension ms-vscode.makefile-tools
 code --install-extension ms-vscode.test-adapter-converter
 code --install-extension ms-vsliveshare.vsliveshare
 code --install-extension redhat.vscode-yaml
-code --install-extension rust-lang.rust
 code --install-extension rust-lang.rust-analyzer
+code --install-extension stackbreak.comment-divider
 code --install-extension streetsidesoftware.code-spell-checker
 code --install-extension timonwong.shellcheck
 code --install-extension ue.alphabetical-sorter
 code --install-extension visualstudioexptteam.intellicode-api-usage-examples
 code --install-extension visualstudioexptteam.vscodeintellicode
+code --install-extension withfig.fig
 
 # Add custom VSCode settings
 ln -s $DIR/linked/settings.json ~/Library/Application\ Support/Code/User/

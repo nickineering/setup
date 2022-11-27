@@ -3,6 +3,8 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "breadcrumbs.enabled": true,
+    "comment-divider.length": 88,
+    "comment-divider.shouldLengthIncludeIndent": true,
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.accessibilitySupport": "off",
