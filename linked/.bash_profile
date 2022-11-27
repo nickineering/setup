@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/bash_profile.pre.bash" ]] && builtin source "$HOME/.fig/shell/bash_profile.pre.bash"
-export PATH="$HOME/.local/bin:$PATH"  # Needed by Fig
+export PATH="$HOME/.local/bin:$PATH" # Needed by Fig
 
 # ------------------------------------------------------------------------------------ #
 # !                           Don't tell Zsh you wrote here

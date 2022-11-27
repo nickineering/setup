@@ -9,22 +9,22 @@ source print.sh
 source backup_or_delete.sh
 while IFS= read -r file; do
     backup_or_delete ~/"$file"
-done < "$MAC"/state/linked_files.txt
+done <"$MAC"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 print_green "Deleted existing links so they can be freshly created"
 
 # Install Homebrew packages
 while IFS= read -r package; do
     brew install "$package"
-done < "$MAC"/state/brew_packages.txt
+done <"$MAC"/state/brew_packages.txt
 print_green "Installed Homebrew packages"
 
-brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
+brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 
 # Install Homebrew casks
 while IFS= read -r cask; do
     brew install --cask "$cask"
-done < "$MAC"/state/brew_casks.txt
+done <"$MAC"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
 # ColorSlurp color picker - get any color on screen
@@ -32,10 +32,10 @@ mas install 1287239339
 print_green "Installed Mac App Store apps"
 
 # Install VSCode extensions. View current with `code --list-extensions`
-rm -rf ~/.vscode/extensions  # Start with a clean slate
+rm -rf ~/.vscode/extensions # Start with a clean slate
 while IFS= read -r extension; do
     code --install-extension "$extension"
-done < "$MAC"/state/vscode_extensions.txt
+done <"$MAC"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
 # Configure Zsh to use Oh My Zsh. Affects ~/.zshrc so must be before linking.
@@ -43,26 +43,24 @@ source configure_zsh.sh
 
 # Copy templates for customization files if they do not already exist
 while IFS= read -r file; do
-    if [ -e ~/"$2" ]
-    then
+    if [ -e ~/"$2" ]; then
         print_green "A ~/$file file already exists. If you'd like to replace it please \
 do so manually."
     else
         cp "$MAC/copied/$file" ~/
     fi
-done < "$MAC"/state/copied_files.txt
+done <"$MAC"/state/copied_files.txt
 
 # Link custom settings to that they are updated automatically when changes are pulled
 while IFS= read -r file; do
     ln -s "$DOTFILES/$file" ~/
-done < "$MAC"/state/linked_files.txt
+done <"$MAC"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 
 # Install custom Firefox settings
 FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
 FIREFOX_PROFILE=$(find "$FIREFOX_FOLDER" -name '*.dev-edition-default')
-if [ -z "$FIREFOX_PROFILE" ]
-then
+if [ -z "$FIREFOX_PROFILE" ]; then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
     backup_or_delete "$FIREFOX_PROFILE"/user.js
@@ -80,11 +78,11 @@ pyenv global "$LATEST_PYTHON"
 pip install --upgrade pip
 
 pip install \
-bandit \  # Python code security
-beautysh \  # Bash code formatting
-black \  # Python code formatting
-flake8 \  # Python linting
-isort \  # Sort Python imports
+    bandit \  # Python code security
+beautysh \    # Bash code formatting
+black \       # Python code formatting
+flake8 \      # Python linting
+isort \       # Sort Python imports
 pre-commit \  # Run multilingual commands before git commits
 
 print_green "Completed Python installs"

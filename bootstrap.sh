@@ -19,11 +19,11 @@ This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
 # Install Homebrew, a Mac package manager
 if command -v brew; then
-    brew upgrade
-    print_green "Upgraded Homebrew packages"
+	brew upgrade
+	print_green "Upgraded Homebrew packages"
 else
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    print_green "Installed Homebrew"
+	NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	print_green "Installed Homebrew"
 fi
 
 # Make a projects directory and clone the repo into it
@@ -32,14 +32,13 @@ cd ~/projects
 brew install git # Use Homebrew so that updates are easy
 export MAC=~/projects/mac
 export DOTFILES=$MAC/linked
-if [ -d "$MAC" ];
-then
-    cd $MAC
-    git pull
-    print_green "Pulled latest commits from repo"
+if [ -d "$MAC" ]; then
+	cd $MAC
+	git pull
+	print_green "Pulled latest commits from repo"
 else
-    git clone https://github.com/nferrara100/mac.git
-    cd $MAC # Enter newly cloned repo
+	git clone https://github.com/nferrara100/mac.git
+	cd $MAC # Enter newly cloned repo
 	print_green "Cloned repo into projects directory"
 fi
 

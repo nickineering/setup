@@ -7,13 +7,13 @@
 # ------------------------------------------------------------------------------------ #
 
 # Move $1 to trash
-trash () {
+trash() {
     mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
 # Backup ~/.env.sh where secrets should be located.
 # It is not subject to version control.
-backup_secrets () {
+backup_secrets() {
     mkdir -p ~/Documents/backups
     cp ~/.env.sh ~/Documents/backups/
     cp ~/.gitconfig ~/Documents/backups/
@@ -22,12 +22,12 @@ backup_secrets () {
 }
 
 # Combination of cd and ls
-cs () {
+cs() {
     cd "$@" && ls
 }
 
 # Combination of mkdir and cd
-mcd () {
+mcd() {
     mkdir -p "$1"
     cd "$1" || exit
 }
