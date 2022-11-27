@@ -28,10 +28,9 @@ fi
 
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
-cd ~/projects
-brew install git # Use Homebrew so that updates are easy
 export MAC=~/projects/mac
 export DOTFILES=$MAC/linked
+brew install git # Use Homebrew so that updates are easy
 if [ -d "$MAC" ]; then
 	cd $MAC
 	git pull

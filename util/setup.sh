@@ -1,8 +1,9 @@
 #!/usr/local/bin/bash
 
 # This script should only be run via bootstrap.sh. This will fail if it isn't.
-cd "$MAC"/util || exit 1
+cd "$MAC"/util || printf "Please run setup.sh from bootstrap.sh" && exit 1
 
+# Generic printing utility
 source print.sh
 
 # Move all files that will be destroyed to the backups folder so they are not overwritten
