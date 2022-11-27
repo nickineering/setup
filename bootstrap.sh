@@ -53,26 +53,9 @@ print_green "Copied required files"
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install Homebrew formulas
-brew install \
-awscli \  # Amazon Web Services CLI
-bash \  # Mac comes with Bash 3.2, but we want the latest
-bash-completion \  # Autocomplete for Git
-chroma \  # Syntax highlighting utility. Required by ZSH-Colorize
-deno \  # TypeScript native Node alternative written in Rust
-fig \  # IDE style terminal autocompletion
-gh \  # Github CLI
-git-lfs \  # Better handling of large files by Git
-jupyterlab \  # Interactive code editing notebook
-mas \  # Install Mac App Store apps
-nvm \  # local JavaScript runtime
-postgresql \  # Database for local development
-pyenv-virtualenvwrapper \  # The easiest way to manage Python environments
-rust \  # Rust programming language
-shellcheck \  # Linting for shell scripts
-thefuck \  # Type "fuck" after misspelling terminal commands to autocorrect
-tmux \  # Terminal multitasking
-watchman \
-zsh  # Use the most up to date version of Zsh, the default shell
+while IFS= read -r package; do
+    brew install "$package"
+done < $MAC/state/brew_packages.txt
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
@@ -82,36 +65,9 @@ print_green "Using custom .zshrc settings"
 brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
 
 # Install Homebrew casks
-brew install --cask \
-1password \  # Password manager
-1password-cli \  # Use password manager in terminal
-boop \  # Scratchpad for developers with text wrangling tools
-cheatsheet \  # Easily see keyboard shortcuts for the current app
-docker \  # Code containerisation
-firefox-developer-edition \  # Web browser with added dev tools
-google-chrome \  # Web browser
-gpg-suite \  # GPG key generator
-iterm2 \  # Terminal emulator
-kindle \  # Read Kindle books on desktop
-microsoft-edge \  # Major browser
-nordvpn \  # Paid VPN for privacy and security
-openinterminal \  # Open any folder in the terminal or an editor
-poetry \  # Package manager for Python
-paragon-ntfs \  # Use NTFS hard drives - cross platform and journaled
-postgres \  # Local database
-postman \  # API builder and debugger
-pyenv \  # Run multiple versions of python at the same time
-raycast \  # Extendable app launcher and clipboard history
-shottr \  # Screenshots and on screen OCR
-signal \  # Secure messaging
-skype \  # Video calling
-spotify \  # Music streaming
-the-unarchiver \  # File compression utility
-tiles \  # Windows style windows that snap into place
-visual-studio-code \  # Graphical code editor
-vlc \  # Multimedia viewer
-whatsapp \  # Secure messaging
-zoom  # Video calling
+while IFS= read -r cask; do
+    brew install --cask "$cask"
+done < $MAC/state/brew_casks.txt
 
 # ColorSlurp color picker - get any color on screen
 mas install 1287239339

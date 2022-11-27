@@ -1,0 +1,29 @@
+1password  # Password manager
+1password-cli  # Use password manager in terminal
+boop  # Scratchpad for developers with text wrangling tools
+cheatsheet  # Easily see keyboard shortcuts for the current app
+docker  # Code containerisation
+firefox-developer-edition  # Web browser with added dev tools
+google-chrome  # Web browser
+gpg-suite  # GPG key generator
+iterm2  # Terminal emulator
+kindle  # Read Kindle books on desktop
+microsoft-edge  # Major browser
+nordvpn  # Paid VPN for privacy and security
+openinterminal  # Open any folder in the terminal or an editor
+poetry  # Package manager for Python
+paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
+postgres  # Local database
+postman  # API builder and debugger
+pyenv  # Run multiple versions of python at the same time
+raycast  # Extendable app launcher and clipboard history
+shottr  # Screenshots and on screen OCR
+signal  # Secure messaging
+skype  # Video calling
+spotify  # Music streaming
+the-unarchiver  # File compression utility
+tiles  # Windows style windows that snap into place
+visual-studio-code  # Graphical code editor
+vlc  # Multimedia viewer
+whatsapp  # Secure messaging
+zoom  # Video calling
