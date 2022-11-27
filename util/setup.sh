@@ -5,15 +5,13 @@ cd "$MAC"/util || exit 1
 
 source print.sh
 
-# Import handy bash functions, including `trash_silent` to move files to trash
-source ../linked/.shell_functions.sh
-
-# Move all files that will be destroyed to trash so they are not overwritten
+# Move all files that will be destroyed to the backups folder so they are not overwritten
+source backup_or_delete.sh
 while IFS= read -r file; do
-    trash_silent ~/"$file"
+    backup_or_delete ~/"$file"
 done < "$MAC"/state/linked_files.txt
-trash_silent ~/Library/Application\ Support/Code/User/settings.json
-print_green "Any pre-existing dotfiles have been moved to trash to prevent overwriting"
+backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
+print_green "Deleted existing linked files so they can be freshly created"
 
 # Install Homebrew packages
 while IFS= read -r package; do
@@ -66,7 +64,7 @@ if [ -z "$FIREFOX_PROFILE" ]
 then
     print_green "Could not find Firefox profile folder. Skipping Firefox settings..."
 else
-    trash_silent "$FIREFOX_PROFILE"/user.js
+    backup_or_delete "$FIREFOX_PROFILE"/user.js
     ln -s "$DOTFILES"/user.js "$FIREFOX_PROFILE"
 fi
 
