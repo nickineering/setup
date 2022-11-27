@@ -50,7 +50,12 @@ ln -s $DOTFILES/.tmux.conf ~/
 print_green "Copied required files"
 
 # Install Homebrew, a Mac package manager
-NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if command -v brew; then
+    print_green "Homebrew is already installed. Upgrading packages..."
+    brew upgrade
+else
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
 # Install Homebrew formulas
 while IFS= read -r package; do
@@ -103,14 +108,30 @@ ln -s $DOTFILES/settings.json ~/Library/Application\ Support/Code/User/
 print_green "Completed VSCode installs"
 
 # Install Zsh plugin manager
-sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+if command -v omz; then
+    print_green "Oh My Zsh is already installed. Checking for updates..."
+    omz update
+else
+    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+fi
+
+ZSH_PLUGINS=~/.oh-my-zsh/custom/plugins
 
 # Adding custom Zsh plugin for syntax highlighting
-mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+if [ -d $ZSH_PLUGINS/zsh-syntax-highlighting ]; then
+    print_green "Zsh syntax highlighting already installed. Checking for updates..."
+    git -C $ZSH_PLUGINS/zsh-syntax-highlighting pull
+else
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting $ZSH_PLUGINS/zsh-syntax-highlighting
+fi
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+if [ -d $ZSH_PLUGINS/zsh-autosuggestions ]; then
+    print_green "Zsh autosuggestions already installed. Checking for updates..."
+    git -C $ZSH_PLUGINS/zsh-autosuggestions pull
+else
+    git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_PLUGINS/zsh-autosuggestions
+fi
 
 # Poetry autocompletion
 mkdir -p "$ZSH"/plugins/poetry
