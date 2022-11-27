@@ -2,6 +2,18 @@
 
 # Some aliases credit: https://github.com/alrra/dotfiles/blob/main/src/git/gitconfig
 
+# Commit with message $1, and push
+commit () {
+    git commit -v -m "$1"
+    git push
+}
+
+# Add all files in current directory, commit with message $1, and push
+commit-all () {
+    git add .
+    commit "$1"
+}
+
 # Amend last commit to credit author: $1=name, $2=email
 credit () {
     if [ -n "$1" ] && [ -n "$2" ]; then
