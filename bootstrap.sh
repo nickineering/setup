@@ -48,6 +48,8 @@ cp copied/.env.sh ~/
 cp copied/.gitconfig ~/
 ln -s $DOTFILES/.vimrc ~/
 ln -s $DOTFILES/.tmux.conf ~/
+ln -s $DOTFILES/.shell_aliases.sh ~/
+ln -s $DOTFILES/.shell_functions.sh ~/
 
 print_green "Copied and linked required files"
 
