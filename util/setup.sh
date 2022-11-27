@@ -10,8 +10,6 @@ source ../linked/.shell_functions.sh
 
 # Move all files that will be destroyed to trash so they are not overwritten
 trash_silent ~/.bash_profile
-trash_silent ~/.env.sh
-trash_silent ~/.gitconfig
 trash_silent ~/.profile.sh
 trash_silent ~/.shell_aliases.sh
 trash_silent ~/.shell_functions.sh
@@ -49,8 +47,18 @@ print_green "Installed VSCode extensions"
 rm -f ~/.zshrc
 
 # Link custom settings to that they are updated automatically when changes are pulled
-cp "$MAC"/copied/.env.sh ~/
-cp "$MAC"/copied/.gitconfig ~/
+if [ -e "$2" ]
+then
+    print_green "A ~/.env.sh file already exists. If you'd like to replace it do so manually."
+else
+    cp "$MAC"/copied/.env.sh ~/
+fi
+if [ -e "$2" ]
+then
+    print_green "A ~/.gitconfig file already exists. If you'd like to replace it do so manually."
+else
+    cp "$MAC"/copied/.gitconfig ~/
+fi
 ln -s "$DOTFILES"/.bash_profile ~/
 ln -s "$DOTFILES"/.profile.sh ~/
 ln -s "$DOTFILES"/.shell_aliases.sh ~/
