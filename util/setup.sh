@@ -9,13 +9,9 @@ source print.sh
 source ../linked/.shell_functions.sh
 
 # Move all files that will be destroyed to trash so they are not overwritten
-trash_silent ~/.bash_profile
-trash_silent ~/.profile.sh
-trash_silent ~/.shell_aliases.sh
-trash_silent ~/.shell_functions.sh
-trash_silent ~/.tmux.conf
-trash_silent ~/.vimrc
-trash_silent ~/.zshrc
+while IFS= read -r file; do
+    trash_silent ~/"$file"
+done < "$MAC"/state/linked_files.txt
 trash_silent ~/Library/Application\ Support/Code/User/settings.json
 print_green "Any pre-existing dotfiles have been moved to trash to prevent overwriting"
 
@@ -46,26 +42,21 @@ print_green "Installed VSCode extensions"
 # Get rid of default Zsh config so it can be replaced with the custom config
 rm -f ~/.zshrc
 
+# Copy templates for customization files if they do not already exist
+while IFS= read -r file; do
+    if [ -e ~/"$2" ]
+    then
+        print_green "A ~/$file file already exists. If you'd like to replace it please \
+do so manually."
+    else
+        cp "$MAC/copied/$file" ~/
+    fi
+done < "$MAC"/state/copied_files.txt
+
 # Link custom settings to that they are updated automatically when changes are pulled
-if [ -e "$2" ]
-then
-    print_green "A ~/.env.sh file already exists. If you'd like to replace it do so manually."
-else
-    cp "$MAC"/copied/.env.sh ~/
-fi
-if [ -e "$2" ]
-then
-    print_green "A ~/.gitconfig file already exists. If you'd like to replace it do so manually."
-else
-    cp "$MAC"/copied/.gitconfig ~/
-fi
-ln -s "$DOTFILES"/.bash_profile ~/
-ln -s "$DOTFILES"/.profile.sh ~/
-ln -s "$DOTFILES"/.shell_aliases.sh ~/
-ln -s "$DOTFILES"/.shell_functions.sh ~/
-ln -s "$DOTFILES"/.tmux.conf ~/
-ln -s "$DOTFILES"/.vimrc ~/
-ln -s "$DOTFILES"/.zshrc ~/
+while IFS= read -r file; do
+    ln -s "$DOTFILES/$file" ~/
+done < "$MAC"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json ~/Library/Application\ Support/Code/User/
 
 # Install custom Firefox settings

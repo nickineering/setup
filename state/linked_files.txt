@@ -1,0 +1,7 @@
+.bash_profile
+.profile.sh
+.shell_aliases.sh
+.shell_functions.sh
+.tmux.conf
+.vimrc
+.zshrc
