@@ -79,8 +79,7 @@ rm -f ~/.zshrc
 ln -s $DOTFILES/.zshrc ~/
 print_green "Using custom .zshrc settings"
 
-brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
-brew install --cask firefox-developer-edition  # Web browser with added dev tools
+brew tap homebrew/cask-versions  # Supplies firefox-developer-edition
 
 # Install Homebrew casks
 brew install --cask \
@@ -89,6 +88,7 @@ brew install --cask \
 boop \  # Scratchpad for developers with text wrangling tools
 cheatsheet \  # Easily see keyboard shortcuts for the current app
 docker \  # Code containerisation
+firefox-developer-edition \  # Web browser with added dev tools
 google-chrome \  # Web browser
 gpg-suite \  # GPG key generator
 iterm2 \  # Terminal emulator
@@ -96,9 +96,11 @@ kindle \  # Read Kindle books on desktop
 microsoft-edge \  # Major browser
 nordvpn \  # Paid VPN for privacy and security
 openinterminal \  # Open any folder in the terminal or an editor
+poetry \  # Package manager for Python
 paragon-ntfs \  # Use NTFS hard drives - cross platform and journaled
 postgres \  # Local database
 postman \  # API builder and debugger
+pyenv \  # Run multiple versions of python at the same time
 raycast \  # Extendable app launcher and clipboard history
 shottr \  # Screenshots and on screen OCR
 signal \  # Secure messaging
@@ -116,8 +118,7 @@ mas install 1287239339
 
 print_green "Completed main app installs"
 
-# Install Pyenv to run multiple versions of python at the same time
-brew install pyenv
+# Pyenv configuration
 # shellcheck disable=SC1090
 source ~/.bash_profile
 LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
@@ -153,10 +154,9 @@ mkdir -p ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 
-# Poetry package manager for Python
-brew install poetry
+# Poetry autocompletion
 mkdir -p "$ZSH"/plugins/poetry
 poetry completions zsh > "$ZSH"/plugins/poetry/_poetry
 
