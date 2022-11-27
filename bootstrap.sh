@@ -193,8 +193,6 @@ defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TR
 # Avoid creating .DS_Store files on network volumes
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
-# Dock defaults require subsequent `killall Dock`
-
 # Place the Dock on the left of the screen
 defaults write com.apple.dock "orientation" -string "left"
 
@@ -219,6 +217,9 @@ defaults write com.apple.Dock showhidden -bool TRUE
 # Clear bottom left hotcorner where create note is enabled by default
 defaults write com.apple.dock wvous-br-corner -int 0
 
+# Display full POSIX path as Finder window title
+defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+
 # When performing a search, search the current folder by default
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
@@ -234,6 +235,9 @@ defaults write com.apple.finder NewWindowTarget -string "PfHm"
 
 # Allow text selection in quick look
 defaults write com.apple.finder QLEnableTextSelection -bool true
+
+# Allow quitting Finder
+defaults write com.apple.finder QuitMenuItem -bool true
 
 # Show path bar in Finder
 defaults write com.apple.finder ShowPathbar -bool true
@@ -276,8 +280,9 @@ add_to_dock "Reminders" "System"
 add_to_dock "Spotify"
 add_to_dock "Utilities/Activity Monitor" "System"
 add_to_dock "Visual Studio Code"
-# Required to make changes to the dock take effect
+# Required to make changes to the Dock and Finder take effect
 killall Dock
+killall Finder
 
 # Add directories to Finder favorites
 brew install --cask mysides
