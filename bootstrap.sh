@@ -124,7 +124,6 @@ black \  # Python code formatting
 flake8 \  # Python linting
 isort \  # Sort Python imports
 pre-commit \  # Run multilingual commands before git commits
-pygments  # Dependency of Zsh colorize
 
 print_green "Completed Python installs"
 
@@ -164,9 +163,6 @@ mkdir -p ~/.nvm
 # shellcheck disable=SC1090
 source ~/.zshrc
 nvm install --lts
-
-# Install JavaScript globals
-npm install -g renovate  # Dependency upgrades
 
 print_green "Completed installs. Now configuring settings..."
 
