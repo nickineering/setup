@@ -52,24 +52,25 @@ print_green "Copied required files"
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install Homebrew formulas
-brew install awscli  # Amazon Web Services CLI
-brew install bash-completion  # Autocomplete for Git
-brew install chroma  # Syntax highlighting utility. Required by ZSH-Colorize
-brew install deno  # TypeScript native Node alternative written in Rust
-brew install fig  # IDE style terminal autocompletion
-brew install gh  # Github CLI
-brew install git-lfs  # Better handling of large files by Git
-brew install jupyterlab  # Interactive code editing notebook
-brew install mas  # Install Mac App Store apps
-brew install nvm  # local JavaScript runtime
-brew install postgresql  # Database for local development
-brew install pyenv-virtualenvwrapper  # The easiest way to manage Python environments
-brew install rust  # Rust programming language
-brew install shellcheck  # Linting for shell scripts
-brew install thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
-brew install tmux  # Terminal multitasking
-brew install watchman
-brew install zsh  # Use the most up to date version of Zsh, the default shell
+brew install \
+awscli \  # Amazon Web Services CLI
+bash-completion \  # Autocomplete for Git
+chroma \  # Syntax highlighting utility. Required by ZSH-Colorize
+deno \  # TypeScript native Node alternative written in Rust
+fig \  # IDE style terminal autocompletion
+gh \  # Github CLI
+git-lfs \  # Better handling of large files by Git
+jupyterlab \  # Interactive code editing notebook
+mas \  # Install Mac App Store apps
+nvm \  # local JavaScript runtime
+postgresql \  # Database for local development
+pyenv-virtualenvwrapper \  # The easiest way to manage Python environments
+rust \  # Rust programming language
+shellcheck \  # Linting for shell scripts
+thefuck \  # Type "fuck" after misspelling terminal commands to autocorrect
+tmux \  # Terminal multitasking
+watchman \
+zsh  # Use the most up to date version of Zsh, the default shell
 
 # Get rid of default Zsh config and replace with custom
 rm -f ~/.zshrc
@@ -80,32 +81,33 @@ brew tap homebrew/cask-versions  # Required to install dev edition of Firefox
 brew install --cask firefox-developer-edition  # Web browser with added dev tools
 
 # Install Homebrew casks
-brew install --cask 1password  # Password manager
-brew install --cask 1password-cli  # Use password manager in terminal
-brew install --cask boop  # Scratchpad for developers with text wrangling tools
-brew install --cask cheatsheet  # Easily see keyboard shortcuts for the current app
-brew install --cask docker  # Code containerisation
-brew install --cask google-chrome  # Web browser
-brew install --cask gpg-suite  # GPG key generator
-brew install --cask iterm2  # Terminal emulator
-brew install --cask kindle  # Read Kindle books on desktop
-brew install --cask microsoft-edge  # Major browser
-brew install --cask nordvpn  # Paid VPN for privacy and security
-brew install --cask openinterminal  # Open any folder in the terminal or an editor
-brew install --cask paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
-brew install --cask postgres  # Local database
-brew install --cask postman  # API builder and debugger
-brew install --cask raycast  # Extendable app launcher and clipboard history
-brew install --cask shottr  # Screenshots and on screen OCR
-brew install --cask signal  # Secure messaging
-brew install --cask skype  # Video calling
-brew install --cask spotify  # Music streaming
-brew install --cask the-unarchiver  # File compression utility
-brew install --cask tiles  # Windows style windows that snap into place
-brew install --cask visual-studio-code  # Graphical code editor
-brew install --cask vlc  # Multimedia viewer
-brew install --cask whatsapp  # Secure messaging
-brew install --cask zoom  # Video calling
+brew install --cask \
+1password \  # Password manager
+1password-cli \  # Use password manager in terminal
+boop \  # Scratchpad for developers with text wrangling tools
+cheatsheet \  # Easily see keyboard shortcuts for the current app
+docker \  # Code containerisation
+google-chrome \  # Web browser
+gpg-suite \  # GPG key generator
+iterm2 \  # Terminal emulator
+kindle \  # Read Kindle books on desktop
+microsoft-edge \  # Major browser
+nordvpn \  # Paid VPN for privacy and security
+openinterminal \  # Open any folder in the terminal or an editor
+paragon-ntfs \  # Use NTFS hard drives - cross platform and journaled
+postgres \  # Local database
+postman \  # API builder and debugger
+raycast \  # Extendable app launcher and clipboard history
+shottr \  # Screenshots and on screen OCR
+signal \  # Secure messaging
+skype \  # Video calling
+spotify \  # Music streaming
+the-unarchiver \  # File compression utility
+tiles \  # Windows style windows that snap into place
+visual-studio-code \  # Graphical code editor
+vlc \  # Multimedia viewer
+whatsapp \  # Secure messaging
+zoom  # Video calling
 
 # ColorSlurp color picker - get any color on screen
 mas install 1287239339
@@ -121,49 +123,56 @@ pyenv install "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
 pip install --upgrade pip
 
-pip install bandit  # Python code security
-pip install beautysh  # Bash code formatting
-pip install black  # Python code formatting
-pip install flake8  # Python linting
-pip install isort  # Sort Python imports
-pip install pre-commit  # Run multilingual commands before git commits
-pip install pygments  # Dependency of Zsh colorize
+pip install \
+bandit \  # Python code security
+beautysh \  # Bash code formatting
+black \  # Python code formatting
+flake8 \  # Python linting
+isort \  # Sort Python imports
+pre-commit \  # Run multilingual commands before git commits
+pygments  # Dependency of Zsh colorize
 
 print_green "Completed Python installs"
 
-# Install VSCode extensions. View current at ~/.vscode/extensions
-code --install-extension aaron-bond.better-comments
-code --install-extension adpyke.codesnap
-code --install-extension batisteo.vscode-django
-code --install-extension bungcip.better-toml
-code --install-extension christian-kohler.path-intellisense
-code --install-extension davidanson.vscode-markdownlint
-code --install-extension denoland.vscode-deno
-code --install-extension docsmsft.docs-markdown
-code --install-extension eamodio.gitlens
-code --install-extension esbenp.prettier-vscode
-code --install-extension formulahendry.auto-rename-tag
-code --install-extension GitHub.vscode-pull-request-github
-code --install-extension hbenl.vscode-test-explorer
-code --install-extension littlefoxteam.vscode-python-test-adapter
-code --install-extension markis.code-coverage
-code --install-extension ms-python.python
-code --install-extension ms-toolsai.jupyter
-code --install-extension ms-toolsai.jupyter-keymap
-code --install-extension ms-toolsai.jupyter-renderers
-code --install-extension ms-vscode-remote.remote-containers
-code --install-extension ms-vscode.makefile-tools
-code --install-extension ms-vscode.test-adapter-converter
-code --install-extension ms-vsliveshare.vsliveshare
-code --install-extension redhat.vscode-yaml
-code --install-extension rust-lang.rust-analyzer
-code --install-extension stackbreak.comment-divider
-code --install-extension streetsidesoftware.code-spell-checker
-code --install-extension timonwong.shellcheck
-code --install-extension ue.alphabetical-sorter
-code --install-extension visualstudioexptteam.intellicode-api-usage-examples
-code --install-extension visualstudioexptteam.vscodeintellicode
-code --install-extension withfig.fig
+# Install VSCode extensions. View current with `code --list-extensions`
+vscode_extensions=(
+    aaron-bond.better-comments
+    adpyke.codesnap
+    batisteo.vscode-django
+    bungcip.better-toml
+    christian-kohler.path-intellisense
+    davidanson.vscode-markdownlint
+    denoland.vscode-deno
+    docsmsft.docs-markdown
+    eamodio.gitlens
+    esbenp.prettier-vscode
+    formulahendry.auto-rename-tag
+    GitHub.vscode-pull-request-github
+    hbenl.vscode-test-explorer
+    littlefoxteam.vscode-python-test-adapter
+    markis.code-coverage
+    ms-python.python
+    ms-toolsai.jupyter
+    ms-toolsai.jupyter-keymap
+    ms-toolsai.jupyter-renderers
+    ms-vscode-remote.remote-containers
+    ms-vscode.makefile-tools
+    ms-vscode.test-adapter-converter
+    ms-vsliveshare.vsliveshare
+    redhat.vscode-yaml
+    rust-lang.rust-analyzer
+    stackbreak.comment-divider
+    streetsidesoftware.code-spell-checker
+    timonwong.shellcheck
+    ue.alphabetical-sorter
+    visualstudioexptteam.intellicode-api-usage-examples
+    visualstudioexptteam.vscodeintellicode
+    withfig.fig
+)
+
+for extension in "${vscode_extensions[@]}"; do
+    code --install-extension "$extension"
+done
 
 # Add custom VSCode settings
 ln -s $DIR/linked/settings.json ~/Library/Application\ Support/Code/User/
