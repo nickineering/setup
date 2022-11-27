@@ -1,8 +1,10 @@
 #!/bin/bash
 
-#                         STOP!
-# ---- Only edit this file if you want to change the whole repo. ----
-# Edit profile.custom.sh to add temporary code for particular projects
+# ------------------------------------------------------------------------------------ #
+# !                                STAY AWAY, SECRETS!
+# This file is committed to version control and used by both Bash and Zsh.
+# Add secrets and device specific configuration to ~/.env.sh instead.
+# ------------------------------------------------------------------------------------ #
 
 # Run multiple Python versions on same machine
 export PYENV_ROOT="$HOME/.pyenv"
@@ -35,11 +37,11 @@ trash () {
     mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
-# Backup .profile.custom.sh where secrets should be located.
+# Backup ~/.env.sh where secrets should be located.
 # It is not subject to version control.
 backup_secrets () {
     mkdir -p ~/Documents/backups
-    cp ~/.profile.custom.sh ~/Documents/backups/
+    cp ~/.env.sh ~/Documents/backups/
     echo 'Backup complete'
     ls -lah ~/Documents/backups/
 }
@@ -62,4 +64,4 @@ export NVM_DIR="$HOME/.nvm"
 
 # Changes not tracked in git
 # shellcheck disable=SC1090
-source ~/.profile.custom.sh
+source ~/.env.sh

@@ -1,6 +1,11 @@
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 
+# ------------------------------------------------------------------------------------ #
+# !                                  Leave me alone
+# Unless you're doing something specific for zsh use ~/.profile.sh. No secrets here, plz!
+# ------------------------------------------------------------------------------------ #
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -128,8 +133,8 @@ setopt CORRECT_ALL
 source ~/.profile.sh
 
 # There should be no code below this comment other than Fig.
-# If there is copy it into .profile.sh.
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––-
+# If there is copy it into ~/.profile.sh.
+# ------------------------------------------------------------------------------------ #
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

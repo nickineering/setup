@@ -8,7 +8,7 @@ Everything I need to painlessly setup a new Mac.
 a new Mac.
 
 ```bash
-curl -s https://raw.githubusercontent.com/nferrara100/mac/master/install.sh | bash
+curl -s https://raw.githubusercontent.com/nferrara100/mac/master/bootstrap.sh | bash
 ```
 
 ## Manual bits

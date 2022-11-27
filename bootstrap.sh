@@ -1,4 +1,6 @@
 #!/bin/bash
+# Run this script to setup a new Mac
+# ! It is not meant to be run on Macs that have already been setup!
 
 # Print optional str $2 as bold green text
 # Print str $1 on new line as normal green text
@@ -39,7 +41,7 @@ print_green "Cloned repo into projects directory"
 # Link custom settings to that they are updated automatically when changes are pulled
 ln -s $DIR/linked/.bash_profile ~/
 ln -s $DIR/linked/.profile.sh ~/
-cp copied/.profile.custom.sh ~/
+cp copied/.env.sh ~/
 cp copied/.gitconfig ~/
 ln -s $DIR/linked/.vimrc ~/
 ln -s $DIR/linked/.tmux.conf ~/
