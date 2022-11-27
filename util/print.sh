@@ -1,4 +1,5 @@
 #!/bin/bash
+# * Bash 3.2 (2007)
 
 # Print optional str $2 as bold green text
 # Print str $1 on new line as normal green text

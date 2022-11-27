@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 
 # Some aliases credit: https://github.com/alrra/dotfiles/blob/main/src/git/gitconfig
 
