@@ -37,8 +37,8 @@ while IFS= read -r extension; do
 done < "$MAC"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
-# Get rid of default Zsh config so it can be replaced with the custom config
-rm -f ~/.zshrc
+# Configure Zsh to use Oh My Zsh. Affects ~/.zshrc so must be before linking.
+source configure_zsh.sh
 
 # Copy templates for customization files if they do not already exist
 while IFS= read -r file; do
@@ -87,37 +87,6 @@ isort \  # Sort Python imports
 pre-commit \  # Run multilingual commands before git commits
 
 print_green "Completed Python installs"
-
-# Install Zsh plugin manager
-if command -v omz; then
-    print_green "Oh My Zsh is already installed. Checking for updates..."
-    omz update
-else
-    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-fi
-
-ZSH_PLUGINS=~/.oh-my-zsh/custom/plugins
-
-# Adding custom Zsh plugin for syntax highlighting
-if [ -d $ZSH_PLUGINS/zsh-syntax-highlighting ]; then
-    print_green "Zsh syntax highlighting already installed. Checking for updates..."
-    git -C $ZSH_PLUGINS/zsh-syntax-highlighting pull
-else
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting $ZSH_PLUGINS/zsh-syntax-highlighting
-fi
-
-# Autosuggestions when typing in Zsh. Right arrow to autocomplete.
-if [ -d $ZSH_PLUGINS/zsh-autosuggestions ]; then
-    print_green "Zsh autosuggestions already installed. Checking for updates..."
-    git -C $ZSH_PLUGINS/zsh-autosuggestions pull
-else
-    git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_PLUGINS/zsh-autosuggestions
-fi
-print_green "Finished Zsh configuration"
-
-# Poetry autocompletion
-mkdir -p "$ZSH"/plugins/poetry
-poetry completions zsh > "$ZSH"/plugins/poetry/_poetry
 
 # Setup Node Version Manager (NVM) for local JavaScript
 mkdir -p ~/.nvm
