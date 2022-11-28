@@ -24,20 +24,17 @@ backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 print_green "Deleted existing links so they can be freshly created"
 
 # Install Homebrew packages
-while IFS= read -r line; do
-    # Remove comments
-    package=$(echo "$line" | head -n1 | awk '{print $1;}')
-    brew install "$package"
+source strip_comments.sh
+while IFS= read -r package; do
+    brew install "$(strip_comments "$package")"
 done <"$MAC"/state/brew_packages.txt
 print_green "Installed Homebrew packages"
 
 brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 
 # Install Homebrew casks
-while IFS= read -r line; do
-    # Remove comments
-    cask=$(echo "$line" | head -n1 | awk '{print $1;}')
-    brew install --cask "$cask"
+while IFS= read -r cask; do
+    brew install --cask "$(strip_comments "$cask")"
 done <"$MAC"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
@@ -101,9 +98,8 @@ pip install --upgrade pip
 # Delete any existing pip packages and then reinstall fresh
 pip freeze | xargs pip uninstall -y
 # Keep Python utility packages as globals
-while IFS= read -r line; do
-    package=$(echo "$line" | head -n1 | awk '{print $1;}')
-    pip install "$package"
+while IFS= read -r package; do
+    pip install "$(strip_comments "$package")"
 done <"$MAC"/state/python_packages.txt
 print_green "Completed Python installs"
 
