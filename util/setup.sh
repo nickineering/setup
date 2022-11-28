@@ -83,18 +83,24 @@ fi
 print_green "Copied and linked required files"
 
 # Pyenv configuration
-# shellcheck disable=SC1090
+# Load these here to avoid sourcing our profile
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init --path)"
-LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1 | xargs)
-pyenv install "$LATEST_PYTHON"
-pyenv global "$LATEST_PYTHON"
-pyenv shell "$LATEST_PYTHON"
+MATCHING_PY=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$")
+LATEST_PY=$(echo "$MATCHING_PY" | tail -1 | xargs)
+# Must check if we already have the latest to prevent pyenv error
+HAS_LATEST=$(pyenv versions | grep "$LATEST_PY")
+if [ ! "$HAS_LATEST" ]; then
+    pyenv install "$LATEST_PY"
+fi
+pyenv global "$LATEST_PY"
+pyenv shell "$LATEST_PY"
 pip install --upgrade pip
 
 # Delete any existing pip packages and then reinstall fresh
 pip freeze | xargs pip uninstall -y
+# Keep Python utility packages as globals
 while IFS= read -r package; do
     pip install "$package"
 done <"$MAC"/state/python_packages.txt
