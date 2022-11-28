@@ -1,3 +1,4 @@
+autojump  # Quickly jump among directories
 awscli  # Amazon Web Services CLI
 bash-completion  # Autocomplete for Git
 chroma  # Syntax highlighting utility. Required by ZSH-Colorize
@@ -8,7 +9,6 @@ git-lfs  # Better handling of large files by Git
 jupyterlab  # Interactive code editing notebook
 mas  # Install Mac App Store apps
 nvm  # local JavaScript runtime
-tldr  # Simple help pages for command-line tools
 poetry  # Package manager for Python
 pyenv  # Run multiple versions of python at the same time
 pyenv-virtualenvwrapper  # The easiest way to manage Python environments
@@ -16,6 +16,7 @@ rust  # Rust programming language
 shellcheck  # Linter for shell scripts
 shfmt  # Formatter for shell scripts
 thefuck  # Type "fuck" after misspelling terminal commands to autocorrect
+tldr  # Simple help pages for command-line tools
 tmux  # Terminal multitasking
 watchman
 zsh  # Use the most up to date version of Zsh, the default shell

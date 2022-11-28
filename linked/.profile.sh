@@ -15,6 +15,9 @@ export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 export WORKON_HOME=$HOME/virtualenvs
 pyenv virtualenvwrapper_lazy
 
+# Load Autojump: quickly jump between directories
+[ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh
+
 # Makes GPG keys available for use
 export GPG_TTY=$(tty)
 
