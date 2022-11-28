@@ -6,9 +6,6 @@ defaults -currentHost write com.apple.screensaver idleTime 0
 # Hide the spotlight icon in the menu bar
 defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
 
-# Show keyboard layout selection on login screen
-defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool TRUE
-
 # Avoid creating .DS_Store files on network volumes
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
