@@ -13,7 +13,6 @@ nordvpn  # Paid VPN for privacy and security
 openinterminal  # Open any folder in the terminal or an editor
 paragon-ntfs  # Use NTFS hard drives - cross platform and journaled
 postman  # API builder and debugger
-pyenv  # Run multiple versions of python at the same time
 raycast  # Extendable app launcher and clipboard history
 shottr  # Screenshots and on screen OCR
 signal  # Secure messaging
