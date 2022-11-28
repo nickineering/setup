@@ -101,7 +101,8 @@ pip install --upgrade pip
 # Delete any existing pip packages and then reinstall fresh
 pip freeze | xargs pip uninstall -y
 # Keep Python utility packages as globals
-while IFS= read -r package; do
+while IFS= read -r line; do
+    package=$(echo "$line" | head -n1 | awk '{print $1;}')
     pip install "$package"
 done <"$MAC"/state/python_packages.txt
 print_green "Completed Python installs"
