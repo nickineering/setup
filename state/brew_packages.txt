@@ -9,7 +9,6 @@ jupyterlab  # Interactive code editing notebook
 mas  # Install Mac App Store apps
 nvm  # local JavaScript runtime
 poetry  # Package manager for Python
-postgresql  # Database for local development
 pyenv-virtualenvwrapper  # The easiest way to manage Python environments
 rust  # Rust programming language
 shellcheck  # Linter for shell scripts
