@@ -1,7 +1,7 @@
 #!/usr/local/bin/bash
 
 # Install Zsh plugin manager
-if command -v omz; then
+if [ -d ~/.oh-my-zsh ]; then
 	print_green "Oh My Zsh is already installed. Checking for updates..."
 	omz update
 else
