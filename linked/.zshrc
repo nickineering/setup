@@ -122,6 +122,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # Custom settings below here
+# ------------------------------------------------------------------------------------ #
 
 # Automatically prepend `cd` to directory names
 setopt AUTO_CD
