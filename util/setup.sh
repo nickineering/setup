@@ -46,7 +46,6 @@ mas install 1287239339
 print_green "Installed Mac App Store apps"
 
 # Install VSCode extensions. View current with `code --list-extensions`
-rm -rf ~/.vscode/extensions # Start with a clean slate
 while IFS= read -r extension; do
     code --install-extension "$extension"
 done <"$MAC"/state/vscode_extensions.txt
