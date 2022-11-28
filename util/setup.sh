@@ -85,8 +85,8 @@ print_green "Copied and linked required files"
 # Pyenv configuration
 # Load these here to avoid sourcing our profile
 export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
 MATCHING_PY=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$")
 LATEST_PY=$(echo "$MATCHING_PY" | tail -1 | xargs)
 # Must check if we already have the latest to prevent pyenv error
