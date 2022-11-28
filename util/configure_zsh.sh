@@ -2,8 +2,7 @@
 
 # Install Zsh plugin manager
 if [ -d ~/.oh-my-zsh ]; then
-	print_green "Oh My Zsh is already installed. Checking for updates..."
-	omz update
+	print_green "Oh My Zsh is already installed"
 else
 	sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
