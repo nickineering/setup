@@ -24,7 +24,9 @@ backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 print_green "Deleted existing links so they can be freshly created"
 
 # Install Homebrew packages
-while IFS= read -r package; do
+while IFS= read -r line; do
+    # Remove comments
+    package=$(echo "$line" | head -n1 | awk '{print $1;}')
     brew install "$package"
 done <"$MAC"/state/brew_packages.txt
 print_green "Installed Homebrew packages"
@@ -32,7 +34,9 @@ print_green "Installed Homebrew packages"
 brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 
 # Install Homebrew casks
-while IFS= read -r cask; do
+while IFS= read -r line; do
+    # Remove comments
+    cask=$(echo "$line" | head -n1 | awk '{print $1;}')
     brew install --cask "$cask"
 done <"$MAC"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
