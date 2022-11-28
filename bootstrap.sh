@@ -10,9 +10,11 @@ set -e
 # Print commands that are run as they are run
 set -v
 
-# Start running the print utility first so we can update the user on progress
+# Start running the print utility first so we can update the user on progress.
+# We must save the file first because we are on Bash 3.2
+curl -s https://raw.githubusercontent.com/nferrara100/mac/master/util/print.sh >/tmp/print.sh
 # shellcheck source=util/print.sh
-source <(curl -s https://raw.githubusercontent.com/nferrara100/mac/master/util/print.sh)
+source /tmp/print.sh
 
 print_green "Please leave everything closed and wait for your Mac to be configured. \
 This will take a while." "AUTOMATICALLY CONFIGURING MAC"
