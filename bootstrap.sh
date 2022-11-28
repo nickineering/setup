@@ -1,8 +1,8 @@
 #!/bin/bash
 # * Bash 3.2 (2007)
 
-# Run this script to setup a new Mac
-# ! It is not meant to be run on Macs that have already been setup!
+# This is the entrypoint
+# Run to setup a new Mac or reconfigure an existing Mac
 
 # Abort on error
 set -e
