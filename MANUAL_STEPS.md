@@ -41,6 +41,7 @@ to complete any steps noted:
 1. Chrome - all profiles
 1. Docker
 1. Fig
+    1. Install VSCode extension
 1. Firefox
 1. Github VSCode extension
 1. iTerm2

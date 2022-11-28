@@ -31,4 +31,3 @@ timonwong.shellcheck
 ue.alphabetical-sorter
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
-withfig.fig
