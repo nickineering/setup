@@ -1,7 +1,16 @@
 #!/usr/local/bin/bash
 
-# This script should only be run via bootstrap.sh. This will fail if it isn't.
-cd "$MAC"/util || printf "Please run setup.sh from bootstrap.sh" && exit 1
+# This script continues what bootstrap.sh started
+
+# Abort on error
+set -e
+
+# Print commands that are run as they are run
+set -v
+
+export MAC=~/projects/mac
+export DOTFILES=$MAC/linked
+cd "$MAC"/util
 
 # Generic printing utility
 source print.sh
