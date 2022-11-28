@@ -87,7 +87,7 @@ print_green "Copied and linked required files"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init --path)"
-LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1)
+LATEST_PYTHON=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$" | tail -1 | xargs)
 pyenv install "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
 pyenv shell "$LATEST_PYTHON"
