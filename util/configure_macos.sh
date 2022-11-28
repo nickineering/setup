@@ -9,9 +9,6 @@ defaults -currentHost write com.apple.Spotlight MenuItemHidden -int 1
 # Avoid creating .DS_Store files on network volumes
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
-# Place the Dock on the left of the screen
-defaults write com.apple.dock "orientation" -string "left"
-
 # Autohide the Dock
 defaults write com.apple.dock autohide -bool true
 
