@@ -8,6 +8,7 @@ git-lfs  # Better handling of large files by Git
 jupyterlab  # Interactive code editing notebook
 mas  # Install Mac App Store apps
 nvm  # local JavaScript runtime
+tldr  # Simple help pages for command-line tools
 poetry  # Package manager for Python
 pyenv  # Run multiple versions of python at the same time
 pyenv-virtualenvwrapper  # The easiest way to manage Python environments
