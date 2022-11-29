@@ -9,9 +9,6 @@ export PATH="$HOME/.local/bin:$PATH" # Needed by Fig
 # And seriously, no secrets here. Version control is watching.
 # ------------------------------------------------------------------------------------ #
 
-# Iterm2 advanced features
-test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
-
 # Docker autocompletion
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 

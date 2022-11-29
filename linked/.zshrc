@@ -127,6 +127,9 @@ source $ZSH/oh-my-zsh.sh
 # Automatically prepend `cd` to directory names
 setopt AUTO_CD
 
+# Iterm2 advanced features
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
 

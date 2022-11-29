@@ -29,6 +29,10 @@ fi
 mkdir -p "$ZSH"/plugins/poetry
 poetry completions zsh >"$ZSH"/plugins/poetry/_poetry
 
+# Install Iterm2 advanced features.
+# Writes to .zshrc, but the output is in our version, too
+curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utilities.sh | bash
+
 # Get rid of the default Zsh config installed by Oh My Zsh so it can be replaced
 rm -f ~/.zshrc
 
