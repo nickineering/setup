@@ -24,7 +24,6 @@ backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
-brew tap homebrew/cask-fonts    # Supplies Nerd Fonts, including Meslo
 brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 
 # Install Homebrew packages
