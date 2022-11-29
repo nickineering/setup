@@ -23,14 +23,16 @@ done <"$MAC"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 print_green "Deleted existing links so they can be freshly created"
 
+# Brew taps
+brew tap homebrew/cask-fonts    # Supplies Nerd Fonts, including Meslo
+brew tap homebrew/cask-versions # Supplies firefox-developer-edition
+
 # Install Homebrew packages
 source strip_comments.sh
 while IFS= read -r package; do
     brew install "$(strip_comments "$package")"
 done <"$MAC"/state/brew_packages.txt
 print_green "Installed Homebrew packages"
-
-brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 
 # Install Homebrew casks
 while IFS= read -r cask; do

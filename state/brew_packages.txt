@@ -4,6 +4,7 @@ bash-completion         # Autocomplete for Git
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 deno                    # TypeScript native Node alternative written in Rust
 fig                     # IDE style terminal autocompletion
+font-meslo-lg-nerd-font # A cool font similar to Menlo from homebrew/cask-fonts
 gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 jupyterlab              # Interactive code editing notebook
