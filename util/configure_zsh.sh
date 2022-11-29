@@ -29,6 +29,11 @@ fi
 mkdir -p "$ZSH"/plugins/poetry
 poetry completions zsh >"$ZSH"/plugins/poetry/_poetry
 
+# Docker shell completion for Zsh
+etc=/Applications/Docker.app/Contents/Resources/etc
+ln -s $etc/docker.zsh-completion /usr/local/share/zsh/site-functions/_docker
+ln -s $etc/docker-compose.zsh-completion /usr/local/share/zsh/site-functions/_docker-compose
+
 # Install Iterm2 advanced features.
 # Writes to .zshrc, but the output is in our version, too
 curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utilities.sh | bash

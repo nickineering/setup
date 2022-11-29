@@ -9,9 +9,6 @@ export PATH="$HOME/.local/bin:$PATH" # Needed by Fig
 # And seriously, no secrets here. Version control is watching.
 # ------------------------------------------------------------------------------------ #
 
-# Docker autocompletion
-[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
-
 # Git autocompletion
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 
