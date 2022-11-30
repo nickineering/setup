@@ -77,20 +77,30 @@ HIST_STAMPS="mm/dd/yyyy"
 ZSH_COLORIZE_TOOL=chroma
 ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
 
+# Automatically load node version specified by .nvmrc
+zstyle ':omz:plugins:nvm' autoload true
+
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    colored-man-pages
-    colorize
-    copyfile
-    copypath
-    poetry
-    web-search
-    zsh-autosuggestions
-    zsh-syntax-highlighting
+    alias-finder            # Search aliases
+    autojump                # Loads autojump
+    colored-man-pages       # What it says
+    colorize                # Syntax highlighting for cat and less
+    copyfile                # Copy contents of a file in one command
+    copypath                # Copy path of file or directory to clipboard
+    dotenv                  # Automatically load .env files in current directory
+    gh                      # Completion for Github
+    gpg-agent               # Enable GPG keys for commit signing
+    nvm                     # Source NVM and add completions
+    poetry                  # Poetry completions
+    rust                    # Rust completions
+    web-search              # Web search straight from the command line
+    zsh-autosuggestions     # Automatically show results from history while typing
+    zsh-syntax-highlighting # Syntax highlight shell commands while typing
 )
 
 source $ZSH/oh-my-zsh.sh
