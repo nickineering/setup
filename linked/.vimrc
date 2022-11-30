@@ -5,6 +5,7 @@ set cursorline " highlight the current cursor line
 set expandtab " expand tab to spaces
 set ignorecase " ignore case when searching
 set mat=5 " how many tenths of a second to blink matching brackets for
+set mouse=a " allow mouse usage
 set number " show line numbers
 set relativenumber " show relative line numbers
 set ruler " always show current positions along the bottom
