@@ -121,12 +121,16 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Custom settings below here
+# ------------------------------------------------------------------------------------ #
+
 # ZSH options - See: https://linux.die.net/man/1/zshoptions
-bindkey -v           # Use vim keybindings by default
-setopt auto_cd       # Automatically prepend `cd` to directory names
-setopt extended_glob # Use more characters in globs
-setopt nomatch       # Error if no file matches a glob
-setopt notify        # Report the status of background jobs immediately
+bindkey -v                  # Use vim keybindings by default
+setopt auto_cd              # Automatically prepend `cd` to directory names
+setopt extended_glob        # Use more characters in globs
+setopt nomatch              # Error if no file matches a glob
+setopt notify               # Report the status of background jobs immediately
+setopt interactive_comments # Allow comment (#) characters in interactive shells
 
 # The following lines were added by compinstall
 # Install better completions
@@ -134,15 +138,6 @@ zstyle :compinstall filename '/Users/nick/.zshrc'
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
-
-# Custom settings below here
-# ------------------------------------------------------------------------------------ #
-
-# Automatically prepend `cd` to directory names
-setopt AUTO_CD
-
-# Allow comment (#) characters in interactive shells
-setopt interactive_comments
 
 # Iterm2 advanced features
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
