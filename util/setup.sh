@@ -80,5 +80,10 @@ print_green "Completed installs. Now configuring settings..."
 # Configures the operating system on import
 source configure_macos.sh
 
+print_green "Configured MacOS. Now downloading OS updates. This could take a while..."
+
+# Install MacOS updates
+sudo softwareupdate -i -a
+
 print_green "Please follow the instructions in $MAC/MANUAL_STEPS.md and then reboot \
 your computer." "AUTOMATED CONFIGURATION COMPLETE"
