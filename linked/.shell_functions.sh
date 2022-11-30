@@ -31,3 +31,10 @@ mcd() {
     mkdir -p "$1"
     cd "$1" || exit
 }
+
+update() {
+    local MAC=~/projects/mac
+    cd $MAC || exit 1
+    git pull
+    .$MAC/util/setup.sh
+}
