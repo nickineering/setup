@@ -69,6 +69,12 @@ done <"$MAC"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 
 source configure_firefox.sh
+
+# Create Vim directories
+mkdir -p ~/.vim/swaps/
+mkdir -p ~/.vim/backups/
+mkdir -p ~/.vim/undo/
+
 print_green "Copied and linked required files"
 
 source configure_python.sh
