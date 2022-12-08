@@ -46,6 +46,14 @@ local-ignore() {
 	echo "$1" >>"$ROOT"/.git/info/exclude
 }
 
+# Edit the Git file that ignores files only within this clone of the repo
+local-ignore-edit() {
+	# Get root directory of current Git repo
+	local ROOT
+	ROOT=$(git rev-parse --show-toplevel)
+	vim "$ROOT"/.git/info/exclude
+}
+
 # Rename a branch locally and remote. $1=NEW_NAME, $2=OLD_NAME
 # Credit: https://gist.github.com/DamirPorobic/5be1a47d11c2c7444ddb171d19b4919e
 rename-branch() {
