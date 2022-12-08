@@ -49,3 +49,6 @@ alias reload='exec ${SHELL} -l'
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
+
+# cd to the root of the current Git repository
+alias gitroot='cd $(git rev-parse --show-toplevel)'
