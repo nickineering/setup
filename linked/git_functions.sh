@@ -38,6 +38,14 @@ interactive-rebase() {
 	git rebase --interactive HEAD~"${1:-10}"
 }
 
+# Ignore $1 as if in .gitignore, but only on this clone of the repo
+local-ignore() {
+	# Get root directory of current Git repo
+	local ROOT
+	ROOT=$(git rev-parse --show-toplevel)
+	echo "$1" >>"$ROOT"/.git/info/exclude
+}
+
 # Rename a branch locally and remote. $1=NEW_NAME, $2=OLD_NAME
 # Credit: https://gist.github.com/DamirPorobic/5be1a47d11c2c7444ddb171d19b4919e
 rename-branch() {
