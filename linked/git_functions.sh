@@ -35,7 +35,14 @@ reset-to-origin() {
 
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
 interactive-rebase() {
-	git rebase --interactive HEAD~"${1:-10}"
+	local DISTANCE
+	# Set $DISTANCE to $1 if it's a number, otherwise default to 10
+	if [ -n "$1" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+		DISTANCE="$1"
+	else
+		DISTANCE=10
+	fi
+	git rebase --interactive HEAD~"$DISTANCE"
 }
 
 # Ignore $1 as if in .gitignore, but only on this clone of the repo
