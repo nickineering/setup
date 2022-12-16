@@ -27,6 +27,7 @@
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "on",
     "editor.wordWrap": "off",
+    "explorer.confirmDelete": false,
     "explorer.confirmDragAndDrop": false,
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
