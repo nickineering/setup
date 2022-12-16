@@ -56,6 +56,7 @@ to complete any steps noted:
     1. Default Terminal: iTerm
     1. Default Editor: Visual Studio Code
     1. iTerm: Tab
+1. Paragon NTFS
 1. Raycast
 1. Shottr
     1. Grant permissions

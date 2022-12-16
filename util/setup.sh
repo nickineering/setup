@@ -89,6 +89,9 @@ source configure_macos.sh
 
 print_green "Configured MacOS. Now downloading OS updates. This could take a while..."
 
+# Install Paragon NTFS
+open /usr/local/Caskroom/paragon-ntfs/15/FSInstaller.app
+
 # Install MacOS updates
 sudo softwareupdate -i -a
 
