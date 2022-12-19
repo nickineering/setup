@@ -40,10 +40,6 @@ while IFS= read -r cask; do
 done <"$MAC"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
-# ColorSlurp color picker - get any color on screen
-mas install 1287239339
-print_green "Installed Mac App Store apps"
-
 # Install VSCode extensions. View current with `code --list-extensions`
 while IFS= read -r extension; do
     code --install-extension "$extension"

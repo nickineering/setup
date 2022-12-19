@@ -7,7 +7,6 @@ fig                     # IDE style terminal autocompletion
 gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 jupyterlab              # Interactive code editing notebook
-mas                     # Install Mac App Store apps
 nvm                     # local JavaScript runtime
 poetry                  # Package manager for Python
 pyenv                   # Run multiple versions of python at the same time
