@@ -58,6 +58,8 @@ to complete any steps noted:
     1. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
+1. Safari
+    1. Enable the Develop menu in Settings -> Advanced
 1. Shottr
     1. Grant permissions
     1. Increase scrolling screenshot speed to max
