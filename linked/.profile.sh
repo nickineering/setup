@@ -6,6 +6,17 @@
 # Add secrets and device specific configuration to ~/.env.sh instead.
 # ------------------------------------------------------------------------------------ #
 
+# Use modern GNU tools instead of Mac defaults
+export MANPATH="/usr/local/opt/findutils/libexec/man:$MANPATH"
+export MANPATH="/usr/local/opt/gnu-indent/libexec/man:$MANPATH"
+export MANPATH="/usr/local/opt/make/libexec/man:$MANPATH"
+export MANPATH="/usr/local/opt/unzip/libexec/man:$MANPATH"
+export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
+export PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
+export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
+export PATH="/usr/local/opt/unzip/bin:$PATH"
+alias awk='echo "Use gawk instead of awk" && false'
+
 # Run multiple Python versions on the same machine
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
