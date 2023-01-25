@@ -93,6 +93,7 @@ plugins=(
     copyfile                # Copy contents of a file in one command
     copypath                # Copy path of file or directory to clipboard
     dotenv                  # Automatically load .env files in current directory
+    gnu-utils               # Aliases updated coreutils to replace Mac defaults
     gh                      # Completion for Github
     gpg-agent               # Enable GPG keys for commit signing
     nvm                     # Source NVM and add completions
