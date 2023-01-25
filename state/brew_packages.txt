@@ -10,6 +10,7 @@ gawk                    # Mac default outdated
 gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 gnu-indent              # Mac default outdated
+go                      # Go programming language
 gzip                    # Mac default outdated
 jupyterlab              # Interactive code editing notebook
 make                    # Mac default outdated
