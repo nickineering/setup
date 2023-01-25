@@ -2,6 +2,9 @@
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "[php]": {
+        "editor.defaultFormatter": "devsense.phptools-vscode"
+    },
     "[shellscript]": {
         "editor.defaultFormatter": "mkhl.shfmt"
     },
@@ -19,6 +22,7 @@
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
     "editor.guides.bracketPairs": true,
+    "editor.inlineSuggest.enabled": true,
     "editor.minimap.enabled": false,
     "editor.minimap.maxColumn": 88,
     "editor.rulers": [
@@ -37,6 +41,12 @@
     "git.enableSmartCommit": true,
     "git.fetchOnPull": true,
     "git.showPushSuccessNotification": true,
+    "github.copilot.enable": {
+        "*": true,
+        "markdown": true,
+        "plaintext": true,
+        "yaml": true
+    },
     "gitlens.gitCommands.closeOnFocusOut": true,
     "html.format.indentHandlebars": true,
     "html.format.indentInnerHtml": true,
