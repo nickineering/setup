@@ -1,5 +1,6 @@
 aaron-bond.better-comments
 adpyke.codesnap
+azuretools.vscode-docker
 batisteo.vscode-django
 bungcip.better-toml
 christian-kohler.path-intellisense
