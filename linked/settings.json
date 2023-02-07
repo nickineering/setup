@@ -2,9 +2,6 @@
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
-    "[php]": {
-        "editor.defaultFormatter": "devsense.phptools-vscode"
-    },
     "[shellscript]": {
         "editor.defaultFormatter": "mkhl.shfmt"
     },

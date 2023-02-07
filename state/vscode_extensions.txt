@@ -6,9 +6,6 @@ bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
 denoland.vscode-deno
-DEVSENSE.composer-php-vscode
-DEVSENSE.phptools-vscode
-DEVSENSE.profiler-php-vscode
 docsmsft.docs-markdown
 eamodio.gitlens
 EditorConfig.EditorConfig
