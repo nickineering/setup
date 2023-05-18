@@ -100,5 +100,8 @@
     "workbench.editor.highlightModifiedTabs": true,
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
+    },
+    "[python]": {
+        "editor.formatOnType": true
     }
 }

@@ -85,9 +85,6 @@ source configure_macos.sh
 
 print_green "Configured MacOS. Now downloading OS updates. This could take a while..."
 
-# Install Paragon NTFS
-open /usr/local/Caskroom/paragon-ntfs/15/FSInstaller.app
-
 # Configure Zoom to automatically update
 sudo launchctl load -w /Library/LaunchDaemons/us.zoom.ZoomDaemon.plist
 

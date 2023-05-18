@@ -23,6 +23,9 @@ will have to follow the following manual steps to finish setting up your Mac:
 1. Set a
    [lock screen message](https://support.apple.com/en-ie/guide/mac-help/mh35890/mac)
    including your email in case your laptop is misplaced and someone kind finds it.
+1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer and grant
+   it permissions in System Settings as instructed during installation. This allows
+   editing external NTFS drives.
 
 Then run the following git commands:
 
