@@ -61,6 +61,10 @@ to complete any steps noted:
     1. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
+1. Rocket
+    1. Open and follow instructions
+    1. Enable start on startup
+    1. Grant permissions for web browsers
 1. Safari
     1. Enable the Develop menu in Settings -> Advanced
 1. Shottr

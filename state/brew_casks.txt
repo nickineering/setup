@@ -7,6 +7,7 @@ firefox-developer-edition # Web browser with added dev tools
 google-chrome             # Web browser
 google-cloud-sdk          # Command line access to Google Cloud
 gpg-suite                 # GPG key generator
+imageoptim                # Compress images and remove metadata
 iterm2                    # Terminal emulator
 kindle                    # Read Kindle books on desktop
 microsoft-edge            # Major browser
@@ -14,6 +15,7 @@ nordvpn                   # Paid VPN for privacy and security
 openinterminal            # Open any folder in the terminal or an editor
 postman                   # API builder and debugger
 raycast                   # Extendable app launcher and clipboard history
+rocket                    # Type ":" to pick emoji anywhere, like in Slack
 shottr                    # Screenshots and on screen OCR
 signal                    # Secure messaging
 skype                     # Video calling
