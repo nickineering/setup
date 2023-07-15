@@ -16,7 +16,11 @@ pyenv shell "$LATEST_PY"
 pip install --upgrade pip
 
 # Delete any existing pip packages and then reinstall fresh
-pip freeze | xargs pip uninstall -y
+FROZEN_PACKAGES=$(pip freeze)
+if [ "$FROZEN_PACKAGES" ]; then
+    echo "$FROZEN_PACKAGES" | xargs pip uninstall -y
+fi
+
 # Keep Python utility packages as globals
 source strip_comments.sh
 while IFS= read -r package; do
