@@ -45,6 +45,7 @@
         "yaml": true
     },
     "gitlens.gitCommands.closeOnFocusOut": true,
+    "go.toolsManagement.autoUpdate": true,
     "html.format.indentHandlebars": true,
     "html.format.indentInnerHtml": true,
     "html.format.preserveNewLines": false,
