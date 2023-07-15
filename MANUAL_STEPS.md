@@ -77,7 +77,7 @@ to complete any steps noted:
 1. Spotify
 1. Tiles
     1. Grant permissions
-    1. Open on login)
+    1. Open on login
 1. WhatsApp
 1. Xcode
 1. Zoom
