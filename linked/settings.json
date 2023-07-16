@@ -33,10 +33,14 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+    "flake8.args": [
+        "--ignore=E501"
+    ],
     "git.autoStash": true,
     "git.autofetch": true,
     "git.enableSmartCommit": true,
     "git.fetchOnPull": true,
+    "git.openRepositoryInParentFolders": "never",
     "git.showPushSuccessNotification": true,
     "github.copilot.enable": {
         "*": true,
@@ -60,14 +64,20 @@
     "prettier.proseWrap": "always",
     "prettier.tabWidth": 4,
     "prettier.trailingComma": "all",
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
+    "python.analysis.inlayHints.callArgumentNames": true,
     "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
     "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.typeCheckingMode": "basic",
     "python.formatting.provider": "black",
     "python.languageServer": "Pylance",
     "python.linting.banditEnabled": true,
     "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,
+    "python.testing.pytestEnabled": true,
     "python.venvPath": "~/virtualenvs/",
     "pythonTestExplorer.testFramework": "pytest",
     "pythonTestExplorer.testplanEnabled": true,
@@ -101,8 +111,5 @@
     "workbench.editor.highlightModifiedTabs": true,
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
-    },
-    "[python]": {
-        "editor.formatOnType": true
     }
 }
