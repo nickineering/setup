@@ -1,5 +1,6 @@
-bandit      # Python code security
-black       # Python code formatting
-flake8       # Python linting
-isort       # Sort Python imports
-pre-commit  # Run multilingual commands before git commits
+bandit           # Python code security
+black            # Python code formatting
+black\[jupyter\] # Jupyter notebook code formatting
+flake8            # Python linting
+isort            # Sort Python imports
+pre-commit       # Run multilingual commands before git commits
