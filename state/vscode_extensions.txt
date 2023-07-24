@@ -2,7 +2,6 @@ aaron-bond.better-comments
 adpyke.codesnap
 azuretools.vscode-docker
 batisteo.vscode-django
-bungcip.better-toml
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
 denoland.vscode-deno
@@ -35,6 +34,7 @@ redhat.vscode-yaml
 rust-lang.rust-analyzer
 stackbreak.comment-divider
 streetsidesoftware.code-spell-checker
+tamasfe.even-better-toml
 timonwong.shellcheck
 ue.alphabetical-sorter
 VisualStudioExptTeam.intellicode-api-usage-examples
