@@ -30,6 +30,7 @@
     "editor.wordWrap": "off",
     "explorer.confirmDelete": false,
     "explorer.confirmDragAndDrop": false,
+    "explorer.excludeGitIgnore": true,
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
@@ -42,6 +43,8 @@
     "git.fetchOnPull": true,
     "git.openRepositoryInParentFolders": "never",
     "git.showPushSuccessNotification": true,
+    "github.copilot-labs.showBrushesLenses": true,
+    "github.copilot-labs.showTestGenerationLenses": true,
     "github.copilot.enable": {
         "*": true,
         "markdown": true,
