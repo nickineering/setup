@@ -46,6 +46,8 @@ to complete any steps noted:
 1. Fig
     1. Install VSCode extension
 1. Firefox
+1. Github Copilot CLI
+    1. Run `github-copilot-cli auth` to authenticate with Github
 1. Github VSCode extension
 1. iTerm2
     1. Make default terminal

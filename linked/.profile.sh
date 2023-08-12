@@ -30,6 +30,9 @@ pyenv virtualenvwrapper_lazy
 # Enable thefuck to correct mistyped commands
 eval "$(thefuck --alias)"
 
+# Github Copilot command line aliases
+eval "$(github-copilot-cli alias -- "$0")"
+
 # Easy access to the dotfiles repo
 export DOTFILES=~/projects/mac/linked
 
