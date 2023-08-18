@@ -5,6 +5,7 @@
     "[shellscript]": {
         "editor.defaultFormatter": "mkhl.shfmt"
     },
+    "application.shellEnvironmentResolutionTimeout": 60,
     "breadcrumbs.enabled": true,
     "comment-divider.length": 88,
     "comment-divider.shouldLengthIncludeIndent": true,
