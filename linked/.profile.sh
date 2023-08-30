@@ -33,7 +33,10 @@ eval "$(thefuck --alias)"
 # Github Copilot command line aliases
 eval "$(github-copilot-cli alias -- "$0")"
 
-# Easy access to the dotfiles repo
+# Easy access to this repo
+export MAC=~/projects/mac
+
+# Easy access to the dotfiles folder
 export DOTFILES=~/projects/mac/linked
 
 # Load handy aliases

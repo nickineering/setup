@@ -18,7 +18,12 @@ littlefoxteam.vscode-python-test-adapter
 lllllllqw.jsdoc
 markis.code-coverage
 mkhl.shfmt
+ms-dotnettools.csharp
+ms-python.black-formatter
+ms-python.flake8
 ms-python.isort
+ms-python.mypy-type-checker
+ms-python.pylint
 ms-python.python
 ms-python.vscode-pylance
 ms-toolsai.jupyter
@@ -30,7 +35,6 @@ ms-vscode-remote.remote-containers
 ms-vscode.makefile-tools
 ms-vscode.test-adapter-converter
 ms-vsliveshare.vsliveshare
-ms-dotnettools.csharp
 redhat.vscode-yaml
 rust-lang.rust-analyzer
 stackbreak.comment-divider
