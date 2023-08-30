@@ -15,6 +15,7 @@ GitHub.vscode-pull-request-github
 golang.go
 hbenl.vscode-test-explorer
 littlefoxteam.vscode-python-test-adapter
+lllllllqw.jsdoc
 markis.code-coverage
 mkhl.shfmt
 ms-python.isort
