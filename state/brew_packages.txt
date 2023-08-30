@@ -1,5 +1,4 @@
 autojump                # Quickly jump among directories
-awscli                  # Amazon Web Services CLI
 bash-completion         # Autocomplete for Git
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 coreutils               # Mac default outdated

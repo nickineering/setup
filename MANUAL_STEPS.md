@@ -38,7 +38,6 @@ Finally, you will need to sign in or otherwise activate the following apps, bein
 to complete any steps noted:
 
 1. 1Password
-1. AWS CLI: `awscli`
 1. Cheatsheet
     1. Grant permissions
 1. Chrome - all profiles
