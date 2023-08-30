@@ -1,5 +1,6 @@
 1password                 # Password manager
 1password-cli             # Use password manager in terminal
+blender                   # 3D modeling
 boop                      # Scratchpad for developers with text wrangling tools
 cheatsheet                # Easily see keyboard shortcuts for the current app
 docker                    # Code containerisation
@@ -22,6 +23,7 @@ skype                     # Video calling
 spotify                   # Music streaming
 the-unarchiver            # File compression utility
 tiles                     # Windows style windows that snap into place
+unity                     # Game engine
 visual-studio-code        # Graphical code editor
 vlc                       # Multimedia viewer
 whatsapp                  # Secure messaging

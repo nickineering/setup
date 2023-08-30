@@ -30,6 +30,7 @@ ms-vscode-remote.remote-containers
 ms-vscode.makefile-tools
 ms-vscode.test-adapter-converter
 ms-vsliveshare.vsliveshare
+ms-dotnettools.csharp
 redhat.vscode-yaml
 rust-lang.rust-analyzer
 stackbreak.comment-divider
