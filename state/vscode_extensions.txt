@@ -18,6 +18,7 @@ littlefoxteam.vscode-python-test-adapter
 lllllllqw.jsdoc
 markis.code-coverage
 mkhl.shfmt
+ms-dotnettools.csdevkit
 ms-dotnettools.csharp
 ms-python.black-formatter
 ms-python.flake8
@@ -45,5 +46,6 @@ timonwong.shellcheck
 ue.alphabetical-sorter
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
+visualstudiotoolsforunity.vstuc
 withfig.fig
 zignd.html-css-class-completion
