@@ -11,6 +11,9 @@
     "[shellscript]": {
         "editor.defaultFormatter": "mkhl.shfmt"
     },
+    "[sql]": {
+        "editor.defaultFormatter": "mtxr.sqltools"
+    },
     "application.shellEnvironmentResolutionTimeout": 60,
     "breadcrumbs.enabled": true,
     "comment-divider.length": 88,
@@ -101,6 +104,8 @@
     },
     "search.showLineNumbers": true,
     "search.smartCase": true,
+    "sqltools.format.linesBetweenQueries": 2,
+    "sqltools.format.reservedWordCase": "upper",
     "terminal.external.osxExec": "iTerm.app",
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.enableMultiLinePasteWarning": false,
