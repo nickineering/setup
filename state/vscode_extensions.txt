@@ -4,7 +4,6 @@ azuretools.vscode-docker
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
 denoland.vscode-deno
-docsmsft.docs-markdown
 eamodio.gitlens
 EditorConfig.EditorConfig
 esbenp.prettier-vscode
