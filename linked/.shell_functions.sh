@@ -4,6 +4,7 @@
 # !                                STAY AWAY, SECRETS!
 # This file is committed to version control and used by both Bash and Zsh.
 # Add secrets and device specific configuration to ~/.env.sh instead.
+# Compatibility must be maintained with both Bash and Zsh.
 # ------------------------------------------------------------------------------------ #
 
 # Move $1 to trash
