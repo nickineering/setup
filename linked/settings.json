@@ -4,6 +4,7 @@
     },
     "[python]": {
         "editor.codeActionsOnSave": {
+            "source.fixAll": true,
             "source.organizeImports": true
         },
         "editor.defaultFormatter": "ms-python.black-formatter"
@@ -97,6 +98,9 @@
     "pythonTestExplorer.testFramework": "pytest",
     "pythonTestExplorer.testplanEnabled": true,
     "redhat.telemetry.enabled": true,
+    "ruff.args": [
+        "--select=ALL"
+    ],
     "search.exclude": {
         ".git/": true,
         "coverage/": true,

@@ -1,8 +1,7 @@
 bandit           # Python code security
 black            # Python code formatting
 black\[jupyter\] # Jupyter notebook code formatting
-isort            # Sort Python imports
 pre-commit       # Run multilingual commands before git commits
 pylama           # All in one linter including mypy and pylint
 pyroma           # Python package configuration linting
-pyupgrade        # Upgrade Python code to use modern syntax
+ruff             # Super fast Python linting written in Rust

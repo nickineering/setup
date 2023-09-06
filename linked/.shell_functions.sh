@@ -50,9 +50,8 @@ pynick() {
     done < <(find . -type f -name "*.py" -print0)
 
     # Automatic fixes
+    ruff check . --select ALL --fix
     black "${PYTHON_FILES[@]}"
-    isort .
-    pyupgrade "${PYTHON_FILES[@]}"
 
     # Manual fixes (with some automations)
     print_green "\nMANUAL: Pylama linting issues\n"
