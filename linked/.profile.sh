@@ -16,7 +16,6 @@ export PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/unzip/bin:$PATH"
-alias awk='echo "Use gawk instead of awk" && false'
 
 # Run multiple Python versions on the same machine
 export PYENV_ROOT="$HOME/.pyenv"
