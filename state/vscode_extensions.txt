@@ -4,6 +4,7 @@ azuretools.vscode-docker
 christian-kohler.path-intellisense
 DavidAnson.vscode-markdownlint
 denoland.vscode-deno
+donjayamanne.python-environment-manager
 eamodio.gitlens
 EditorConfig.EditorConfig
 esbenp.prettier-vscode
@@ -23,6 +24,7 @@ ms-python.black-formatter
 ms-python.mypy-type-checker
 ms-python.python
 ms-python.vscode-pylance
+ms-toolsai.datawrangler
 ms-toolsai.jupyter
 ms-toolsai.jupyter-keymap
 ms-toolsai.jupyter-renderers
@@ -33,6 +35,7 @@ ms-vscode.makefile-tools
 ms-vscode.test-adapter-converter
 ms-vsliveshare.vsliveshare
 mtxr.sqltools
+njpwerner.autodocstring
 redhat.vscode-yaml
 rust-lang.rust-analyzer
 stackbreak.comment-divider
