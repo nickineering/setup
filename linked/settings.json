@@ -45,9 +45,6 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "flake8.args": [
-        "--ignore=E501"
-    ],
     "git.autoStash": true,
     "git.autofetch": true,
     "git.enableSmartCommit": true,
@@ -67,10 +64,6 @@
     "html.format.indentHandlebars": true,
     "html.format.indentInnerHtml": true,
     "html.format.preserveNewLines": false,
-    "isort.args": [
-        "--profile",
-        "black"
-    ],
     "javascript.updateImportsOnFileMove.enabled": "always",
     "notebook.cellToolbarLocation": {
         "default": "right",
@@ -108,8 +101,10 @@
     },
     "search.showLineNumbers": true,
     "search.smartCase": true,
-    "sqltools.format.linesBetweenQueries": 2,
-    "sqltools.format.reservedWordCase": "upper",
+    "sqltools.format": {
+        "linesBetweenQueries": 2,
+        "reservedWordCase": "upper"
+    },
     "terminal.external.osxExec": "iTerm.app",
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.enableMultiLinePasteWarning": false,
@@ -125,6 +120,7 @@
     "typescript.format.insertSpaceAfterTypeAssertion": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "win-ca.inject": "append",
     "window.closeWhenEmpty": true,
     "window.newWindowDimensions": "maximized",
     "window.zoomLevel": 1,
