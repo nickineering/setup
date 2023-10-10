@@ -52,4 +52,9 @@ alias reload='exec ${SHELL} -l'
 alias path='echo -e ${PATH//:/\\n}'
 
 # cd to the root of the current Git repository
-alias gitroot='cd $(git rev-parse --show-toplevel)'
+alias git-root='cd $(git rev-parse --show-toplevel)'
+
+alias git-aliases='less $DOTFILES/git_aliases.sh'
+alias git-functions='less $DOTFILES/git_functions.sh'
+alias shell-aliases='less $DOTFILES/.shell_aliases.sh'
+alias shell-functions='less $DOTFILES/.shell_functions.sh'
