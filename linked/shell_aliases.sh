@@ -7,7 +7,6 @@
 # Compatibility must be maintained with both Bash and Zsh.
 # ------------------------------------------------------------------------------------ #
 
-alias myip="curl http://ipecho.net/plain; echo"
 alias please=sudo
 # Count files in current directory and subdirectories
 alias count='find . -type f | wc -l'
