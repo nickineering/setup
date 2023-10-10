@@ -41,11 +41,11 @@ export DOTFILES=~/projects/mac/linked
 
 # Load handy aliases
 # shellcheck disable=SC1090
-source ~/.shell_aliases.sh
+source $DOTFILES/shell_aliases.sh
 
 # Load handy functions
 # shellcheck disable=SC1090
-source ~/.shell_functions.sh
+source $DOTFILES/shell_functions.sh
 
 # Changes not tracked in git
 # shellcheck disable=SC1090
