@@ -89,7 +89,7 @@
     "pythonTestExplorer.testFramework": "pytest",
     "pythonTestExplorer.testplanEnabled": true,
     "redhat.telemetry.enabled": true,
-    "ruff.args": [
+    "ruff.lint.args": [
         "--select=ALL"
     ],
     "search.exclude": {
@@ -104,7 +104,9 @@
         "reservedWordCase": "upper"
     },
     "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.allowMnemonics": true,
     "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
     "terminal.integrated.enableMultiLinePasteWarning": false,
     "terminal.integrated.env.osx": {
         "FIG_NEW_SESSION": "1"
