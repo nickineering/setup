@@ -17,7 +17,6 @@ make                    # Mac default outdated
 nvm                     # local JavaScript runtime
 poetry                  # Package manager for Python
 pyenv                   # Run multiple versions of python at the same time
-pyenv-virtualenvwrapper # The easiest way to manage Python environments
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
 shfmt                   # Formatter for shell scripts
