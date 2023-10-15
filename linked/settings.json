@@ -10,6 +10,10 @@
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "[shellscript]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.shellcheck": true,
+            "source.fixAll.shfmt": true
+        },
         "editor.defaultFormatter": "mkhl.shfmt"
     },
     "[sql]": {
