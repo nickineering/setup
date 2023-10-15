@@ -1,4 +1,10 @@
 {
+    "[csharp]": {
+        "editor.defaultFormatter": "ms-dotnettools.csharp"
+    },
+    "[go]": {
+        "editor.defaultFormatter": "golang.go"
+    },
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
@@ -21,6 +27,9 @@
     },
     "[sql]": {
         "editor.defaultFormatter": "mtxr.sqltools"
+    },
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
     },
     "application.shellEnvironmentResolutionTimeout": 60,
     "breadcrumbs.enabled": true,
