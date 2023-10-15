@@ -36,11 +36,13 @@ mtxr.sqltools
 njpwerner.autodocstring
 redhat.vscode-yaml
 rust-lang.rust-analyzer
+serayuzgur.crates
 stackbreak.comment-divider
 streetsidesoftware.code-spell-checker
 tamasfe.even-better-toml
 timonwong.shellcheck
 ue.alphabetical-sorter
+vadimcn.vscode-lldb
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
 visualstudiotoolsforunity.vstuc
