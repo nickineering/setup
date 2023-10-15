@@ -18,6 +18,7 @@ nvm                     # local JavaScript runtime
 poetry                  # Package manager for Python
 pyenv                   # Run multiple versions of python at the same time
 rust                    # Rust programming language
+rustfmt                 # Rust formatter
 shellcheck              # Linter for shell scripts
 shfmt                   # Formatter for shell scripts
 thefuck                 # Type "fuck" after misspelling terminal commands to autocorrect
