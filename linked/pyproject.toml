@@ -1,0 +1,19 @@
+[tool.ruff]
+select = ["ALL"]
+unfixable = ["ERA001"]
+ignore = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D211",
+    "D213",
+    "E501",
+]
+
+[tool.ruff.extend-per-file-ignores]
+"test_*" = ["S101"]

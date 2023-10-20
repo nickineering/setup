@@ -105,9 +105,6 @@
     "pythonTestExplorer.testFramework": "pytest",
     "pythonTestExplorer.testplanEnabled": true,
     "redhat.telemetry.enabled": true,
-    "ruff.lint.args": [
-        "--select=ALL"
-    ],
     "search.exclude": {
         ".git/": true,
         "coverage/": true,

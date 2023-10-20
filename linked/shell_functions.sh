@@ -50,7 +50,7 @@ pynick() {
     done < <(find . -type f -name "*.py" -print0)
 
     # Automatic fixes
-    ruff check . --select ALL --fix
+    ruff check . --fix
     black "${PYTHON_FILES[@]}"
 
     # Manual fixes (with some automations)
