@@ -9,20 +9,12 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "[python]": {
-        "editor.codeActionsOnSave": {
-            "source.fixAll": true,
-            "source.organizeImports": true
-        },
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
     "[shellscript]": {
-        "editor.codeActionsOnSave": {
-            "source.fixAll.shellcheck": true,
-            "source.fixAll.shfmt": true
-        },
         "editor.defaultFormatter": "mkhl.shfmt"
     },
     "[sql]": {
@@ -38,6 +30,10 @@
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.accessibilitySupport": "off",
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true,
+        "source.organizeImports": true
+    },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.fontFamily": "Menlo, Monaco, 'Courier New'",
     "editor.fontLigatures": true,
@@ -86,6 +82,7 @@
         "default": "right",
         "jupyter-notebook": "left"
     },
+    "npm-intellisense.importES6": true,
     "prettier.bracketSpacing": false,
     "prettier.endOfLine": "lf",
     "prettier.printWidth": 88,

@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Bash File",
+            "program": "${file}",
+            "request": "launch",
+            "type": "bashdb"
+        }
+    ],
+    "version": "0.2.0"
+}
