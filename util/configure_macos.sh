@@ -18,6 +18,9 @@ defaults write com.apple.dock autohide-delay -float 0
 # Open files by droping them on an icon in the Dock
 defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 
+# Speeds up window minimizing and maximizing
+defaults write com.apple.dock mineffect -string "scale"
+
 # Remove all apps kept in Dock by default
 defaults write com.apple.dock persistent-apps -array
 
@@ -25,7 +28,7 @@ defaults write com.apple.dock persistent-apps -array
 defaults write com.apple.dock show-recents -bool FALSE
 
 # Hidden apps are grayed out in Dock so they are obvious
-defaults write com.apple.Dock showhidden -bool TRUE
+defaults write com.apple.dock showhidden -bool TRUE
 
 # Clear bottom left hotcorner where create note is enabled by default
 defaults write com.apple.dock wvous-br-corner -int 0
