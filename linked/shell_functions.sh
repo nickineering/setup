@@ -43,7 +43,7 @@ update() {
 # Run my favorite Python linters in the current directory and subdirectories
 pynick() {
     source "$MAC"/util/print.sh
-    print_green "Running all Nick's favorite Python linting tools. First black, isort, and pyupgrade...\n"
+    print_green "Running all Nick's favorite Python linting tools. First ruff and black...\n"
     PYTHON_FILES=()
     while IFS= read -r -d '' file; do
         PYTHON_FILES+=("$file")
