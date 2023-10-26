@@ -26,13 +26,6 @@ delete-branches() {
 	git branch | grep -v '^*' | xargs git branch -D
 }
 
-# Reset to wherever origin for this branch is, but leave local files alone
-reset-to-origin() {
-	local branch
-	branch=$(git branch --show-current)
-	git reset origin/"$branch"
-}
-
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
 interactive-rebase() {
 	local DISTANCE
@@ -93,6 +86,13 @@ rename-branch() {
 	git fetch origin
 	git remote prune origin
 	echo Done.
+}
+
+# Reset to wherever origin for this branch is, but leave local files alone
+reset-to-origin() {
+	local branch
+	branch=$(git branch --show-current)
+	git reset origin/"$branch"
 }
 
 # Remove tag if it exists and then tag the latest commit with that name: $1=TAG_NAME
