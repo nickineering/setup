@@ -44,7 +44,6 @@
     "editor.guides.bracketPairs": true,
     "editor.inlineSuggest.enabled": true,
     "editor.minimap.enabled": false,
-    "editor.minimap.maxColumn": 88,
     "editor.rulers": [
         88
     ],
@@ -58,19 +57,14 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "git.autoStash": true,
     "git.autofetch": true,
+    "git.autoStash": true,
+    "git.confirmSync": false,
     "git.enableSmartCommit": true,
     "git.fetchOnPull": true,
     "git.openRepositoryInParentFolders": "never",
-    "git.showPushSuccessNotification": true,
-    "github.copilot-labs.showBrushesLenses": true,
-    "github.copilot-labs.showTestGenerationLenses": true,
     "github.copilot.enable": {
-        "*": true,
-        "markdown": true,
-        "plaintext": true,
-        "yaml": true
+        "*": true
     },
     "gitlens.gitCommands.closeOnFocusOut": true,
     "go.toolsManagement.autoUpdate": true,
@@ -83,12 +77,9 @@
         "jupyter-notebook": "left"
     },
     "npm-intellisense.importES6": true,
-    "prettier.bracketSpacing": false,
     "prettier.endOfLine": "lf",
     "prettier.printWidth": 88,
     "prettier.proseWrap": "always",
-    "prettier.tabWidth": 4,
-    "prettier.trailingComma": "all",
     "python.analysis.autoFormatStrings": true,
     "python.analysis.autoImportCompletions": true,
     "python.analysis.completeFunctionParens": true,
