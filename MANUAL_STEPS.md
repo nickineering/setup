@@ -39,47 +39,47 @@ to complete any steps noted:
 
 1. 1Password
 1. Cheatsheet
-    1. Grant permissions
+   1. Grant permissions
 1. Chrome - all profiles
 1. Docker
 1. Fig
-    1. Install VSCode extension
+   1. Install VSCode extension
 1. Firefox
 1. Github Copilot CLI
-    1. Run `github-copilot-cli auth` to authenticate with Github
+   1. Run `github-copilot-cli auth` to authenticate with Github
 1. Github VSCode extension
 1. iTerm2
-    1. Make default terminal
+   1. Make default terminal
 1. Kindle
 1. NordVPN
 1. OpenInTerminal
-    1. Grant permissions
-    1. Launch at Login
-    1. Quick Toggle (terminal)
-    1. Hide Status Bar Icon
-    1. Default Terminal: iTerm
-    1. Default Editor: Visual Studio Code
-    1. iTerm: Tab
+   1. Grant permissions
+   1. Launch at Login
+   1. Quick Toggle (terminal)
+   1. Hide Status Bar Icon
+   1. Default Terminal: iTerm
+   1. Default Editor: Visual Studio Code
+   1. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
 1. Rocket
-    1. Open and follow instructions
-    1. Enable start on startup
-    1. Grant permissions for web browsers
+   1. Open and follow instructions
+   1. Enable start on startup
+   1. Grant permissions for web browsers
 1. Safari
-    1. Enable the Develop menu in Settings -> Advanced
+   1. Enable the Develop menu in Settings -> Advanced
 1. Shottr
-    1. Activate license
-    1. Grant permissions
-    1. Increase scrolling screenshot speed to max
-    1. Assign hotkeys for all commands
-    1. Default window to larger size
+   1. Activate license
+   1. Grant permissions
+   1. Increase scrolling screenshot speed to max
+   1. Assign hotkeys for all commands
+   1. Default window to larger size
 1. Signal
 1. Skype
 1. Spotify
 1. Tiles
-    1. Grant permissions
-    1. Open on login
+   1. Grant permissions
+   1. Open on login
 1. WhatsApp
 1. Xcode
 1. Zoom
