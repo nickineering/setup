@@ -4,11 +4,11 @@ Everything I need to painlessly configure my Mac exactly how I like it.
 
 ## Get started
 
-⚠️ **Danger**: This will completely change your system. It is strongly recommended to
+⚠️ **Danger:** This will completely change your system. It is strongly recommended to
 create a fork and comment out any parts you do not want before using it yourself.
 
 ```bash
-curl -s https://raw.githubusercontent.com/nferrara100/mac/master/bootstrap.sh | /bin/bash
+curl -s https://raw.githubusercontent.com/nickineering/mac/master/bootstrap.sh | /bin/bash
 ```
 
 Once you run that script you will have to

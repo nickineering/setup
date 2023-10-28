@@ -12,7 +12,7 @@ set -v
 
 # Start running the print utility first so we can update the user on progress.
 # We must save the file first because we are on Bash 3.2
-curl -s https://raw.githubusercontent.com/nferrara100/mac/master/util/print.sh >/tmp/print.sh
+curl -s https://raw.githubusercontent.com/nickineering/mac/master/util/print.sh >/tmp/print.sh
 # shellcheck source=util/print.sh
 source /tmp/print.sh
 
@@ -37,7 +37,7 @@ if [ -d "$MAC" ]; then
 	git pull
 	print_green "Pulled latest commits from repo"
 else
-	git clone https://github.com/nferrara100/mac.git
+	git clone https://github.com/nickineering/mac.git
 	cd $MAC # Enter newly cloned repo
 	print_green "Cloned repo into projects directory"
 fi
