@@ -64,6 +64,9 @@
     "git.fetchOnPull": true,
     "git.openRepositoryInParentFolders": "never",
     "github.copilot.enable": {
+        "markdown": true,
+        "plaintext": true,
+        "yaml": true,
         "*": true
     },
     "gitlens.gitCommands.closeOnFocusOut": true,
