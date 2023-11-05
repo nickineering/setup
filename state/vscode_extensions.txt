@@ -54,6 +54,5 @@ tyriar.sort-lines
 vadimcn.vscode-lldb
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
-visualstudiotoolsforunity.vstuc
 withfig.fig
 wix.vscode-import-cost
