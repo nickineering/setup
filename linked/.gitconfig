@@ -3,6 +3,7 @@
 [commit]
 	gpgSign = true
 [core]
+	autocrlf = false
 	eol = lf
 	excludesFile = ~/projects/mac/linked/.gitignore
 	quotePath = true
