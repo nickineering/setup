@@ -9,7 +9,10 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.rulers": [
+            88
+        ]
     },
     "[rust]": {
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
@@ -25,7 +28,6 @@
     },
     "application.shellEnvironmentResolutionTimeout": 60,
     "breadcrumbs.enabled": true,
-    "comment-divider.length": 88,
     "comment-divider.shouldLengthIncludeIndent": true,
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
@@ -45,7 +47,7 @@
     "editor.inlineSuggest.enabled": true,
     "editor.minimap.enabled": false,
     "editor.rulers": [
-        88
+        80
     ],
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "on",
@@ -81,7 +83,6 @@
     },
     "npm-intellisense.importES6": true,
     "prettier.endOfLine": "lf",
-    "prettier.printWidth": 88,
     "prettier.proseWrap": "always",
     "python.analysis.autoFormatStrings": true,
     "python.analysis.autoImportCompletions": true,
