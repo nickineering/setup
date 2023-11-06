@@ -38,6 +38,7 @@ ms-vscode.makefile-tools
 ms-vscode.test-adapter-converter
 ms-vsliveshare.vsliveshare
 mtxr.sqltools
+orta.vscode-jest
 quicktype.quicktype
 redhat.vscode-yaml
 richie5um2.vscode-sort-json
