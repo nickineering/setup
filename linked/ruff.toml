@@ -15,4 +15,4 @@ ignore = [
 ]
 
 [extend-per-file-ignores]
-"test_*" = ["S101"]
+"test_*" = ["S101", "ANN201"]
