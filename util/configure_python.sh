@@ -26,3 +26,6 @@ source strip_comments.sh
 while IFS= read -r package; do
     pip install "$(strip_comments "$package")"
 done <"$MAC"/state/python_packages.txt
+
+# Install shell completions for ruff - requires code in .zshrc
+ruff generate-shell-completion zsh >~/.zfunc/_ruff

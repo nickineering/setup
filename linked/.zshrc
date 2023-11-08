@@ -143,6 +143,9 @@ setopt nomatch              # Error if no file matches a glob
 setopt notify               # Report the status of background jobs immediately
 setopt interactive_comments # Allow comment (#) characters in interactive shells
 
+# Needed for ruff autocompletions
+fpath+=~/.zfunc
+
 # The following lines were added by compinstall
 # Install better completions
 zstyle :compinstall filename '/Users/nick/.zshrc'
