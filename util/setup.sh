@@ -21,7 +21,7 @@ while IFS= read -r file; do
     backup_or_delete ~/"$file"
 done <"$MAC"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
-backup_or_delete "$HOME/Library/Application Support/ruff/pyproject.toml"
+backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
 print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
@@ -68,7 +68,7 @@ ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 # Per platform determined by Rust: https://docs.rs/dirs/4.0.0/dirs/fn.config_dir.html
 RUFF_DIR="$HOME/Library/Application Support/ruff/"
 mkdir -p "$RUFF_DIR"
-ln -s "$DOTFILES"/pyproject.toml "$RUFF_DIR"
+ln -s "$DOTFILES"/ruff.toml "$RUFF_DIR"
 
 source configure_firefox.sh
 

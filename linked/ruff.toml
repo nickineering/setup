@@ -1,4 +1,3 @@
-[tool.ruff]
 select = ["ALL"]
 unfixable = ["ERA001"]
 ignore = [
@@ -15,5 +14,5 @@ ignore = [
     "E501",
 ]
 
-[tool.ruff.extend-per-file-ignores]
+[extend-per-file-ignores]
 "test_*" = ["S101"]
