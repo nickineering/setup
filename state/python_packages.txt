@@ -1,7 +1,0 @@
-bandit           # Python code security
-black            # Python code formatting
-black\[jupyter\] # Jupyter notebook code formatting
-pre-commit       # Run multilingual commands before git commits
-pylama           # All in one linter including mypy and pylint
-pyroma           # Python package configuration linting
-ruff             # Super fast Python linting written in Rust

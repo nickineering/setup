@@ -15,17 +15,11 @@ pyenv global "$LATEST_PY"
 pyenv shell "$LATEST_PY"
 pip install --upgrade pip
 
-# Delete any existing pip packages and then reinstall fresh
+# Delete any existing pip packages
 FROZEN_PACKAGES=$(pip freeze)
 if [ "$FROZEN_PACKAGES" ]; then
     echo "$FROZEN_PACKAGES" | xargs pip uninstall -y
 fi
-
-# Keep Python utility packages as globals
-source strip_comments.sh
-while IFS= read -r package; do
-    pip install "$(strip_comments "$package")"
-done <"$MAC"/state/python_packages.txt
 
 # Install shell completions for ruff - requires code in .zshrc
 ruff generate-shell-completion zsh >~/.zfunc/_ruff
