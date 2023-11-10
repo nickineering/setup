@@ -12,6 +12,8 @@ ignore = [
     "D211",
     "D213",
     "E501",
+    "FIX002",
+    "TD002",
 ]
 
 [extend-per-file-ignores]
