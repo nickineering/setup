@@ -5,7 +5,7 @@
 [core]
 	autocrlf = false
 	eol = lf
-	excludesFile = ~/projects/mac/linked/.gitignore
+	excludesFile = ~/projects/setup/linked/.gitignore
 	quotePath = true
 [fetch]
 	prune = true
@@ -22,7 +22,7 @@
 [hub]
 	protocol = https
 [include]
-	path = ~/projects/mac/linked/git_aliases.ini  # <--- Save aliases here!
+	path = ~/projects/setup/linked/git_aliases.ini  # <--- Save aliases here!
 [merge]
 	autoStash = true
 [pull]

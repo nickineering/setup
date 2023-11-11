@@ -12,7 +12,7 @@ set -v
 
 # Start running the print utility first so we can update the user on progress.
 # We must save the file first because we are on Bash 3.2
-curl -s https://raw.githubusercontent.com/nickineering/mac/master/util/print.sh >/tmp/print.sh
+curl -s https://raw.githubusercontent.com/nickineering/setup/master/util/print.sh >/tmp/print.sh
 # shellcheck source=util/print.sh
 source /tmp/print.sh
 
@@ -30,15 +30,15 @@ fi
 
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
-export MAC=~/projects/mac
+export SETUP=~/projects/setup
 brew install git # Use Homebrew so that updates are easy
-if [ -d "$MAC" ]; then
-	cd $MAC
+if [ -d "$SETUP" ]; then
+	cd $SETUP
 	git pull
 	print_green "Pulled latest commits from repo"
 else
-	git clone https://github.com/nickineering/mac.git
-	cd $MAC # Enter newly cloned repo
+	git clone https://github.com/nickineering/setup.git
+	cd $SETUP # Enter newly cloned repo
 	print_green "Cloned repo into projects directory"
 fi
 

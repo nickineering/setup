@@ -35,7 +35,7 @@ mcd() {
 
 # Update everything on the computer
 update() {
-    cd "$MAC" || exit 1
+    cd "$SETUP" || exit 1
     git pull
-    ."$MAC"/util/setup.sh
+    ."$SETUP"/util/setup.sh
 }

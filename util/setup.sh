@@ -8,9 +8,9 @@ set -e
 # Print commands that are run as they are run
 set -v
 
-export MAC=~/projects/mac
-export DOTFILES=$MAC/linked
-cd "$MAC"/util
+export SETUP=~/projects/setup
+export DOTFILES=$SETUP/linked
+cd "$SETUP"/util
 
 # Generic printing utility
 source print.sh
@@ -19,7 +19,7 @@ source print.sh
 source backup_or_delete.sh
 while IFS= read -r file; do
     backup_or_delete ~/"$file"
-done <"$MAC"/state/linked_files.txt
+done <"$SETUP"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
 print_green "Deleted existing links so they can be freshly created"
@@ -32,19 +32,19 @@ brew tap beeftornado/rmtree     # Run `brew rmtree` to remove package and depend
 source strip_comments.sh
 while IFS= read -r package; do
     brew install "$(strip_comments "$package")"
-done <"$MAC"/state/brew_packages.txt
+done <"$SETUP"/state/brew_packages.txt
 print_green "Installed Homebrew packages"
 
 # Install Homebrew casks
 while IFS= read -r cask; do
     brew install --cask "$(strip_comments "$cask")"
-done <"$MAC"/state/brew_casks.txt
+done <"$SETUP"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
 # Install VSCode extensions. View current with `code --list-extensions`
 while IFS= read -r extension; do
     code --install-extension "$extension"
-done <"$MAC"/state/vscode_extensions.txt
+done <"$SETUP"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
 # Configure Zsh to use Oh My Zsh. Affects ~/.zshrc so must be before linking.
@@ -56,14 +56,14 @@ while IFS= read -r file; do
         print_green "A ~/$file file already exists. If you'd like to replace it please \
 do so manually."
     else
-        cp "$MAC/copied/$file" ~/
+        cp "$SETUP/copied/$file" ~/
     fi
-done <"$MAC"/state/copied_files.txt
+done <"$SETUP"/state/copied_files.txt
 
 # Link custom settings to that they are updated automatically when changes are pulled
 while IFS= read -r file; do
     ln -s "$DOTFILES/$file" ~/
-done <"$MAC"/state/linked_files.txt
+done <"$SETUP"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 # Per platform determined by Rust: https://docs.rs/dirs/4.0.0/dirs/fn.config_dir.html
 RUFF_DIR="$HOME/Library/Application Support/ruff/"
@@ -96,5 +96,5 @@ sudo launchctl load -w /Library/LaunchDaemons/us.zoom.ZoomDaemon.plist
 # Install MacOS updates
 sudo softwareupdate -i -a
 
-print_green "Please follow the instructions in $MAC/MANUAL_STEPS.md and then reboot \
+print_green "Please follow the instructions in $SETUP/MANUAL_STEPS.md and then reboot \
 your computer." "AUTOMATED CONFIGURATION COMPLETE"

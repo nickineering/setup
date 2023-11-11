@@ -29,10 +29,10 @@ eval "$(thefuck --alias)"
 eval "$(github-copilot-cli alias -- "$0")"
 
 # Easy access to this repo
-export MAC=~/projects/mac
+export SETUP=~/projects/setup
 
 # Easy access to the dotfiles folder
-export DOTFILES=~/projects/mac/linked
+export DOTFILES=~/projects/setup/linked
 
 # Load handy aliases
 # shellcheck disable=SC1090

@@ -5,6 +5,6 @@
 # Examples: Name, email, signing key
 
 [include]
-	path = ~/projects/mac/linked/.gitconfig  # <--- Place generic config here!
+	path = ~/projects/setup/linked/.gitconfig  # <--- Place generic config here!
 
 # -------------- Place your user or device specific config below this point --------------

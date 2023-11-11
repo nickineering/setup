@@ -9,7 +9,7 @@ recommended to create a fork and comment out any parts you do not want before
 using it yourself.
 
 ```bash
-curl -s https://raw.githubusercontent.com/nickineering/mac/master/bootstrap.sh | /bin/bash
+curl -s https://raw.githubusercontent.com/nickineering/setup/master/bootstrap.sh | /bin/bash
 ```
 
 Once you run that script you will have to
