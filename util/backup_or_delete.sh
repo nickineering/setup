@@ -7,7 +7,7 @@ mkdir -p $BACKUPS
 
 # Backup $1 in backups folder if not a link. Then delete it no matter what.
 backup_or_delete() {
-	if test -f "$1"; then
+	if [ -e "$1" ] || [ -h "$1" ]; then
 		if [[ ! -L $1 ]]; then
 			local FILE
 			FILE=$(basename "$1")
