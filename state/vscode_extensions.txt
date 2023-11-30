@@ -21,8 +21,6 @@ littlefoxteam.vscode-python-test-adapter
 markis.code-coverage
 mhutchie.git-graph
 mkhl.shfmt
-ms-dotnettools.csdevkit
-ms-dotnettools.csharp
 ms-python.black-formatter
 ms-python.mypy-type-checker
 ms-python.python
