@@ -22,7 +22,6 @@ markis.code-coverage
 mhutchie.git-graph
 mkhl.shfmt
 ms-python.black-formatter
-ms-python.mypy-type-checker
 ms-python.python
 ms-python.vscode-pylance
 ms-toolsai.datawrangler
