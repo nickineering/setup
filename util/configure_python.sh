@@ -6,9 +6,9 @@ command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 MATCHING_PY=$(pyenv install --list | grep --extended-regexp "^\s*[0-9][0-9.]*[0-9]\s*$")
 LATEST_PY=$(echo "$MATCHING_PY" | tail -1 | xargs)
-# Must check if we already have the latest to prevent pyenv error
-HAS_LATEST=$(pyenv versions | grep "$LATEST_PY")
-if [ ! "$HAS_LATEST" ]; then
+# We should only try installing the latest Python version if we do not already
+# have it to prevent a pyenv error
+if ! pyenv versions | grep -q "$LATEST_PY"; then
     pyenv install "$LATEST_PY"
 fi
 pyenv global "$LATEST_PY"
