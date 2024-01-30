@@ -53,5 +53,4 @@ vadimcn.vscode-lldb
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
 withfig.fig
-wix.vscode-import-cost
 yoavbls.pretty-ts-errors
