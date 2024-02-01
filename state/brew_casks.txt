@@ -7,7 +7,6 @@ firefox-developer-edition # Web browser with added dev tools
 google-chrome             # Web browser
 google-cloud-sdk          # Command line access to Google Cloud
 gpg-suite                 # GPG key generator
-imageoptim                # Compress images and remove metadata
 iterm2                    # Terminal emulator
 kindle                    # Read Kindle books on desktop
 microsoft-edge            # Major browser

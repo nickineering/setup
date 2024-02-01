@@ -3,6 +3,7 @@ bash-completion         # Autocomplete for Git
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
+exiftool                # Remove metadata from images
 fig                      # IDE style terminal autocompletion
 findutils                # Mac default outdated
 gawk                    # Mac default outdated
