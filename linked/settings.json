@@ -49,6 +49,18 @@
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "on",
     "editor.wordWrap": "off",
+    "eslint.validate": [
+        "html",
+        "javascript",
+        "javascriptreact",
+        "json",
+        "json5",
+        "jsonc",
+        "markdown",
+        "typescript",
+        "typescriptreact",
+        "yaml"
+    ],
     "explorer.confirmDelete": false,
     "explorer.confirmDragAndDrop": false,
     "explorer.excludeGitIgnore": true,
