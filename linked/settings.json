@@ -68,17 +68,17 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "git.autofetch": true,
     "git.autoStash": true,
+    "git.autofetch": true,
     "git.confirmSync": false,
     "git.enableSmartCommit": true,
     "git.fetchOnPull": true,
     "git.openRepositoryInParentFolders": "never",
     "github.copilot.enable": {
+        "*": true,
         "markdown": true,
         "plaintext": true,
-        "yaml": true,
-        "*": true
+        "yaml": true
     },
     "gitlens.gitCommands.closeOnFocusOut": true,
     "go.toolsManagement.autoUpdate": true,
@@ -96,9 +96,6 @@
     "python.analysis.autoFormatStrings": true,
     "python.analysis.autoImportCompletions": true,
     "python.analysis.completeFunctionParens": true,
-    "python.analysis.inlayHints.functionReturnTypes": true,
-    "python.analysis.inlayHints.pytestParameters": true,
-    "python.analysis.inlayHints.variableTypes": true,
     "python.analysis.diagnosticSeverityOverrides": {
         "reportCallInDefaultInitializer": "error",
         "reportImplicitOverride": "error",
@@ -117,6 +114,9 @@
         "reportUnnecessaryTypeIgnoreComment": "error",
         "reportUnusedCallResult": "error"
     },
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.inlayHints.variableTypes": true,
     "python.analysis.typeCheckingMode": "strict",
     "python.diagnostics.sourceMapsEnabled": true,
     "python.languageServer": "Pylance",
