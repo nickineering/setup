@@ -1,20 +1,27 @@
+[format]
+docstring-code-format = true
+
+[lint]
 select = ["ALL"]
 unfixable = ["ERA001"]
 ignore = [
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "D211",
-    "D213",
-    "E501",
-    "FIX002",
-    "TD002",
+    "COM812", # Conflicts with formatter
+    "D100",   # Docs
+    "D101",   # Docs
+    "D102",   # Docs
+    "D103",   # Docs
+    "D104",   # Docs
+    "D105",   # Docs
+    "D106",   # Docs
+    "D107",   # Docs
+    "D211",   # Docs
+    "D213",   # Docs
+    "E501",   # Line length (otherwise enforced by formatter)
+    "FIX002", # Prevents TODO comments, which are useful
+    "ISC001", # Conflicts with formatter
+    "TD002",  # Prevents authorless TODO comments, which is annoying
 ]
 
 [extend-per-file-ignores]
-"test_*" = ["S101", "ANN201"]
+"test_*" = ["ANN201", "S101", "TID252"]
+"*.pyi" = ["ANN401"]
