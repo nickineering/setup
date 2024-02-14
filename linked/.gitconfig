@@ -1,5 +1,7 @@
 [advice]
 	detachedHead = false
+[branch]
+	sort = -committerdate
 [commit]
 	gpgSign = true
 [core]
@@ -35,5 +37,8 @@
 	autoSquash = true
 	autoStash = true
 	missingCommitsCheck = "warn"
+[rerere]
+	autoUpdate = true
+	enabled = true
 [submodule]
 	recurse = true
