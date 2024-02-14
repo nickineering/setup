@@ -6,7 +6,7 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.rulers": [
             88
         ]
@@ -139,7 +139,7 @@
     "terminal.integrated.allowMnemonics": true,
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.defaultProfile.windows": "Git Bash",
-    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
     "terminal.integrated.env.osx": {
         "FIG_NEW_SESSION": "1"
     },
