@@ -1,6 +1,4 @@
-# Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
-
+# shellcheck shell=zsh
 # ------------------------------------------------------------------------------------ #
 # !                                  Leave me alone
 # Unless you're doing something specific for zsh use ~/.profile.sh. No secrets here, plz!
@@ -159,9 +157,6 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
 
-# There should be no code below this comment other than Fig.
+# There should be no code below this comment.
 # If there is copy it into ~/.profile.sh.
 # ------------------------------------------------------------------------------------ #
-
-# Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

@@ -46,8 +46,6 @@ being sure to complete any steps noted:
    1. Grant permissions
 1. Chrome - all profiles
 1. Docker
-1. Fig
-   1. Install VSCode extension
 1. Firefox
 1. Github Copilot CLI
    1. Run `github-copilot-cli auth` to authenticate with Github
@@ -58,12 +56,12 @@ being sure to complete any steps noted:
 1. NordVPN
 1. OpenInTerminal
    1. Grant permissions
-   1. Launch at Login
-   1. Quick Toggle (terminal)
-   1. Hide Status Bar Icon
-   1. Default Terminal: iTerm
-   1. Default Editor: Visual Studio Code
-   1. iTerm: Tab
+   2. Launch at Login
+   3. Quick Toggle (terminal)
+   4. Hide Status Bar Icon
+   5. Default Terminal: iTerm
+   6. Default Editor: Visual Studio Code
+   7. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
 1. Rocket

@@ -52,5 +52,4 @@ ue.alphabetical-sorter
 vadimcn.vscode-lldb
 VisualStudioExptTeam.intellicode-api-usage-examples
 VisualStudioExptTeam.vscodeintellicode
-withfig.fig
 yoavbls.pretty-ts-errors

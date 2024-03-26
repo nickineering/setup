@@ -140,9 +140,6 @@
     "terminal.integrated.copyOnSelection": true,
     "terminal.integrated.defaultProfile.windows": "Git Bash",
     "terminal.integrated.enableMultiLinePasteWarning": "never",
-    "terminal.integrated.env.osx": {
-        "FIG_NEW_SESSION": "1"
-    },
     "terminal.integrated.fontFamily": "Menlo, Monaco, 'Courier New'",
     "terminal.integrated.fontSize": 13,
     "terminal.integrated.fontWeight": "300",
@@ -160,5 +157,6 @@
     "workbench.editor.highlightModifiedTabs": true,
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
-    }
+    },
+    "powershell.promptToUpdatePowerShell": false
 }
