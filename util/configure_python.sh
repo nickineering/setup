@@ -20,6 +20,3 @@ FROZEN_PACKAGES=$(pip freeze)
 if [ "$FROZEN_PACKAGES" ]; then
     echo "$FROZEN_PACKAGES" | xargs pip uninstall -y
 fi
-
-# Install shell completions for ruff - requires code in .zshrc
-ruff generate-shell-completion zsh >~/.zfunc/_ruff

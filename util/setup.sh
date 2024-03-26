@@ -65,10 +65,6 @@ while IFS= read -r file; do
     ln -s "$DOTFILES/$file" ~/
 done <"$SETUP"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
-# Per platform determined by Rust: https://docs.rs/dirs/4.0.0/dirs/fn.config_dir.html
-RUFF_DIR="$HOME/Library/Application Support/ruff/"
-mkdir -p "$RUFF_DIR"
-ln -s "$DOTFILES"/ruff.toml "$RUFF_DIR"
 
 source configure_firefox.sh
 
@@ -78,6 +74,9 @@ mkdir -p ~/.vim/backups/
 mkdir -p ~/.vim/undo/
 
 print_green "Copied and linked required files"
+
+source configure_ruff.sh
+print_green "Configured Ruff"
 
 source configure_python.sh
 print_green "Completed Python installs"
