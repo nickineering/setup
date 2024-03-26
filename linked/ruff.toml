@@ -2,8 +2,12 @@
 docstring-code-format = true
 
 [lint]
-select = ["ALL"]
-unfixable = ["ERA001"]
+select = [
+    "ALL", # Default to all new rules. More maintenance, but more features
+]
+unfixable = [
+    "ERA001", # Commented out code
+]
 ignore = [
     "COM812", # Conflicts with formatter
     "D100",   # Docs
@@ -22,6 +26,12 @@ ignore = [
     "TD002",  # Prevents authorless TODO comments, which is annoying
 ]
 
-[extend-per-file-ignores]
-"test_*" = ["ANN201", "S101", "TID252"]
-"*.pyi" = ["ANN401"]
+[lint.extend-per-file-ignores]
+"*.pyi" = [
+    "ANN401", # Require argument annotations
+]
+"test_*" = [
+    "ANN201", # Require function return types
+    "S101",   # Prohibit assert keyword
+    "TID252", # Prohibit relative imports
+]
