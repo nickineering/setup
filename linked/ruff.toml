@@ -1,3 +1,5 @@
+extend-include = ["*.ipynb"]
+
 [format]
 docstring-code-format = true
 
