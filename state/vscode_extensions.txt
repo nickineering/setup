@@ -21,7 +21,6 @@ markis.code-coverage
 mhutchie.git-graph
 mkhl.shfmt
 ms-azuretools.vscode-docker
-ms-python.black-formatter
 ms-python.python
 ms-python.vscode-pylance
 ms-toolsai.datawrangler
