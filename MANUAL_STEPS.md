@@ -47,8 +47,8 @@ being sure to complete any steps noted:
 1. Chrome - all profiles
 1. Docker
 1. Firefox
-1. Github Copilot CLI
-   1. Run `github-copilot-cli auth` to authenticate with Github
+1. Github CLI
+   1. Run `gh auth login` to authenticate with Github
 1. Github VSCode extension
 1. iTerm2
    1. Make default terminal

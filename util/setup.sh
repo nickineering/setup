@@ -75,6 +75,10 @@ mkdir -p ~/.vim/undo/
 
 print_green "Copied and linked required files"
 
+gh extension install github/gh-copilot
+gh extension upgrade gh-copilot
+print_green "Installed Github Copilot"
+
 source configure_ruff.sh
 print_green "Configured Ruff"
 

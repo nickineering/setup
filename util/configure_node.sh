@@ -15,4 +15,3 @@ if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ]; then
 fi
 
 npm install -g npm
-npm install -g @githubnext/github-copilot-cli

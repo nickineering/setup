@@ -154,6 +154,9 @@ compinit
 # Iterm2 advanced features
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+# Github Copilot
+eval "$(gh copilot alias -- zsh)"
+
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh
 
