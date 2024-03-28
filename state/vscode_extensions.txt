@@ -8,7 +8,6 @@ eamodio.gitlens
 ecmel.vscode-html-css
 EditorConfig.EditorConfig
 esbenp.prettier-vscode
-formulahendry.auto-rename-tag
 GitHub.copilot
 GitHub.vscode-pull-request-github
 golang.go

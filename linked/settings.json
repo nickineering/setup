@@ -45,6 +45,7 @@
     "editor.formatOnType": true,
     "editor.guides.bracketPairs": true,
     "editor.inlineSuggest.enabled": true,
+    "editor.linkedEditing": true,
     "editor.minimap.enabled": false,
     "editor.rulers": [
         80
@@ -161,5 +162,5 @@
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
     },
-    "powershell.promptToUpdatePowerShell": false
+    "powershell.promptToUpdatePowerShell": false,
 }
