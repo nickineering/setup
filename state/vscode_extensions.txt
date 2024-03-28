@@ -1,6 +1,5 @@
 aaron-bond.better-comments
 adpyke.codesnap
-azuretools.vscode-docker
 christian-kohler.npm-intellisense
 christian-kohler.path-intellisense
 dbaeumer.vscode-eslint
@@ -15,11 +14,13 @@ GitHub.vscode-pull-request-github
 golang.go
 hbenl.vscode-test-explorer
 hbenl.vscode-test-explorer-liveshare
+humao.rest-client
 ibm.output-colorizer
 littlefoxteam.vscode-python-test-adapter
 markis.code-coverage
 mhutchie.git-graph
 mkhl.shfmt
+ms-azuretools.vscode-docker
 ms-python.black-formatter
 ms-python.python
 ms-python.vscode-pylance
