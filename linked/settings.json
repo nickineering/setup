@@ -142,7 +142,6 @@
     "terminal.external.osxExec": "iTerm.app",
     "terminal.integrated.allowMnemonics": true,
     "terminal.integrated.copyOnSelection": true,
-    "terminal.integrated.defaultProfile.windows": "Git Bash",
     "terminal.integrated.enableMultiLinePasteWarning": "never",
     "terminal.integrated.fontFamily": "Menlo, Monaco, 'Courier New'",
     "terminal.integrated.fontSize": 13,
@@ -153,7 +152,6 @@
     "typescript.format.insertSpaceAfterTypeAssertion": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-    "win-ca.inject": "append",
     "window.closeWhenEmpty": true,
     "window.newWindowDimensions": "maximized",
     "window.zoomLevel": 1,
@@ -161,6 +159,5 @@
     "workbench.editor.highlightModifiedTabs": true,
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter-notebook"
-    },
-    "powershell.promptToUpdatePowerShell": false,
+    }
 }
