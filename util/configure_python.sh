@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Configure pyenv and install the latest Python version and set the global to that
 export PYENV_ROOT="$HOME/.pyenv"

@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 export RUFF_CONFIG=~/projects/ruff-config
 if [ -d "$RUFF_CONFIG" ]; then

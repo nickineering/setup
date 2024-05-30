@@ -11,12 +11,11 @@ following manual steps to finish setting up your Mac:
    [configure git to sign commits with the new GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key)
 1. Add system languages and keyboard layouts to the OS
 1. Pair your Bluetooth devices
-1. Add your signature to Preview from the "Signature with white background"
-   Google Doc
 1. Search for "extensions" in System Settings. Click "Finder extensions" ->
    "Added extensions" -> Enable "OpenInTerminal"
 1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
-1. Remove Apple News and Apple Stocks widgets from the Notification Center
+1. Remove Apple News and Apple Stocks widgets from the Notification Center and
+   replace them with weather, connected devices, Github, and Google Translate.
 1. Go to System Settings -> Trackpad and increase the Tracking Speed. By default
    it can be tricky to cross the whole screen in one gesture.
 1. This uses Raycast instead of Spotlight, so Spotlight should be moved out of
@@ -30,6 +29,7 @@ following manual steps to finish setting up your Mac:
 1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.
+1. Set 1Password and Chrome to start at login
 
 Then run the following git commands:
 
@@ -50,7 +50,6 @@ sure to complete any steps noted:
 1. Github VSCode extension
 1. iTerm2
    1. Make default terminal
-1. Kindle
 1. NordVPN
 1. OpenInTerminal
    1. Grant permissions
@@ -62,12 +61,15 @@ sure to complete any steps noted:
    7. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
+   1. Assign `cmd + space` hotkey
 1. Rocket
    1. Open and follow instructions
    2. Enable start on startup
    3. Grant permissions for web browsers
 1. Safari
    1. Enable the Develop menu in Settings -> Advanced
+   1. General -> Safari opens with all windows from last session
+   1. General -> Remove history items: Manually
 1. Shottr
    1. Activate license
    2. Grant permissions
@@ -88,5 +90,5 @@ Finally, you need to run the following command in your terminal to finish the
 automated setups:
 
 ```bash
-source ~/projects/setup/after_signin.sh
+chmod +x ~/projects/setup/util/after_signin.sh && ~/projects/setup/util/after_signin.sh
 ```

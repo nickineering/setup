@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Add $1 to the Mac dock
 # $1 == the string name of an app without the file extension

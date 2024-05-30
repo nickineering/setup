@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Setup Node Version Manager (NVM) for local JavaScript
 mkdir -p ~/.nvm

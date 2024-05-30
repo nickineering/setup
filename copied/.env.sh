@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # ------------------------------------------------------------------------------------ #
 # !                           Your secrets are safe with me

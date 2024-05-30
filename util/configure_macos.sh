@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Disable screensaver
 defaults -currentHost write com.apple.screensaver idleTime 0

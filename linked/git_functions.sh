@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Some aliases credit: https://github.com/alrra/dotfiles/blob/main/src/git/gitconfig
 

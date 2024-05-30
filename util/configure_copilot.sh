@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 output=$(gh auth status) || true
 if [[ $output == *"Active account: true"* ]]; then

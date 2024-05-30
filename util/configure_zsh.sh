@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Install Zsh plugin manager
 if [ -d ~/.oh-my-zsh ]; then

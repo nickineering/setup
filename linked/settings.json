@@ -137,6 +137,7 @@
     },
     "search.showLineNumbers": true,
     "search.smartCase": true,
+    "shfmt.executablePath": "/opt/homebrew/bin/shfmt",
     "sqltools.format": {
         "linesBetweenQueries": 2,
         "reservedWordCase": "upper"

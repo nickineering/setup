@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Install custom Firefox settings
 FIREFOX_FOLDER="$HOME/Library/Application Support/Firefox/Profiles"
