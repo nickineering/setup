@@ -38,7 +38,7 @@ if [ -d "$SETUP" ]; then
 	git pull
 	print_green "Pulled latest commits from repo"
 else
-	git clone https://github.com/nickineering/setup.git
+	git clone https://github.com/nickineering/setup.git $SETUP
 	cd $SETUP # Enter newly cloned repo
 	print_green "Cloned repo into projects directory"
 fi

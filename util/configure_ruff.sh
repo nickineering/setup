@@ -1,6 +1,6 @@
 #!/usr/local/bin/bash
 
-git clone https://github.com/nickineering/ruff-config ~/projects/
+git clone https://github.com/nickineering/ruff-config ~/projects/ruff-config
 
 # Per platform determined by Rust: https://docs.rs/dirs/4.0.0/dirs/fn.config_dir.html
 RUFF_DIR="$HOME/Library/Application Support/ruff/"
