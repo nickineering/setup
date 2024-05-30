@@ -35,11 +35,11 @@ Then run the following git commands:
 
 ```bash
 git config --global user.name "Your Name"
-git config --global user.email "Your email"
+git config --global user.email "Your email specifically for git"
 ```
 
-Finally, you will need to sign in or otherwise activate the following apps,
-being sure to complete any steps noted:
+Next, you will need to sign in or otherwise activate the following apps, being
+sure to complete any steps noted:
 
 1. 1Password
 1. Cheatsheet
@@ -47,8 +47,6 @@ being sure to complete any steps noted:
 1. Chrome - all profiles
 1. Docker
 1. Firefox
-1. Github CLI
-   1. Run `gh auth login` to authenticate with Github
 1. Github VSCode extension
 1. iTerm2
    1. Make default terminal
@@ -66,22 +64,29 @@ being sure to complete any steps noted:
 1. Raycast
 1. Rocket
    1. Open and follow instructions
-   1. Enable start on startup
-   1. Grant permissions for web browsers
+   2. Enable start on startup
+   3. Grant permissions for web browsers
 1. Safari
    1. Enable the Develop menu in Settings -> Advanced
 1. Shottr
    1. Activate license
-   1. Grant permissions
-   1. Increase scrolling screenshot speed to max
-   1. Assign hotkeys for all commands
-   1. Default window to larger size
+   2. Grant permissions
+   3. Increase scrolling screenshot speed to max
+   4. Assign hotkeys for all commands
+   5. Default window to larger size
 1. Signal
 1. Skype
 1. Spotify
 1. Tiles
    1. Grant permissions
-   1. Open on login
+   2. Open on login
+1. VSCode Settings Sync
 1. WhatsApp
-1. Xcode
 1. Zoom
+
+Finally, you need to run the following command in your terminal to finish the
+automated setups:
+
+```bash
+source ~/projects/setup/after_signin.sh
+```

@@ -43,7 +43,7 @@ print_green "Installed Homebrew casks"
 
 # Install VSCode extensions. View current with `code --list-extensions`
 while IFS= read -r extension; do
-    code --install-extension "$extension"
+    /opt/homebrew/bin/code --install-extension "$extension"
 done <"$SETUP"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
@@ -52,7 +52,7 @@ source configure_zsh.sh
 
 # Copy templates for customization files if they do not already exist
 while IFS= read -r file; do
-    if [ -e ~/"$2" ]; then
+    if [ -e ~/"$file" ]; then
         print_green "A ~/$file file already exists. If you'd like to replace it please \
 do so manually."
     else
@@ -75,9 +75,7 @@ mkdir -p ~/.vim/undo/
 
 print_green "Copied and linked required files"
 
-gh extension install github/gh-copilot
-gh extension upgrade gh-copilot
-print_green "Installed Github Copilot"
+source configure_copilot.sh
 
 source configure_ruff.sh
 print_green "Configured Ruff"
@@ -88,13 +86,13 @@ print_green "Completed Python installs"
 source configure_node.sh
 print_green "Completed installs. Now configuring settings..."
 
+# Configure Zoom to automatically update
+sudo launchctl load -w /Library/LaunchDaemons/us.zoom.ZoomDaemon.plist
+
 # Configures the operating system on import
 source configure_macos.sh
 
 print_green "Configured MacOS. Now downloading OS updates. This could take a while..."
-
-# Configure Zoom to automatically update
-sudo launchctl load -w /Library/LaunchDaemons/us.zoom.ZoomDaemon.plist
 
 # Install MacOS updates
 sudo softwareupdate -i -a

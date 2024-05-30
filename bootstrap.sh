@@ -19,6 +19,8 @@ source /tmp/print.sh
 print_green "Please leave everything closed and wait for your Mac to be configured. \
 This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
+xcode-select --install || true # Install Xcode command line tools for Homebrew
+
 # Install Homebrew, a Mac package manager
 if command -v brew; then
 	brew upgrade
