@@ -25,10 +25,6 @@ else
 	git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_PLUGINS/zsh-autosuggestions
 fi
 
-# Poetry autocompletion
-mkdir -p $ZSH_PLUGINS/poetry
-poetry completions zsh >$ZSH_PLUGINS/poetry/_poetry
-
 # Install Iterm2 advanced features.
 # Writes to .zshrc, but the output is in our version, too
 curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utilities.sh | bash

@@ -94,8 +94,8 @@ killall Dock
 killall Finder
 
 # Add directories to Finder favorites
-brew install --cask mysides
-mysides add "Macintosh HD" file:///
-mysides add "$USER" file:///Users/"$USER"/
-mysides add Projects file:///Users/"$USER"/projects/
-brew remove mysides
+# brew install --cask mysides
+# mysides add "Macintosh HD" file:///
+# mysides add "$USER" file:///Users/"$USER"/
+# mysides add Projects file:///Users/"$USER"/projects/
+# brew remove mysides

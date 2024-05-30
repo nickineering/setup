@@ -25,7 +25,6 @@ backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
 print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
-brew tap homebrew/cask-versions # Supplies firefox-developer-edition
 brew tap beeftornado/rmtree     # Run `brew rmtree` to remove package and dependencies
 
 # Install Homebrew packages

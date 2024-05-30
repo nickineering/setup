@@ -19,15 +19,13 @@ source /tmp/print.sh
 print_green "Please leave everything closed and wait for your Mac to be configured. \
 This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
-xcode-select --install || true # Install Xcode command line tools for Homebrew
-
 # Install Homebrew, a Mac package manager
 if command -v brew; then
 	brew upgrade
 	print_green "Upgraded Homebrew packages"
 else
 	print_green "Installing Homebrew. Please follow the on screen prompts to continue..."
-	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	INTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 	eval "$(/opt/homebrew/bin/brew shellenv)"
 	print_green "Installed Homebrew"
 fi
@@ -37,16 +35,14 @@ mkdir -p ~/projects
 export SETUP=~/projects/setup
 brew install git # Use Homebrew so that updates are easy
 if [ -d "$SETUP" ]; then
-	cd $SETUP
-	git pull
+	git -C $SETUP pull
 	print_green "Pulled latest commits from repo"
 else
 	git clone https://github.com/nickineering/setup.git $SETUP
-	cd $SETUP # Enter newly cloned repo
 	print_green "Cloned repo into projects directory"
 fi
 
 # MacOS comes with Bash 3.2, but we want the latest. Download the latest Bash and then
 # continue using it.
 brew install bash
-source util/setup.sh
+source $SETUP/util/setup.sh
