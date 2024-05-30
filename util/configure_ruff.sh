@@ -9,4 +9,5 @@ mkdir -p "$RUFF_DIR"
 ln -s "$RUFF_BASE" "$RUFF_DIR/ruff.toml"
 
 # Install shell completions for ruff - requires code in .zshrc
+mkdir -p ~/.zfunc
 ruff generate-shell-completion zsh >~/.zfunc/_ruff
