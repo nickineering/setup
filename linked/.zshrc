@@ -90,6 +90,7 @@ plugins=(
     colorize                # Syntax highlighting for cat and less
     copyfile                # Copy contents of a file in one command
     copypath                # Copy path of file or directory to clipboard
+    docker                  # Docker completions
     dotenv                  # Automatically load .env files in current directory
     gnu-utils               # Aliases updated coreutils to replace Mac defaults
     gh                      # Completion for Github
