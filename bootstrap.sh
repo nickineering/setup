@@ -25,6 +25,7 @@ if command -v brew; then
 	print_green "Upgraded Homebrew packages"
 else
 	NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	eval "$(/opt/homebrew/bin/brew shellenv)"
 	print_green "Installed Homebrew"
 fi
 
