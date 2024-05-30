@@ -26,8 +26,8 @@ else
 fi
 
 # Poetry autocompletion
-mkdir -p "$ZSH"/plugins/poetry
-poetry completions zsh >"$ZSH"/plugins/poetry/_poetry
+mkdir -p $ZSH_PLUGINS/poetry
+poetry completions zsh >$ZSH_PLUGINS/poetry/_poetry
 
 # Docker shell completion for Zsh
 etc=/Applications/Docker.app/Contents/Resources/etc
