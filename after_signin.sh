@@ -1,5 +1,11 @@
 #!/usr/local/bin/bash
 
+# Bash strict mode
+set -euo pipefail
+
+# Print commands as they are run
+set -v
+
 source util/print.sh
 source util/backup_or_delete.sh
 

@@ -4,10 +4,10 @@
 # This is the entrypoint
 # Run to setup a new Mac or reconfigure an existing Mac
 
-# Abort on error
-set -e
+# Bash strict mode
+set -euo pipefail
 
-# Print commands that are run as they are run
+# Print commands as they are run
 set -v
 
 # Start running the print utility first so we can update the user on progress.
