@@ -8,6 +8,7 @@ eamodio.gitlens
 ecmel.vscode-html-css
 EditorConfig.EditorConfig
 esbenp.prettier-vscode
+fill-labs.dependi
 GitHub.copilot
 GitHub.vscode-pull-request-github
 golang.go
@@ -41,7 +42,6 @@ richie5um2.vscode-sort-json
 rogalmic.bash-debug
 rust-lang.rust-analyzer
 ryu1kn.partial-diff
-serayuzgur.crates
 stackbreak.comment-divider
 streetsidesoftware.code-spell-checker
 tamasfe.even-better-toml
