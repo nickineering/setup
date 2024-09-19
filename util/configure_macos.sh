@@ -79,8 +79,10 @@ source add_to_dock.sh
 # Add the following applications to the Mac dock
 add_to_dock "1Password"
 add_to_dock "Boop"
+add_to_dock "Calculator" "System"
 add_to_dock "Firefox Developer Edition"
 add_to_dock "Google Chrome"
+add_to_dock "iPhone Mirroring" "System"
 add_to_dock "iTerm"
 add_to_dock "NordVPN"
 add_to_dock "Notes" "System"
