@@ -91,6 +91,7 @@ add_to_dock "Reminders" "System"
 add_to_dock "Spotify"
 add_to_dock "Utilities/Activity Monitor" "System"
 add_to_dock "Visual Studio Code"
+add_to_dock "Weather" "System"
 # Required to make changes to the Dock and Finder take effect
 killall Dock
 killall Finder
