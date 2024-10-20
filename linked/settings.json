@@ -153,6 +153,7 @@
     "terminal.integrated.shellIntegration.suggestEnabled": true,
     "terminal.integrated.showExitAlert": false,
     "terminal.integrated.tabs.enabled": true,
+    "testExplorer.useNativeTesting": true,
     "typescript.format.insertSpaceAfterTypeAssertion": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
