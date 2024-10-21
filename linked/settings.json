@@ -95,6 +95,9 @@
         "default": "right",
         "jupyter-notebook": "left"
     },
+    "notebook.formatOnSave.enabled": true,
+    "notebook.source.fixAll": "explicit",
+    "notebook.source.organizeImports": "explicit",
     "npm-intellisense.importES6": true,
     "prettier.endOfLine": "lf",
     "prettier.proseWrap": "always",
