@@ -60,3 +60,5 @@ alias git-aliases='less $DOTFILES/git_aliases.ini'
 alias git-functions='less $DOTFILES/git_functions.sh'
 alias shell-aliases='less $DOTFILES/shell_aliases.sh'
 alias shell-functions='less $DOTFILES/shell_functions.sh'
+
+alias drun='docker compose run --rm app'
