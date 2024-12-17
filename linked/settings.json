@@ -47,6 +47,9 @@
     "editor.inlineSuggest.enabled": true,
     "editor.linkedEditing": true,
     "editor.minimap.enabled": false,
+    "editor.pasteAs.preferences": [
+        "text.updateImports"
+    ],
     "editor.rulers": [
         80
     ],
