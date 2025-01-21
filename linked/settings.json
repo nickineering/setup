@@ -93,6 +93,8 @@
     "html.format.indentInnerHtml": true,
     "html.format.preserveNewLines": false,
     "javascript.updateImportsOnFileMove.enabled": "always",
+    "lldb.suppressUpdateNotifications": true,
+    "makefile.configureOnOpen": true,
     "markdown.experimental.updateLinksOnPaste": true,
     "notebook.cellToolbarLocation": {
         "default": "right",
