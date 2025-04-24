@@ -15,7 +15,6 @@ raycast                   # Extendable app launcher and clipboard history
 rocket                    # Type ":" to pick emoji anywhere, like in Slack
 shottr                    # Screenshots and on screen OCR
 signal                    # Secure messaging
-skype                     # Video calling
 spotify                   # Music streaming
 the-unarchiver            # File compression utility
 tiles                     # Windows style windows that snap into place
