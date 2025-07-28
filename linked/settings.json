@@ -87,6 +87,7 @@
         "plaintext": true,
         "yaml": true
     },
+    "github.copilot.nextEditSuggestions.enabled": true,
     "gitlens.gitCommands.closeOnFocusOut": true,
     "go.toolsManagement.autoUpdate": true,
     "html.format.indentHandlebars": true,
