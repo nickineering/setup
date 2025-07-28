@@ -73,6 +73,9 @@ defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 # Show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
+# Do not show blue keyboard indicator over text when moving cursor
+defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled 0
+
 # Import `add_to_dock` function
 source add_to_dock.sh
 
