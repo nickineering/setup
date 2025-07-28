@@ -25,13 +25,15 @@ backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
 print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
-brew tap beeftornado/rmtree     # Run `brew rmtree` to remove package and dependencies
+brew tap beeftornado/rmtree # Run `brew rmtree` to remove package and dependencies
 
 # Install Homebrew packages
 source strip_comments.sh
 while IFS= read -r package; do
     brew install "$(strip_comments "$package")"
 done <"$SETUP"/state/brew_packages.txt
+# Finish installing chromedriver
+xattr -d com.apple.quarantine /opt/homebrew/bin/chromedriver
 print_green "Installed Homebrew packages"
 
 # Install Homebrew casks

@@ -1,11 +1,13 @@
 autojump                # Quickly jump among directories
 bash-completion         # Autocomplete for Git
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
+chromedriver            # WebDriver for Chrome, used by Selenium
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
 exiftool                # Remove metadata from images
 findutils                # Mac default outdated
 gawk                    # Mac default outdated
+geckodriver            # WebDriver for Firefox, used by Selenium
 gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 gnu-indent              # Mac default outdated
@@ -17,7 +19,6 @@ make                    # Mac default outdated
 nvm                     # local JavaScript runtime
 poetry                  # Package manager for Python
 pyenv                   # Run multiple versions of python at the same time
-uv                      # Python and Python package installation manager
 ruff                    # Super fast Python linting written in Rust
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
@@ -26,5 +27,6 @@ thefuck                 # Type "fuck" after misspelling terminal commands to aut
 tldr                    # Simple help pages for command-line tools
 tmux                    # Terminal multitasking
 unzip                   # Mac default outdated
+uv                      # Python and Python package installation manager
 watchman                # Check for changes to files
 zsh                     # Use the most up to date version of Zsh, the default shell
