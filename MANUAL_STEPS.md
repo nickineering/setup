@@ -47,7 +47,9 @@ sure to complete any steps noted:
 1. Chrome - all profiles
 1. Docker
 1. Firefox
-1. Github VSCode extension
+1. VSCode
+1. Github Actions VSCode extension
+1. Github Pull Requests VSCode extension
 1. iTerm2
    1. Make default terminal
 1. NordVPN
@@ -82,7 +84,6 @@ sure to complete any steps noted:
 1. Tiles
    1. Grant permissions
    2. Open on login
-1. VSCode Settings Sync
 1. WhatsApp
 1. Zoom
 
