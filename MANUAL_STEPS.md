@@ -50,6 +50,7 @@ sure to complete any steps noted:
 1. VSCode
 1. Github Actions VSCode extension
 1. Github Pull Requests VSCode extension
+1. Gitlens VSCode extension
 1. iTerm2
    1. Make default terminal
 1. NordVPN
