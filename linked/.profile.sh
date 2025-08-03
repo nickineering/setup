@@ -17,10 +17,8 @@ export PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/unzip/bin:$PATH"
 
-# Run multiple Python versions on the same machine
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+# Needed for uv
+export PATH="/Users/nick/.local/bin:$PATH"
 
 # Enable thefuck to correct mistyped commands
 eval "$(thefuck --alias)"

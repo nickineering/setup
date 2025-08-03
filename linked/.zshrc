@@ -96,7 +96,6 @@ plugins=(
     gh                      # Completion for Github
     gpg-agent               # Enable GPG keys for commit signing
     nvm                     # Source NVM and add completions
-    poetry                  # Poetry completions
     rust                    # Rust completions
     web-search              # Web search straight from the command line
     zsh-autosuggestions     # Automatically show results from history while typing

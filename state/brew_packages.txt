@@ -17,8 +17,6 @@ gzip                    # Mac default outdated
 jupyterlab              # Interactive code editing notebook
 make                    # Mac default outdated
 nvm                     # local JavaScript runtime
-poetry                  # Package manager for Python
-pyenv                   # Run multiple versions of python at the same time
 ruff                    # Super fast Python linting written in Rust
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
