@@ -149,7 +149,7 @@ fpath+=~/.zfunc
 
 # The following lines were added by compinstall
 # Install better completions
-zstyle :compinstall filename '/Users/nick/.zshrc'
+zstyle :compinstall filename '~/.zshrc'
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall

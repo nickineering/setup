@@ -18,7 +18,7 @@ export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/unzip/bin:$PATH"
 
 # Needed for uv
-export PATH="/Users/nick/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Enable thefuck to correct mistyped commands
 eval "$(thefuck --alias)"
