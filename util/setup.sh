@@ -33,7 +33,7 @@ while IFS= read -r package; do
     brew install "$(strip_comments "$package")"
 done <"$SETUP"/state/brew_packages.txt
 # Finish installing chromedriver
-xattr -d com.apple.quarantine /opt/homebrew/bin/chromedriver
+xattr -d com.apple.quarantine chromedriver
 print_green "Installed Homebrew packages"
 
 # Install Homebrew casks
@@ -44,7 +44,7 @@ print_green "Installed Homebrew casks"
 
 # Install VSCode extensions. View current with `code --list-extensions`
 while IFS= read -r extension; do
-    /opt/homebrew/bin/code --install-extension "$extension"
+    code --install-extension "$extension"
 done <"$SETUP"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
