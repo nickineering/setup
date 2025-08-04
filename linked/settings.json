@@ -23,6 +23,12 @@
     "[sql]": {
         "editor.defaultFormatter": "mtxr.sqltools"
     },
+    "[terraform-vars]": {
+        "editor.defaultFormatter": "hashicorp.terraform"
+    },
+    "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform"
+    },
     "[toml]": {
         "editor.defaultFormatter": "tamasfe.even-better-toml"
     },
@@ -31,6 +37,7 @@
     "comment-divider.shouldLengthIncludeIndent": true,
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
+    "diffEditor.wordWrap": "off",
     "editor.accessibilitySupport": "off",
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit",
@@ -43,7 +50,9 @@
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
-    "editor.guides.bracketPairs": true,
+    "editor.guides.bracketPairs": false,
+    "editor.guides.indentation": false,
+    "editor.inlayHints.enabled": "off",
     "editor.inlineSuggest.enabled": true,
     "editor.linkedEditing": true,
     "editor.minimap.enabled": false,
@@ -169,6 +178,10 @@
     "window.closeWhenEmpty": true,
     "window.newWindowDimensions": "maximized",
     "window.zoomLevel": 1,
+    "workbench.colorCustomizations": {
+        "editor.lineHighlightBackground": "#1073cf2d",
+        "editor.lineHighlightBorder": "#9fced11f"
+    },
     "workbench.editor.closeOnFileDelete": true,
     "workbench.editor.highlightModifiedTabs": true,
     "workbench.editorAssociations": {
