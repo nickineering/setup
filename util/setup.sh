@@ -18,7 +18,7 @@ source print.sh
 # Move all files that will be destroyed to the backups folder so they are not overwritten
 source backup_or_delete.sh
 while IFS= read -r file; do
-    backup_or_delete ~/"$file"
+	backup_or_delete ~/"$file"
 done <"$SETUP"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
@@ -26,11 +26,12 @@ print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
 brew tap beeftornado/rmtree # Run `brew rmtree` to remove package and dependencies
+brew tap hashicorp/tap      # For Terraform
 
 # Install Homebrew packages
 source strip_comments.sh
 while IFS= read -r package; do
-    brew install "$(strip_comments "$package")"
+	brew install "$(strip_comments "$package")"
 done <"$SETUP"/state/brew_packages.txt
 # Finish installing chromedriver
 xattr -d com.apple.quarantine chromedriver
@@ -38,13 +39,13 @@ print_green "Installed Homebrew packages"
 
 # Install Homebrew casks
 while IFS= read -r cask; do
-    brew install --cask "$(strip_comments "$cask")"
+	brew install --cask "$(strip_comments "$cask")"
 done <"$SETUP"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
 # Install VSCode extensions. View current with `code --list-extensions`
 while IFS= read -r extension; do
-    code --install-extension "$extension"
+	code --install-extension "$extension"
 done <"$SETUP"/state/vscode_extensions.txt
 print_green "Installed VSCode extensions"
 
@@ -53,17 +54,17 @@ source configure_zsh.sh
 
 # Copy templates for customization files if they do not already exist
 while IFS= read -r file; do
-    if [ -e ~/"$file" ]; then
-        print_green "A ~/$file file already exists. If you'd like to replace it please \
+	if [ -e ~/"$file" ]; then
+		print_green "A ~/$file file already exists. If you'd like to replace it please \
 do so manually."
-    else
-        cp "$SETUP/copied/$file" ~/
-    fi
+	else
+		cp "$SETUP/copied/$file" ~/
+	fi
 done <"$SETUP"/state/copied_files.txt
 
 # Link custom settings to that they are updated automatically when changes are pulled
 while IFS= read -r file; do
-    ln -s "$DOTFILES/$file" ~/
+	ln -s "$DOTFILES/$file" ~/
 done <"$SETUP"/state/linked_files.txt
 ln -s "$DOTFILES"/settings.json "$HOME/Library/Application Support/Code/User/"
 
