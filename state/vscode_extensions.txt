@@ -60,6 +60,4 @@ timonwong.shellcheck
 tyriar.lorem-ipsum
 ue.alphabetical-sorter
 vadimcn.vscode-lldb
-visualstudioexptteam.intellicode-api-usage-examples
-visualstudioexptteam.vscodeintellicode
 yoavbls.pretty-ts-errors
