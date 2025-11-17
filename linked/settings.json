@@ -1,6 +1,13 @@
 {
+    "[dockercompose]": {
+        "editor.autoIndent": "advanced",
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
     "[dockerfile]": {
         "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
     },
     "[go]": {
         "editor.defaultFormatter": "golang.go"
@@ -38,11 +45,12 @@
     "chat.editing.autoAcceptDelay": 60,
     "chat.editing.confirmEditRequestRemoval": false,
     "chat.editing.confirmEditRequestRetry": false,
+    "chat.editor.wordWrap": "on",
     "chat.renderRelatedFiles": true,
     "comment-divider.shouldLengthIncludeIndent": true,
     "css.lint.duplicateProperties": "warning",
     "diffEditor.ignoreTrimWhitespace": false,
-    "diffEditor.wordWrap": "off",
+    "diffEditor.wordWrap": "on",
     "editor.accessibilitySupport": "off",
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit",
@@ -65,7 +73,7 @@
         "text.updateImports"
     ],
     "editor.rulers": [
-        80
+        88
     ],
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "on",
