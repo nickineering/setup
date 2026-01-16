@@ -18,6 +18,9 @@ following manual steps to finish setting up your Mac:
    replace them with weather, connected devices, Github, and Google Translate.
 1. Go to System Settings -> Trackpad and increase the Tracking Speed. By default
    it can be tricky to cross the whole screen in one gesture.
+1. Go to System settings -> Menu Bar -> Battery Options -> Show Percentage
+1. Go to System Settings -> Battery -> Options -> Wake for network access ->
+   "Always"
 1. This uses Raycast instead of Spotlight, so Spotlight should be moved out of
    the way. Search for "spotlight" in System Settings. Click on "Keyboard
    Shortcuts" -> "Spotlight". Then uncheck "Show Spotlight search" and "Show
