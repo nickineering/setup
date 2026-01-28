@@ -23,6 +23,7 @@ rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
 shfmt                   # Formatter for shell scripts
 tflint                   # Linter for Terraform
+tfsec                   # Security scanner for Terraform
 thefuck                 # Type "fuck" after misspelling terminal commands to autocorrect
 tldr                    # Simple help pages for command-line tools
 tmux                    # Terminal multitasking
