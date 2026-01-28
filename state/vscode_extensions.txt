@@ -10,7 +10,6 @@ ecmel.vscode-html-css
 editorconfig.editorconfig
 esbenp.prettier-vscode
 fill-labs.dependi
-github.copilot
 github.copilot-chat
 github.vscode-github-actions
 github.vscode-pull-request-github
