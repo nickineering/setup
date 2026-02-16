@@ -77,8 +77,6 @@ mkdir -p ~/.vim/undo/
 
 print_green "Copied and linked required files"
 
-source configure_copilot.sh
-
 source configure_ruff.sh
 print_green "Configured Ruff"
 

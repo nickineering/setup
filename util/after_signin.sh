@@ -15,10 +15,5 @@ source configure_firefox.sh
 print_green "Configured Firefox"
 
 gh auth login
-gh extension install github/gh-copilot
 
-# We need to run the aliases once so that we can accept collecting usage data
-# the first time
-gh copilot alias -- bash
-
-print_green "Installed Github Copilot"
+print_green "Installed Github"

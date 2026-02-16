@@ -84,22 +84,22 @@ zstyle ':omz:plugins:nvm' autoload true
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    alias-finder            # Search aliases
-    autojump                # Loads autojump
-    colored-man-pages       # What it says
-    colorize                # Syntax highlighting for cat and less
-    copyfile                # Copy contents of a file in one command
-    copypath                # Copy path of file or directory to clipboard
-    docker                  # Docker completions
-    dotenv                  # Automatically load .env files in current directory
-    gnu-utils               # Aliases updated coreutils to replace Mac defaults
-    gh                      # Completion for Github
-    gpg-agent               # Enable GPG keys for commit signing
-    nvm                     # Source NVM and add completions
-    rust                    # Rust completions
-    web-search              # Web search straight from the command line
-    zsh-autosuggestions     # Automatically show results from history while typing
-    zsh-syntax-highlighting # Syntax highlight shell commands while typing
+	alias-finder            # Search aliases
+	autojump                # Loads autojump
+	colored-man-pages       # What it says
+	colorize                # Syntax highlighting for cat and less
+	copyfile                # Copy contents of a file in one command
+	copypath                # Copy path of file or directory to clipboard
+	docker                  # Docker completions
+	dotenv                  # Automatically load .env files in current directory
+	gnu-utils               # Aliases updated coreutils to replace Mac defaults
+	gh                      # Completion for Github
+	gpg-agent               # Enable GPG keys for commit signing
+	nvm                     # Source NVM and add completions
+	rust                    # Rust completions
+	web-search              # Web search straight from the command line
+	zsh-autosuggestions     # Automatically show results from history while typing
+	zsh-syntax-highlighting # Syntax highlight shell commands while typing
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -156,9 +156,6 @@ compinit
 
 # Iterm2 advanced features
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-# Github Copilot
-eval "$(gh copilot alias -- zsh)"
 
 # Customizations to zsh that are also made available in the bash profile
 source ~/.profile.sh

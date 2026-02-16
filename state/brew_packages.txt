@@ -2,6 +2,7 @@ autojump                # Quickly jump among directories
 bash-completion         # Autocomplete for Git
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 chromedriver            # WebDriver for Chrome, used by Selenium
+copilot-cli             # Github Copilot AI assistance from terminal
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
 exiftool                # Remove metadata from images
