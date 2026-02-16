@@ -9,33 +9,40 @@
 
 # Move $1 to trash
 trash() {
-    mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
+	mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
 }
 
 # Backup ~/.env.sh where secrets should be located.
 # It is not subject to version control.
 backup_secrets() {
-    mkdir -p ~/Documents/backups
-    cp ~/.env.sh ~/Documents/backups/
-    cp ~/.gitconfig ~/Documents/backups/
-    echo 'Backup complete'
-    ls -lah ~/Documents/backups/
+	mkdir -p ~/Documents/backups
+	cp ~/.env.sh ~/Documents/backups/
+	cp ~/.gitconfig ~/Documents/backups/
+	echo 'Backup complete'
+	ls -lah ~/Documents/backups/
 }
 
 # Combination of cd and ls
 cs() {
-    cd "$@" && ls
+	cd "$@" && ls
 }
 
 # Combination of mkdir and cd
 mcd() {
-    mkdir -p "$1"
-    cd "$1" || exit
+	mkdir -p "$1"
+	cd "$1" || exit
 }
 
 # Update everything on the computer
 update() {
-    cd "$SETUP" || exit 1
-    git pull
-    ."$SETUP"/util/setup.sh
+	cd "$SETUP" || exit 1
+	git pull
+	."$SETUP"/util/setup.sh
+}
+
+# Find a subdirectory and cd to it
+godir() {
+	local dir
+	dir=$(find . -type d -name "$1" -print -quit)
+	[[ -n "$dir" ]] && cd "$dir" && pwd || echo "Directory not found: $1"
 }
