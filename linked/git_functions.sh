@@ -54,6 +54,11 @@ local-ignore-edit() {
 	vim "$ROOT"/.git/info/exclude
 }
 
+# Run git pull on all git repos that are nested under the current directory
+pull-all() {
+	find . -name ".git" -type d -execdir sh -c 'echo "Pulling: ${PWD##*/}" && git pull' \;
+}
+
 # Rename a branch locally and remote. $1=NEW_NAME, $2=OLD_NAME
 # Credit: https://gist.github.com/DamirPorobic/5be1a47d11c2c7444ddb171d19b4919e
 rename-branch() {
