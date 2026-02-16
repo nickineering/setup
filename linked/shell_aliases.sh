@@ -13,6 +13,9 @@ alias count='find . -type f | wc -l'
 alias profile.sh="vim ~/.profile.sh"
 alias env.sh="vim ~/.env.sh"
 
+# Find the following directory if nested within the current directory
+alias finddir='find . -type d -name'
+
 # Use zsh-colorize for cat and less everywhere
 alias cat=ccat
 alias less=cless
