@@ -10,6 +10,8 @@
 alias please=sudo
 # Count files in current directory and subdirectories
 alias count='find . -type f | wc -l'
+# Count lines in current directory and subdirectories
+alias count_lines='find . -type f -print0 | xargs -0 cat 2>/dev/null | wc -l'
 alias profile.sh="vim ~/.profile.sh"
 alias env.sh="vim ~/.env.sh"
 
