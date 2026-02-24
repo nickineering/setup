@@ -128,6 +128,19 @@ start() {
 	git pull
 }
 
+# Squash last n commits, keeping the first commit's message: $1=NUM_TO_SQUASH
+squash() {
+	local n="${1:-2}"
+	if [ "$n" -lt 2 ]; then
+		echo "Error: Need at least 2 commits to squash"
+		return 1
+	fi
+	local message
+	message=$(git log --format=%B -n 1 "HEAD~$((n-1))")
+	git reset --soft "HEAD~$n"
+	git commit -m "$message"
+}
+
 # Undo last commits, while preserving files: $1=NUM_TO_UNDO / default=1
 undo-last-commits() {
 	git reset --soft "HEAD~${1:-1}"
