@@ -16,7 +16,7 @@ PREVIOUS_NODE_VERSION=$(nvm current)
 nvm install --lts
 NEW_NODE_VERSION=$(nvm current)
 if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ]; then
-    nvm uninstall "$PREVIOUS_NODE_VERSION"
+	nvm uninstall "$PREVIOUS_NODE_VERSION"
 fi
 npm install -g npm
 # Now we re-enable strict mode

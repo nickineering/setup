@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # Credit: https://gist.github.com/schacon/e9e743dee2e92db9a464619b99e94eff
 
@@ -18,12 +18,12 @@ width5=40
 
 # Function to count commits
 count_commits() {
-    local branch="$1"
-    local base_branch="$2"
-    local ahead_behind
+	local branch="$1"
+	local base_branch="$2"
+	local ahead_behind
 
-    ahead_behind=$(git rev-list --left-right --count "$base_branch"..."$branch")
-    echo "$ahead_behind"
+	ahead_behind=$(git rev-list --left-right --count "$base_branch"..."$branch")
+	echo "$ahead_behind"
 }
 
 # Main script
@@ -35,22 +35,18 @@ printf "${GREEN}%-${width1}s ${RED}%-${width2}s ${BLUE}%-${width3}s ${YELLOW}%-$
 printf "${GREEN}%-${width1}s ${RED}%-${width2}s ${BLUE}%-${width3}s ${YELLOW}%-${width4}s ${NO_COLOR}%-${width5}s\n" "-----" "------" "------------------------------" "-------------------" " "
 
 format_string="%(objectname:short)@%(refname:short)@%(committerdate:relative)"
-IFS=$'\n'
 
-for branchdata in $(git for-each-ref --sort=-authordate --format="$format_string" refs/heads/); do
-    sha=$(echo "$branchdata" | cut -d '@' -f1)
-    branch=$(echo "$branchdata" | cut -d '@' -f2)
-    time=$(echo "$branchdata" | cut -d '@' -f3)
-    if [ "$branch" != "$main_branch" ]; then
-        # Get branch description
-        description=$(git config branch."$branch".description)
+git for-each-ref --sort=-authordate --format="$format_string" refs/heads/ | while IFS='@' read -r sha branch time; do
+	if [ "$branch" != "$main_branch" ]; then
+		# Get branch description
+		description=$(git config branch."$branch".description)
 
-        # Count commits ahead and behind
-        ahead_behind=$(count_commits "$sha" "$main_branch")
-        ahead=$(echo "$ahead_behind" | cut -f2)
-        behind=$(echo "$ahead_behind" | cut -f1)
+		# Count commits ahead and behind
+		ahead_behind=$(count_commits "$sha" "$main_branch")
+		ahead=$(echo "$ahead_behind" | cut -f2)
+		behind=$(echo "$ahead_behind" | cut -f1)
 
-        # Display branch info
-        printf "${GREEN}%-${width1}s ${RED}%-${width2}s ${BLUE}%-${width3}s ${YELLOW}%-${width4}s ${NO_COLOR}%-${width5}s\n" "$ahead" "$behind" "$branch" "$time" "$description"
-    fi
+		# Display branch info
+		printf "${GREEN}%-${width1}s ${RED}%-${width2}s ${BLUE}%-${width3}s ${YELLOW}%-${width4}s ${NO_COLOR}%-${width5}s\n" "$ahead" "$behind" "$branch" "$time" "$description"
+	fi
 done

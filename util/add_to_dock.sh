@@ -9,5 +9,5 @@ add_to_dock() {
 	if [[ $# -ge 2 ]]; then
 		location="/System/Applications/"
 	fi
-	defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'$location"$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+	defaults write com.apple.dock persistent-apps -array-add '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'"$location$1"'.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
 }

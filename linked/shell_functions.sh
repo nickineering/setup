@@ -79,7 +79,7 @@ godir() {
 		while IFS= read -r d; do
 			echo "  $i) $d"
 			((i++))
-		done <<< "$dirs"
+		done <<<"$dirs"
 		echo -n "Select [1-$count]: "
 		read -r choice
 		local target

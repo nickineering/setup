@@ -2,10 +2,10 @@
 
 export RUFF_CONFIG=~/projects/ruff-config
 if [ -d "$RUFF_CONFIG" ]; then
-	git -C $RUFF_CONFIG pull
+	git -C "$RUFF_CONFIG" pull
 	print_green "Pulled the latest commits for Ruff config"
 else
-	git clone https://github.com/nickineering/ruff-config $RUFF_CONFIG
+	git clone https://github.com/nickineering/ruff-config "$RUFF_CONFIG"
 	print_green "Cloned Ruff config repo"
 fi
 

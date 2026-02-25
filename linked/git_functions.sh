@@ -15,7 +15,7 @@ commit-all() {
 
 # Amend last commit to credit co-author: $1=name, $2=email
 credit() {
-	if [ -n "$1" ] && [ -n "$2" ]; then
+	if [ "$1" != "" ] && [ "$2" != "" ]; then
 		GIT_EDITOR="git interpret-trailers --in-place --trailer='Co-authored-by: $1 <$2>'" git commit --amend
 	fi
 }
@@ -59,7 +59,7 @@ interactive-rebase() {
 	local COMMIT_COUNT
 	COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null)
 	# Set $DISTANCE to $1 if it's a number, otherwise default to 10
-	if [ -n "$1" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+	if [ "$1" != "" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
 		DISTANCE="$1"
 	else
 		DISTANCE=10
@@ -189,7 +189,7 @@ squash() {
 		message="$message"$'\n'
 		while IFS= read -r trailer; do
 			message="$message"$'\n'"Co-authored-by: $trailer"
-		done <<< "$trailers"
+		done <<<"$trailers"
 	fi
 	git reset --soft "HEAD~$n"
 	git commit -m "$message"
