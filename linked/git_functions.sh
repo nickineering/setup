@@ -23,8 +23,22 @@ credit() {
 # Delete all local branches other than current
 delete-branches() {
 	# ^* is regex matching the literal * that git uses to mark the current branch
+	local branches
 	# shellcheck disable=SC2063
-	git branch | grep -v '^*' | xargs git branch -D
+	branches=$(git branch | grep -v '^*')
+	if [[ -z "$branches" ]]; then
+		echo "No other branches to delete"
+		return 0
+	fi
+	echo "Branches to delete:"
+	echo "$branches"
+	echo -n "Delete all these branches? [y/N]: "
+	read -r confirm
+	if [[ "$confirm" =~ ^[Yy]$ ]]; then
+		echo "$branches" | xargs git branch -D
+	else
+		echo "Aborted"
+	fi
 }
 
 # cd to the root of the current Git repository
@@ -195,5 +209,12 @@ wipe-last-commits() {
 wipe-local() {
 	local branch
 	branch=$(git branch --show-current)
-	git reset --hard origin/"$branch"
+	echo "This will discard ALL local changes and reset to origin/$branch"
+	echo -n "Are you sure? [y/N]: "
+	read -r confirm
+	if [[ "$confirm" =~ ^[Yy]$ ]]; then
+		git reset --hard origin/"$branch"
+	else
+		echo "Aborted"
+	fi
 }
