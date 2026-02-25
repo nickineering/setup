@@ -40,6 +40,20 @@ update() {
 	. "$SETUP/util/setup.sh"
 }
 
+# Count lines of code by file extension: $1=EXTENSION (e.g., "py", "js")
+# Excludes node_modules, .git, and other common non-source directories
+lines() {
+	local ext="${1:?usage: lines EXTENSION (e.g., lines py)}"
+	find . -type f -name "*.$ext" \
+		! -path "*/node_modules/*" \
+		! -path "*/.git/*" \
+		! -path "*/venv/*" \
+		! -path "*/__pycache__/*" \
+		! -path "*/dist/*" \
+		! -path "*/build/*" \
+		-print0 | xargs -0 wc -l 2>/dev/null | tail -1
+}
+
 # Find a subdirectory and cd to it (shows menu if multiple matches)
 godir() {
 	local dirs

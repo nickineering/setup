@@ -146,10 +146,14 @@ search-for-snippet() {
 	git rev-list --abbrev-commit --all | xargs git grep -F "$1"
 }
 
-# Go to root folder, checkout master, and pull
+# Go to root folder, checkout branch, and pull: $1=BRANCH (default: master or main)
 start() {
 	cd "$(git rev-parse --show-toplevel)" || return 1
-	git checkout master || git checkout main
+	if [[ -n "$1" ]]; then
+		git checkout "$1"
+	else
+		git checkout master || git checkout main
+	fi
 	git pull
 }
 
