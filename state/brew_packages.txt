@@ -22,6 +22,7 @@ nvm                     # local JavaScript runtime
 ruff                    # Super fast Python linting written in Rust
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
+shellharden             # Autofix for shell scripts
 shfmt                   # Formatter for shell scripts
 tflint                   # Linter for Terraform
 tfsec                   # Security scanner for Terraform
