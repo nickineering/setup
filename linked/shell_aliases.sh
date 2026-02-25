@@ -40,7 +40,7 @@ alias localip="ipconfig getifaddr en0"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
 # URL-encode strings
-alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))"'
 
 # Merge PDF files, preserving hyperlinks
 # Usage: `mergepdf input{1,2,3}.pdf`
@@ -57,9 +57,6 @@ alias reload='exec ${SHELL} -l'
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
-
-# cd to the root of the current Git repository
-alias git-root='git rev-parse -z --show-toplevel 2>/dev/null | xargs -0 cd'
 
 alias git-aliases='less $DOTFILES/git_aliases.ini'
 alias git-functions='less $DOTFILES/git_functions.sh'

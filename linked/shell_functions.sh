@@ -30,19 +30,44 @@ cs() {
 # Combination of mkdir and cd
 mcd() {
 	mkdir -p "$1"
-	cd "$1" || exit
+	cd "$1" || return 1
 }
 
 # Update everything on the computer
 update() {
-	cd "$SETUP" || exit 1
+	cd "$SETUP" || return 1
 	git pull
-	."$SETUP"/util/setup.sh
+	. "$SETUP/util/setup.sh"
 }
 
-# Find a subdirectory and cd to it
+# Find a subdirectory and cd to it (shows menu if multiple matches)
 godir() {
-	local dir
-	dir=$(find . -type d -name "$1" -print -quit)
-	[[ -n "$dir" ]] && cd "$dir" && pwd || echo "Directory not found: $1"
+	local dirs
+	dirs=$(find . -type d -name "$1" ! -path "*/node_modules/*" ! -path "*/.git/*" 2>/dev/null)
+	if [[ -z "$dirs" ]]; then
+		echo "Directory not found: $1"
+		return 1
+	fi
+	local count
+	count=$(echo "$dirs" | wc -l | tr -d ' ')
+	if [[ "$count" -eq 1 ]]; then
+		cd "$dirs" && pwd
+	else
+		echo "Multiple matches found:"
+		local i=1
+		echo "$dirs" | while read -r d; do
+			echo "  $i) $d"
+			((i++))
+		done
+		echo -n "Select [1-$count]: "
+		read -r choice
+		local target
+		target=$(echo "$dirs" | sed -n "${choice}p")
+		if [[ -n "$target" ]]; then
+			cd "$target" && pwd
+		else
+			echo "Invalid selection"
+			return 1
+		fi
+	fi
 }

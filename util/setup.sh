@@ -34,7 +34,7 @@ while IFS= read -r package; do
 	brew install "$(strip_comments "$package")"
 done <"$SETUP"/state/brew_packages.txt
 # Finish installing chromedriver
-xattr -d com.apple.quarantine chromedriver
+xattr -d com.apple.quarantine "$(brew --prefix)/bin/chromedriver"
 print_green "Installed Homebrew packages"
 
 # Install Homebrew casks
