@@ -8,7 +8,7 @@ commit() {
 }
 
 # Add all files in current directory, commit with message $1, and push
-commit-all() {
+commit_all() {
 	git add .
 	commit "$1"
 }
@@ -21,7 +21,7 @@ credit() {
 }
 
 # Delete all local branches other than current
-delete-branches() {
+delete_branches() {
 	# ^* is regex matching the literal * that git uses to mark the current branch
 	local branches
 	# shellcheck disable=SC2063
@@ -42,7 +42,7 @@ delete-branches() {
 }
 
 # cd to the root of the current Git repository
-git-root() {
+git_root() {
 	local root
 	root=$(git rev-parse --show-toplevel 2>/dev/null)
 	if [[ -n "$root" ]]; then
@@ -54,7 +54,7 @@ git-root() {
 }
 
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
-interactive-rebase() {
+interactive_rebase() {
 	local DISTANCE
 	local COMMIT_COUNT
 	COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null)
@@ -72,7 +72,7 @@ interactive-rebase() {
 }
 
 # Ignore $1 as if in .gitignore, but only on this clone of the repo
-local-ignore() {
+local_ignore() {
 	# Get root directory of current Git repo
 	local ROOT
 	ROOT=$(git rev-parse --show-toplevel)
@@ -80,7 +80,7 @@ local-ignore() {
 }
 
 # Edit the Git file that ignores files only within this clone of the repo
-local-ignore-edit() {
+local_ignore_edit() {
 	# Get root directory of current Git repo
 	local ROOT
 	ROOT=$(git rev-parse --show-toplevel)
@@ -88,16 +88,16 @@ local-ignore-edit() {
 }
 
 # Run git pull on all git repos that are nested under the current directory
-pull-all() {
+pull_all() {
 	find . -name ".git" -type d -execdir sh -c 'echo "Pulling: ${PWD##*/}" && git pull' \;
 }
 
 # Rename a branch locally and remote. $1=OLD_NAME, $2=NEW_NAME
 # Credit: https://gist.github.com/DamirPorobic/5be1a47d11c2c7444ddb171d19b4919e
-rename-branch() {
+rename_branch() {
 	# Check if the user has provided input
 	if [ $# -ne 2 ]; then
-		echo "usage: rename-branch OLD_BRANCH_NAME NEW_BRANCH_NAME"
+		echo "usage: git rename-branch OLD_BRANCH_NAME NEW_BRANCH_NAME"
 		return 1
 	fi
 
@@ -133,7 +133,7 @@ rename-branch() {
 }
 
 # Reset to wherever origin for this branch is, but leave local files alone
-reset-to-origin() {
+reset_to_origin() {
 	local branch
 	branch=$(git branch --show-current)
 	git reset origin/"$branch"
@@ -146,17 +146,17 @@ retag() {
 }
 
 # Search commits by source code: $1=CODE
-search-for-commits() {
+search_for_commits() {
 	git log --date=short --decorate --pretty=colorful -S"$1"
 }
 
 # Search commits by commit message: $1=COMMIT_MESSAGE
-search-for-message() {
+search_for_message() {
 	git log --date=short --decorate --pretty=colorful --grep="$1"
 }
 
 # Search for snippet in history: $1=SNIPPET
-search-for-snippet() {
+search_for_snippet() {
 	git rev-list --abbrev-commit --all | xargs git grep -F "$1"
 }
 
@@ -196,17 +196,17 @@ squash() {
 }
 
 # Undo last commits, while preserving files: $1=NUM_TO_UNDO / default=1
-undo-last-commits() {
+undo_last_commits() {
 	git reset --soft "HEAD~${1:-1}"
 }
 
 # Wipe last commits: $1=NUM_TO_WIPE / default=1
-wipe-last-commits() {
+wipe_last_commits() {
 	git reset --hard "HEAD~${1:-1}"
 }
 
 # Delete all local changes so that local is the same as remote
-wipe-local() {
+wipe_local() {
 	local branch
 	branch=$(git branch --show-current)
 	echo "This will discard ALL local changes and reset to origin/$branch"
