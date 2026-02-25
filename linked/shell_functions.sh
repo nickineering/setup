@@ -48,9 +48,16 @@ lines() {
 		! -path "*/node_modules/*" \
 		! -path "*/.git/*" \
 		! -path "*/venv/*" \
+		! -path "*/.venv/*" \
 		! -path "*/__pycache__/*" \
+		! -path "*/.mypy_cache/*" \
+		! -path "*/.tox/*" \
+		! -path "*/coverage/*" \
+		! -path "*/.coverage/*" \
 		! -path "*/dist/*" \
 		! -path "*/build/*" \
+		! -path "*/.next/*" \
+		! -path "*/.nuxt/*" \
 		-print0 | xargs -0 wc -l 2>/dev/null | tail -1
 }
 
@@ -69,10 +76,10 @@ godir() {
 	else
 		echo "Multiple matches found:"
 		local i=1
-		echo "$dirs" | while read -r d; do
+		while IFS= read -r d; do
 			echo "  $i) $d"
 			((i++))
-		done
+		done <<< "$dirs"
 		echo -n "Select [1-$count]: "
 		read -r choice
 		local target
