@@ -89,7 +89,7 @@ local_ignore_edit() {
 
 # Run git pull on all git repos that are nested under the current directory
 pull_all() {
-	find . -name ".git" -type d -execdir sh -c 'echo "Pulling: ${PWD##*/}" && git pull' \;
+	fd --type d --hidden '^\.git$' --exec sh -c 'cd {//} && echo "Pulling: ${PWD##*/}" && git pull'
 }
 
 # Rename a branch locally and remote. $1=OLD_NAME, $2=NEW_NAME

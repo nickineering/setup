@@ -9,14 +9,14 @@
 
 alias please=sudo
 # Count files in current directory and subdirectories
-alias count='find . -type f | wc -l'
+alias count='fd --type f | wc -l'
 # Count lines in current directory and subdirectories (text files only)
-alias count_lines='find . -type f ! -path "*/.git/*" -exec file {} \; | grep text | cut -d: -f1 | xargs cat 2>/dev/null | wc -l'
+alias count_lines='fd --type f | xargs file | grep text | cut -d: -f1 | xargs cat 2>/dev/null | wc -l'
 alias profile.sh="vim ~/.profile.sh"
 alias env.sh="vim ~/.env.sh"
 
 # Find the following directory if nested within the current directory
-alias finddir='find . -type d -name'
+alias finddir='fd --type d --glob'
 
 # Use zsh-colorize for cat and less everywhere
 alias cat=ccat
@@ -37,7 +37,7 @@ alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias localip="ipconfig getifaddr en0"
 
 # Recursively delete `.DS_Store` files
-alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
+alias cleanup="fd --type f --no-ignore '\.DS_Store$' --exec rm -v {}"
 
 # URL-encode strings
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))"'

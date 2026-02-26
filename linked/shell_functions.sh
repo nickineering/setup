@@ -41,38 +41,32 @@ update() {
 }
 
 # Count lines of code by file extension: $1=EXTENSION (e.g., "py", "js")
-# Excludes node_modules, .git, and other common non-source directories
 lines() {
 	local ext="${1:?usage: lines EXTENSION (e.g., lines py)}"
-	find . -type f -name "*.$ext" \
-		! -path "*/node_modules/*" \
-		! -path "*/.git/*" \
-		! -path "*/venv/*" \
-		! -path "*/.venv/*" \
-		! -path "*/__pycache__/*" \
-		! -path "*/.mypy_cache/*" \
-		! -path "*/.tox/*" \
-		! -path "*/coverage/*" \
-		! -path "*/.coverage/*" \
-		! -path "*/dist/*" \
-		! -path "*/build/*" \
-		! -path "*/.next/*" \
-		! -path "*/.nuxt/*" \
-		-print0 | xargs -0 wc -l 2>/dev/null | tail -1
+	fd --type f --extension "$ext" --exec cat {} \; 2>/dev/null | wc -l
 }
 
 # Find a subdirectory and cd to it (shows menu if multiple matches)
 godir() {
 	local dirs
-	dirs=$(find . -type d -name "$1" ! -path "*/node_modules/*" ! -path "*/.git/*" 2>/dev/null)
+	dirs=$(fd --type d --glob "$1" 2>/dev/null)
+
 	if [[ -z "$dirs" ]]; then
 		echo "Directory not found: $1"
 		return 1
 	fi
+
 	local count
 	count=$(echo "$dirs" | wc -l | tr -d ' ')
+
 	if [[ "$count" -eq 1 ]]; then
 		cd "$dirs" && pwd
+	elif command -v fzf &>/dev/null; then
+		local target
+		target=$(echo "$dirs" | fzf --height=40% --reverse --prompt="Select directory: ")
+		if [[ -n "$target" ]]; then
+			cd "$target" && pwd
+		fi
 	else
 		echo "Multiple matches found:"
 		local i=1

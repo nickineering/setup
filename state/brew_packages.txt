@@ -6,7 +6,8 @@ copilot-cli             # Github Copilot AI assistance from terminal
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
 exiftool                # Remove metadata from images
-findutils                # Mac default outdated
+fd                      # Fast find alternative written in Rust
+findutils               # Mac default outdated
 gawk                    # Mac default outdated
 geckodriver             # WebDriver for Firefox, used by Selenium
 gh                      # Github CLI
