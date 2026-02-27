@@ -137,6 +137,8 @@ print_green "Copied and linked required files"
 source configure_ruff.sh
 print_green "Configured Ruff"
 
+source configure_claude.sh
+
 source configure_python.sh
 print_green "Completed Python installs"
 
