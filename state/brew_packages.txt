@@ -14,12 +14,14 @@ gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 gnu-indent              # Mac default outdated
 go                      # Go programming language
+jq                      # JSON query and processor
 gopls                   # Go Language Server
 gzip                    # Mac default outdated
 hashicorp/tap/terraform # Infrastructure as Code tool
 jupyterlab              # Interactive code editing notebook
 make                    # Mac default outdated
 nvm                     # local JavaScript runtime
+ripgrep                 # Fast grep alternative written in Rust
 ruff                    # Super fast Python linting written in Rust
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
@@ -33,4 +35,5 @@ tmux                    # Terminal multitasking
 unzip                   # Mac default outdated
 uv                      # Python and Python package installation manager
 watchman                # Check for changes to files
+yq                      # YAML query and processor
 zsh                     # Use the most up to date version of Zsh, the default shell
