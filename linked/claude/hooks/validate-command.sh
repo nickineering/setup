@@ -164,9 +164,50 @@ if [[ "$COMMAND" =~ \|[[:space:]]*xargs[[:space:]].*rm ]] || \
   exit 2
 fi
 
-# Block piped shell execution (arbitrary command execution)
-if [[ "$COMMAND" =~ \|[[:space:]]*(bash|sh|zsh)([[:space:]]|$) ]]; then
-  echo "BLOCKED: Piped shell execution not allowed"
+# Block xargs with shell/interpreter execution
+if [[ "$COMMAND" =~ xargs[[:space:]].*(bash|sh|zsh|python|node|ruby|perl) ]]; then
+  echo "BLOCKED: xargs with shell/interpreter not allowed"
+  exit 2
+fi
+
+# Block bash -c (inline shell execution)
+if [[ "$COMMAND" =~ (bash|sh|zsh)[[:space:]]+-c ]]; then
+  echo "BLOCKED: bash -c can execute arbitrary code"
+  exit 2
+fi
+
+# Block eval
+if [[ "$COMMAND" =~ (^|[;&|])[[:space:]]*eval[[:space:]] ]]; then
+  echo "BLOCKED: eval can execute arbitrary code"
+  exit 2
+fi
+
+# Block source/dot from non-file sources
+if [[ "$COMMAND" =~ (source|\.)[[:space:]]+[<\(] ]] || \
+   [[ "$COMMAND" =~ (source|\.)[[:space:]]+/dev/(stdin|fd) ]]; then
+  echo "BLOCKED: source from stdin/process substitution not allowed"
+  exit 2
+fi
+
+# Block piped shell/interpreter execution (arbitrary command execution)
+if [[ "$COMMAND" =~ \|[[:space:]]*(bash|sh|zsh|python|python3|node|ruby|perl|php)([[:space:]]|$) ]]; then
+  echo "BLOCKED: Piped shell/interpreter execution not allowed"
+  exit 2
+fi
+
+# Block interpreter inline execution flags (direct or via uv run)
+if [[ "$COMMAND" =~ (^|uv[[:space:]]run[[:space:]]+)(python|python3)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](-c[[:space:]]|-)([[:space:]]|$|\") ]]; then
+  echo "BLOCKED: python -c/-stdin can execute arbitrary code"
+  exit 2
+fi
+if [[ "$COMMAND" =~ (^|uv[[:space:]]run[[:space:]]+)node[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](-e[[:space:]]|--eval[[:space:]]|-p[[:space:]]|--print[[:space:]]|-)([[:space:]]|$|\") ]]; then
+  echo "BLOCKED: node -e/--eval/-stdin can execute arbitrary code"
+  exit 2
+fi
+
+# Block awk/gawk system() and getline (shell execution)
+if [[ "$COMMAND" =~ ^[gm]?awk[[:space:]] ]] && [[ "$COMMAND" =~ (system|getline|cmd\|) ]]; then
+  echo "BLOCKED: awk system()/getline can execute shell commands"
   exit 2
 fi
 
