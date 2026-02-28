@@ -1,7 +1,129 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
-    "allow": [],
-    "deny": []
+    "allow": [
+      "Bash(awk *)",
+      "Bash(aws *)",
+      "Bash(base64 *)",
+      "Bash(cat *)",
+      "Bash(cdk *)",
+      "Bash(cp *)",
+      "Bash(curl *)",
+      "Bash(date *)",
+      "Bash(diff *)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(echo *)",
+      "Bash(env)",
+      "Bash(eslint *)",
+      "Bash(fd *)",
+      "Bash(find *)",
+      "Bash(git blame*)",
+      "Bash(git branch*)",
+      "Bash(git config --get*)",
+      "Bash(git config --list*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git ls-files*)",
+      "Bash(git remote*)",
+      "Bash(git rev-parse*)",
+      "Bash(git show*)",
+      "Bash(git stash list*)",
+      "Bash(git status*)",
+      "Bash(git tag -l*)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(jq *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(mv *)",
+      "Bash(mypy *)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(prettier *)",
+      "Bash(pwd)",
+      "Bash(pytest *)",
+      "Bash(python *)",
+      "Bash(ruff *)",
+      "Bash(sam *)",
+      "Bash(sed *)",
+      "Bash(sort *)",
+      "Bash(tail *)",
+      "Bash(tar *)",
+      "Bash(terraform fmt *)",
+      "Bash(terraform init *)",
+      "Bash(terraform output *)",
+      "Bash(terraform plan *)",
+      "Bash(terraform show *)",
+      "Bash(terraform state list *)",
+      "Bash(terraform state show *)",
+      "Bash(terraform validate *)",
+      "Bash(touch *)",
+      "Bash(tsc *)",
+      "Bash(unzip *)",
+      "Bash(uv *)",
+      "Bash(wc *)",
+      "Bash(wget *)",
+      "Bash(which *)",
+      "Bash(whoami)",
+      "Bash(xargs *)",
+      "Bash(yq *)",
+      "Bash(zip *)",
+      "Edit(~/eonnext/**)",
+      "Edit(~/projects/**)",
+      "Read(./**)",
+      "Read(/opt/homebrew/**)",
+      "Read(~/.aws/config)",
+      "Read(~/.bashrc)",
+      "Read(~/.claude/**)",
+      "Read(~/.gitconfig)",
+      "Read(~/.gitignore)",
+      "Read(~/.profile)",
+      "Read(~/.zshrc)",
+      "Read(~/eonnext/**)",
+      "Read(~/projects/**)"
+    ],
+    "deny": [
+      "Bash(* > /etc/*)",
+      "Bash(* > /Library/*)",
+      "Bash(* > /System/*)",
+      "Bash(* > /usr/*)",
+      "Bash(* > /var/*)",
+      "Edit(**/.git/**)",
+      "Read(**/*.key)",
+      "Read(**/*.pem)",
+      "Read(**/*secret*)",
+      "Read(**/credentials*)",
+      "Read(**/token*)",
+      "Read(~/.aws/credentials)",
+      "Read(~/.gnupg/*)",
+      "Read(~/.netrc)",
+      "Read(~/.npmrc)",
+      "Read(~/.ssh/*)",
+      "Write(**/.git/**)"
+    ]
   },
   "env": {}
 }
