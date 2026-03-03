@@ -6,9 +6,9 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 # If file exists, require human confirmation
 if [[ -n "$FILE_PATH" && -f "$FILE_PATH" ]]; then
-  echo "BLOCKED: File already exists: $FILE_PATH"
-  echo "Use Edit tool to modify existing files, or confirm overwrite."
-  exit 2
+	echo "BLOCKED: File already exists: $FILE_PATH"
+	echo "Use Edit tool to modify existing files, or confirm overwrite."
+	exit 2
 fi
 
 exit 0

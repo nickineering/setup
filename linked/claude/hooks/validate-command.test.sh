@@ -8,27 +8,27 @@ PASSED=0
 FAILED=0
 
 test_pass() {
-  local name="$1"
-  local input="$2"
-  if echo "$input" | "$HOOK" > /dev/null 2>&1; then
-    echo "✓ $name"
-    ((PASSED++))
-  else
-    echo "✗ $name (expected pass, got block)"
-    ((FAILED++))
-  fi
+	local name="$1"
+	local input="$2"
+	if echo "$input" | "$HOOK" >/dev/null 2>&1; then
+		echo "✓ $name"
+		((PASSED++))
+	else
+		echo "✗ $name (expected pass, got block)"
+		((FAILED++))
+	fi
 }
 
 test_block() {
-  local name="$1"
-  local input="$2"
-  if echo "$input" | "$HOOK" > /dev/null 2>&1; then
-    echo "✗ $name (expected block, got pass)"
-    ((FAILED++))
-  else
-    echo "✓ $name"
-    ((PASSED++))
-  fi
+	local name="$1"
+	local input="$2"
+	if echo "$input" | "$HOOK" >/dev/null 2>&1; then
+		echo "✗ $name (expected block, got pass)"
+		((FAILED++))
+	else
+		echo "✓ $name"
+		((PASSED++))
+	fi
 }
 
 echo "Testing validate-command.sh"
@@ -98,7 +98,7 @@ test_block "docker volume prune" '{"tool_name":"Bash","tool_input":{"command":"d
 test_block "docker rm container" '{"tool_name":"Bash","tool_input":{"command":"docker rm my-container"}}'
 test_block "docker rmi image" '{"tool_name":"Bash","tool_input":{"command":"docker rmi my-image"}}'
 test_block "docker kill" '{"tool_name":"Bash","tool_input":{"command":"docker kill my-container"}}'
-test_block "docker stop" '{"tool_name":"Bash","tool_input":{"command":"docker stop my-container"}}'
+test_pass "docker stop" '{"tool_name":"Bash","tool_input":{"command":"docker stop my-container"}}'
 echo
 
 echo "CDK (deploy/destroy/bootstrap blocked)"
@@ -120,13 +120,13 @@ test_block "sam delete" '{"tool_name":"Bash","tool_input":{"command":"sam delete
 test_block "sam sync" '{"tool_name":"Bash","tool_input":{"command":"sam sync"}}'
 echo
 
-echo "Git branch deletion (blocked)"
+echo "Git branch deletion (-d allowed, -D blocked)"
 test_pass "git branch" '{"tool_name":"Bash","tool_input":{"command":"git branch"}}'
 test_pass "git branch -a" '{"tool_name":"Bash","tool_input":{"command":"git branch -a"}}'
 test_pass "git branch -v" '{"tool_name":"Bash","tool_input":{"command":"git branch -v"}}'
 test_pass "git branch new-branch" '{"tool_name":"Bash","tool_input":{"command":"git branch new-branch"}}'
-test_block "git branch -d" '{"tool_name":"Bash","tool_input":{"command":"git branch -d old-branch"}}'
-test_block "git branch -D" '{"tool_name":"Bash","tool_input":{"command":"git branch -D old-branch"}}'
+test_pass "git branch -d (safe delete)" '{"tool_name":"Bash","tool_input":{"command":"git branch -d old-branch"}}'
+test_block "git branch -D (force delete)" '{"tool_name":"Bash","tool_input":{"command":"git branch -D old-branch"}}'
 echo
 
 echo "File deletion (rm blocked, use trash)"
@@ -247,6 +247,15 @@ test_block "git checkout -- file" '{"tool_name":"Bash","tool_input":{"command":"
 test_block "git checkout -- ." '{"tool_name":"Bash","tool_input":{"command":"git checkout -- ."}}'
 test_pass "git checkout branch" '{"tool_name":"Bash","tool_input":{"command":"git checkout main"}}'
 test_pass "git checkout -b" '{"tool_name":"Bash","tool_input":{"command":"git checkout -b new-branch"}}'
+test_block "git restore file" '{"tool_name":"Bash","tool_input":{"command":"git restore file.txt"}}'
+test_block "git restore multiple files" '{"tool_name":"Bash","tool_input":{"command":"git restore src/ lib/"}}'
+test_pass "git restore --staged" '{"tool_name":"Bash","tool_input":{"command":"git restore --staged file.txt"}}'
+test_pass "git restore --staged multiple" '{"tool_name":"Bash","tool_input":{"command":"git restore --staged src/ lib/"}}'
+test_block "git stash drop" '{"tool_name":"Bash","tool_input":{"command":"git stash drop"}}'
+test_block "git stash drop index" '{"tool_name":"Bash","tool_input":{"command":"git stash drop stash@{0}"}}'
+test_block "git stash clear" '{"tool_name":"Bash","tool_input":{"command":"git stash clear"}}'
+test_pass "git stash push" '{"tool_name":"Bash","tool_input":{"command":"git stash push -m \"wip\""}}'
+test_pass "git stash pop" '{"tool_name":"Bash","tool_input":{"command":"git stash pop"}}'
 echo
 
 echo "docker exec with destructive commands (blocked)"
@@ -275,5 +284,5 @@ echo "============================"
 echo "Results: $PASSED passed, $FAILED failed"
 
 if [[ $FAILED -gt 0 ]]; then
-  exit 1
+	exit 1
 fi
