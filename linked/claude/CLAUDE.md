@@ -43,6 +43,11 @@ NEVER use `rm` to delete files. Instead, move files to trash:
 mv FILE ~/.Trash/
 ```
 
+# Git Commits
+
+Do NOT add `Co-Authored-By` trailers crediting yourself. Only add co-author
+trailers when crediting other humans.
+
 # Backwards compatibility
 
 Assume everything is greenfield unless otherwise stated. Don't worry about
