@@ -87,8 +87,18 @@ godir() {
 	fi
 }
 
-# Wrapper to support commands that can't work as git aliases (like `git root`)
+# Git wrapper for commands that need to modify the parent shell.
+#
+# WHY: Git aliases run in subshells, so `cd` only affects the subshell.
+#      This wrapper intercepts specific commands and runs them in the current shell.
+#
+# SIDE EFFECT: Shadows the `git` command. Use `command git` to bypass.
+#
+# OVERRIDES:
+#   root        - cd to repository root
+#   start [REF] - cd to root, checkout REF (default: master/main), pull
 git() {
+	# git root - cd to repository root
 	if [[ "$1" == "root" ]]; then
 		local root
 		root=$(command git rev-parse --show-toplevel 2>/dev/null)
@@ -98,6 +108,21 @@ git() {
 			echo "Not in a git repository"
 			return 1
 		fi
+	# git start [branch] - cd to root, checkout branch, pull
+	elif [[ "$1" == "start" ]]; then
+		local root branch="${2:-}"
+		root=$(command git rev-parse --show-toplevel 2>/dev/null)
+		if [[ -z "$root" ]]; then
+			echo "Not in a git repository"
+			return 1
+		fi
+		cd "$root" || return 1
+		if [[ -n "$branch" ]]; then
+			command git checkout "$branch"
+		else
+			command git checkout master 2>/dev/null || command git checkout main
+		fi
+		command git pull
 	else
 		command git "$@"
 	fi

@@ -148,17 +148,6 @@ search_for_snippet() {
 	git rev-list --abbrev-commit --all | xargs git grep -F "$1"
 }
 
-# Go to root folder, checkout branch, and pull: $1=BRANCH (default: master or main)
-start() {
-	cd "$(git rev-parse --show-toplevel)" || return 1
-	if [[ -n "$1" ]]; then
-		git checkout "$1"
-	else
-		git checkout master || git checkout main
-	fi
-	git pull
-}
-
 # Squash last n commits, keeping the first commit's message: $1=NUM_TO_SQUASH
 squash() {
 	local n="${1:-2}"
