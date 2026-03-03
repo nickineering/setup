@@ -127,10 +127,12 @@ if [[ "$COMMAND" =~ ^cp[[:space:]] ]] && ! [[ "$COMMAND" =~ ([[:space:]]-[a-zA-Z
 fi
 
 # Block output redirection that could clobber files (allow /dev/null, >>, and heredocs)
-# The regex requires whitespace before > to avoid matching > inside heredocs (e.g., email addresses)
-if [[ "$COMMAND" =~ [[:space:]]'>'[^'>'] ]] && ! [[ "$COMMAND" =~ '>/dev/null' ]]; then
-	echo "BLOCKED: Output redirection '>' can overwrite files. Use '>>' to append or reconsider" >&2
-	exit 2
+# Patterns: "cmd > file" (space before) or "2>file" (fd redirect, but not 2>&1)
+if [[ "$COMMAND" =~ [[:space:]]'>'[^'>'] ]] || [[ "$COMMAND" =~ [0-9]'>'[^'>&'] ]]; then
+	if ! [[ "$COMMAND" =~ '>/dev/null' ]] && ! [[ "$COMMAND" =~ [0-9]'>/dev/null' ]]; then
+		echo "BLOCKED: Output redirection '>' can overwrite files. Use '>>' to append or reconsider" >&2
+		exit 2
+	fi
 fi
 
 # CDK: only allow read-only commands (list, diff, synth, doctor, docs)

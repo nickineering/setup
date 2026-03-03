@@ -147,7 +147,12 @@ echo
 echo "Output redirection (> blocked, >> allowed)"
 test_block "redirect overwrite" '{"tool_name":"Bash","tool_input":{"command":"echo test > file.txt"}}'
 test_block "command > file" '{"tool_name":"Bash","tool_input":{"command":"cat foo > bar.txt"}}'
-test_pass "redirect to /dev/null" '{"tool_name":"Bash","tool_input":{"command":"command 2>/dev/null"}}'
+test_block "stderr to file" '{"tool_name":"Bash","tool_input":{"command":"command 2>err.log"}}'
+test_block "stdout to file" '{"tool_name":"Bash","tool_input":{"command":"command 1>out.txt"}}'
+test_pass "redirect to /dev/null" '{"tool_name":"Bash","tool_input":{"command":"command >/dev/null"}}'
+test_pass "stderr to /dev/null" '{"tool_name":"Bash","tool_input":{"command":"command 2>/dev/null"}}'
+test_pass "stdout to /dev/null" '{"tool_name":"Bash","tool_input":{"command":"command 1>/dev/null"}}'
+test_pass "stderr to stdout" '{"tool_name":"Bash","tool_input":{"command":"command 2>&1"}}'
 test_pass "append redirect" '{"tool_name":"Bash","tool_input":{"command":"echo test >> file.txt"}}'
 echo
 
@@ -269,6 +274,11 @@ echo "Piped tee (blocked)"
 test_block "pipe to tee" '{"tool_name":"Bash","tool_input":{"command":"echo test | tee file.txt"}}'
 test_block "pipe to tee -a" '{"tool_name":"Bash","tool_input":{"command":"cat data | tee -a output.txt"}}'
 test_pass "tee at start" '{"tool_name":"Bash","tool_input":{"command":"tee file.txt"}}'
+echo
+
+echo "Heredoc with content containing >"
+test_pass "git commit with heredoc email" '{"tool_name":"Bash","tool_input":{"command":"git commit -m \"$(cat <<EOF\ntest\n<email@example.com>\nEOF\n)\""}}'
+test_block "heredoc with file redirect" '{"tool_name":"Bash","tool_input":{"command":"cat <<EOF > file.txt\ntest\nEOF"}}'
 echo
 
 echo "cp --no-clobber variant"
