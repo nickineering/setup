@@ -86,3 +86,19 @@ godir() {
 		fi
 	fi
 }
+
+# Wrapper to support commands that can't work as git aliases (like `git root`)
+git() {
+	if [[ "$1" == "root" ]]; then
+		local root
+		root=$(command git rev-parse --show-toplevel 2>/dev/null)
+		if [[ -n "$root" ]]; then
+			cd "$root" || return 1
+		else
+			echo "Not in a git repository"
+			return 1
+		fi
+	else
+		command git "$@"
+	fi
+}

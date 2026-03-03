@@ -41,18 +41,6 @@ delete_branches() {
 	fi
 }
 
-# cd to the root of the current Git repository
-git_root() {
-	local root
-	root=$(git rev-parse --show-toplevel 2>/dev/null)
-	if [[ -n "$root" ]]; then
-		cd "$root" || return 1
-	else
-		echo "Not in a git repository"
-		return 1
-	fi
-}
-
 # Interactive rebase. $1=STEPS_BACK_FROM_HEAD / default=10
 interactive_rebase() {
 	local DISTANCE
