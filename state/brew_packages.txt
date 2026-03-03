@@ -32,6 +32,7 @@ tfsec                   # Security scanner for Terraform
 thefuck                 # Type "fuck" after misspelling terminal commands to autocorrect
 tldr                    # Simple help pages for command-line tools
 tmux                    # Terminal multitasking
+trash                   # Move files to macOS Trash (handles duplicates like Finder)
 unzip                   # Mac default outdated
 uv                      # Python and Python package installation manager
 watchman                # Check for changes to files

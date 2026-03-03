@@ -133,7 +133,7 @@ echo "File deletion (rm blocked, use trash)"
 test_block "rm file" '{"tool_name":"Bash","tool_input":{"command":"rm file.txt"}}'
 test_block "rm -f file" '{"tool_name":"Bash","tool_input":{"command":"rm -f file.txt"}}'
 test_block "rm -rf dir" '{"tool_name":"Bash","tool_input":{"command":"rm -rf my-dir/"}}'
-test_pass "mv to trash" '{"tool_name":"Bash","tool_input":{"command":"mv file.txt ~/.Trash/"}}'
+test_pass "trash file" '{"tool_name":"Bash","tool_input":{"command":"trash file.txt"}}'
 echo
 
 echo "Copy with no-clobber (cp -n required)"
@@ -180,7 +180,7 @@ test_pass "cp within projects" '{"tool_name":"Bash","tool_input":{"command":"cp 
 test_pass "mkdir in projects" '{"tool_name":"Bash","tool_input":{"command":"mkdir ~/projects/newdir"}}'
 test_pass "touch in eonnext" '{"tool_name":"Bash","tool_input":{"command":"touch ~/eonnext/file.txt"}}'
 test_pass "unzip to projects" '{"tool_name":"Bash","tool_input":{"command":"unzip file.zip -d ~/projects/out"}}'
-test_pass "mv to trash" '{"tool_name":"Bash","tool_input":{"command":"mv file ~/.Trash/"}}'
+test_pass "trash file" '{"tool_name":"Bash","tool_input":{"command":"trash file"}}'
 test_block "touch in .claude" '{"tool_name":"Bash","tool_input":{"command":"touch ~/.claude/file"}}'
 test_block "cp to home root" '{"tool_name":"Bash","tool_input":{"command":"cp -n file ~/dangerous.txt"}}'
 test_block "mv to Downloads" '{"tool_name":"Bash","tool_input":{"command":"mv file ~/Downloads/"}}'

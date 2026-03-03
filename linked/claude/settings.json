@@ -68,6 +68,7 @@
       "Bash(ls *)",
       "Bash(mkdir *)",
       "Bash(mv *)",
+      "Bash(trash *)",
       "Bash(mypy *)",
       "Bash(node *.js)",
       "Bash(node *.mjs)",

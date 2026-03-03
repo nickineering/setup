@@ -37,10 +37,10 @@ Do not delete git repos, and do not edit `.git/` folders.
 
 # File Deletion
 
-NEVER use `rm` to delete files. Instead, move files to trash:
+NEVER use `rm` to delete files. Instead, use the `trash` command:
 
 ```bash
-mv FILE ~/.Trash/
+trash FILE
 ```
 
 # Git Commits

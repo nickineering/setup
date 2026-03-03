@@ -7,11 +7,6 @@
 # Compatibility must be maintained with both Bash and Zsh.
 # ------------------------------------------------------------------------------------ #
 
-# Move $1 to trash
-trash() {
-	mv -f "${1:?usage: trash FILE_TO_DELETE}" ~/.Trash
-}
-
 # Backup ~/.env.sh where secrets should be located.
 # It is not subject to version control.
 backup_secrets() {

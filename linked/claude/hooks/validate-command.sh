@@ -107,9 +107,9 @@ if [[ "$COMMAND" =~ ^docker[[:space:]] ]]; then
 	fi
 fi
 
-# Block rm - use trash instead (mv to ~/.Trash/)
+# Block rm - use trash instead
 if [[ "$COMMAND" =~ ^rm[[:space:]] ]]; then
-	echo "BLOCKED: Use 'mv FILE ~/.Trash/' instead of rm" >&2
+	echo "BLOCKED: Use 'trash FILE' instead of rm" >&2
 	exit 2
 fi
 
