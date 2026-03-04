@@ -67,7 +67,7 @@ validate_chained_commands() {
 			echo "BLOCKED: Dangerous command in chain: $segment" >&2
 			exit 2
 		fi
-	done <<< "$segments"
+	done <<<"$segments"
 }
 validate_chained_commands "$COMMAND"
 
