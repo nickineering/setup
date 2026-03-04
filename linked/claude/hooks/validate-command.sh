@@ -107,6 +107,39 @@ if [[ "$COMMAND" =~ ^docker[[:space:]] ]]; then
 	fi
 fi
 
+# Block docker volume mounts outside allowed directories
+if [[ "$COMMAND" =~ ^docker[[:space:]].*(run|create)[[:space:]] ]]; then
+	# Extract all -v and --volume arguments
+	while [[ "$COMMAND" =~ (-v|--volume)[[:space:]]+([^[:space:]]+) ]]; do
+		VOLUME_ARG="${BASH_REMATCH[2]}"
+		# Get the host path (before the first colon)
+		HOST_PATH="${VOLUME_ARG%%:*}"
+		# Expand ~ to $HOME
+		HOST_PATH="${HOST_PATH/#\~/$HOME}"
+
+		if [[ "$HOST_PATH" =~ ^/ ]]; then
+			if [[ ! "$HOST_PATH" =~ ^"$HOME"/(projects|eonnext)(/?|/.*)$ ]]; then
+				echo "BLOCKED: Docker volume mount $HOST_PATH outside allowed directories" >&2
+				exit 2
+			fi
+		fi
+		# Remove matched portion to find next volume arg
+		COMMAND="${COMMAND#*"${BASH_REMATCH[0]}"}"
+	done
+fi
+
+# Block npm run/exec (can execute arbitrary scripts)
+if [[ "$COMMAND" =~ ^npm[[:space:]]+(run|exec)[[:space:]] ]]; then
+	echo "BLOCKED: npm run/exec can execute arbitrary scripts. Review package.json first." >&2
+	exit 2
+fi
+
+# Block npx (downloads and executes arbitrary packages)
+if [[ "$COMMAND" =~ ^npx[[:space:]] ]]; then
+	echo "BLOCKED: npx can download and execute arbitrary code" >&2
+	exit 2
+fi
+
 # Block rm - use trash instead
 if [[ "$COMMAND" =~ ^rm[[:space:]] ]]; then
 	echo "BLOCKED: Use 'trash FILE' instead of rm" >&2
@@ -126,12 +159,34 @@ if [[ "$COMMAND" =~ ^cp[[:space:]] ]] && ! [[ "$COMMAND" =~ ([[:space:]]-[a-zA-Z
 	exit 2
 fi
 
-# Block output redirection that could clobber files (allow /dev/null, >>, and heredocs)
+# Block output redirection that could clobber files (allow /dev/null)
 # Patterns: "cmd > file" (space before) or "2>file" (fd redirect, but not 2>&1)
 if [[ "$COMMAND" =~ [[:space:]]'>'[^'>'] ]] || [[ "$COMMAND" =~ [0-9]'>'[^'>&'] ]]; then
 	if ! [[ "$COMMAND" =~ '>/dev/null' ]] && ! [[ "$COMMAND" =~ [0-9]'>/dev/null' ]]; then
-		echo "BLOCKED: Output redirection '>' can overwrite files. Use '>>' to append or reconsider" >&2
+		echo "BLOCKED: Output redirection '>' can overwrite files" >&2
 		exit 2
+	fi
+fi
+
+# Block >> append redirection outside allowed directories
+if [[ "$COMMAND" =~ '>>'[[:space:]]*([^[:space:]]+) ]]; then
+	APPEND_TARGET="${BASH_REMATCH[1]}"
+	# Remove quotes if present
+	APPEND_TARGET="${APPEND_TARGET#\"}"
+	APPEND_TARGET="${APPEND_TARGET%\"}"
+	APPEND_TARGET="${APPEND_TARGET#\'}"
+	APPEND_TARGET="${APPEND_TARGET%\'}"
+	# Expand ~ to $HOME
+	APPEND_TARGET="${APPEND_TARGET/#\~/$HOME}"
+
+	if [[ "$APPEND_TARGET" != "/dev/null" ]]; then
+		# Check if path is absolute and outside allowed directories
+		if [[ "$APPEND_TARGET" =~ ^/ ]]; then
+			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|eonnext|\.Trash)(/?|/.*)$ ]]; then
+				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/eonnext, ~/.Trash" >&2
+				exit 2
+			fi
+		fi
 	fi
 fi
 

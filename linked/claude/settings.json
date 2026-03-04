@@ -74,7 +74,6 @@
       "Bash(node *.js)",
       "Bash(node *.mjs)",
       "Bash(npm *)",
-      "Bash(npx *)",
       "Bash(prettier *)",
       "Bash(pwd)",
       "Bash(pytest *)",
