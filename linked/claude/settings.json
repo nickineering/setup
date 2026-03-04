@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh"
+          },
+          {
+            "type": "command",
             "command": "~/projects/setup/linked/claude/hooks/validate-command.sh"
           }
         ]
