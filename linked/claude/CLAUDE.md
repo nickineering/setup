@@ -32,16 +32,13 @@ State any tradeoffs to approaches and if you think they are acceptable.
 
 # Sandbox
 
-**NEVER** modify a file outside of `~/projects/`, `~/eonnext/`, or `~/.Trash/`.
-Do not delete git repos, and do not edit `.git/` folders.
+**Write zones:** `~/projects/`, `~/eonnext/`, `~/.Trash/`, `~/.cache/`,
+`~/Library/Caches/`, `/tmp/`, `/dev/null`
 
-# File Deletion
+**Blocked:** System dirs, `.git/` folders, `rm` command (use `trash` instead)
 
-NEVER use `rm` to delete files. Instead, use the `trash` command:
-
-```bash
-trash FILE
-```
+**Network:** GET/HEAD requests allowed anywhere. POST/PUT/DELETE require
+approval.
 
 # Git Commits
 

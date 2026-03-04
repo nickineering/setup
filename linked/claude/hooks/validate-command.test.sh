@@ -188,6 +188,25 @@ test_block "mkdir outside sandbox" '{"tool_name":"Bash","tool_input":{"command":
 test_block "unzip to Desktop" '{"tool_name":"Bash","tool_input":{"command":"unzip file.zip -d ~/Desktop/"}}'
 echo
 
+echo "Sandbox: Temp directories and /dev/null (always allowed)"
+test_pass "mkdir in /tmp" '{"tool_name":"Bash","tool_input":{"command":"mkdir /tmp/testdir"}}'
+test_pass "touch in /tmp" '{"tool_name":"Bash","tool_input":{"command":"touch /tmp/file.txt"}}'
+test_pass "cp to /tmp" '{"tool_name":"Bash","tool_input":{"command":"cp -n file /tmp/dest"}}'
+test_pass "mv to /tmp subdir" '{"tool_name":"Bash","tool_input":{"command":"mv file /tmp/subdir/"}}'
+test_pass "tar to /var/folders" '{"tool_name":"Bash","tool_input":{"command":"tar xf file.tar -C /var/folders/abc/"}}'
+test_pass "append to /tmp" '{"tool_name":"Bash","tool_input":{"command":"echo test >> /tmp/log.txt"}}'
+test_pass "append to /dev/null" '{"tool_name":"Bash","tool_input":{"command":"echo test >> /dev/null"}}'
+echo
+
+echo "Sandbox: Cache directories (allowed)"
+test_pass "mkdir ~/.cache" '{"tool_name":"Bash","tool_input":{"command":"mkdir ~/.cache/myapp"}}'
+test_pass "touch ~/.cache" '{"tool_name":"Bash","tool_input":{"command":"touch ~/.cache/file.txt"}}'
+test_pass "mkdir ~/Library/Caches" '{"tool_name":"Bash","tool_input":{"command":"mkdir ~/Library/Caches/myapp"}}'
+test_pass "cp to ~/Library/Caches" '{"tool_name":"Bash","tool_input":{"command":"cp -n file ~/Library/Caches/dest"}}'
+test_pass "append to ~/.cache" '{"tool_name":"Bash","tool_input":{"command":"echo test >> ~/.cache/log.txt"}}'
+test_block "touch ~/Library/Other" '{"tool_name":"Bash","tool_input":{"command":"touch ~/Library/Other/file"}}'
+echo
+
 echo "Terraform (apply/destroy/import blocked)"
 test_pass "terraform plan" '{"tool_name":"Bash","tool_input":{"command":"terraform plan"}}'
 test_pass "terraform init" '{"tool_name":"Bash","tool_input":{"command":"terraform init"}}'
@@ -288,6 +307,70 @@ echo
 echo "Non-Bash tools (should pass through)"
 test_pass "Read tool" '{"tool_name":"Read","tool_input":{"file_path":"/etc/passwd"}}'
 test_pass "Grep tool" '{"tool_name":"Grep","tool_input":{"pattern":"foo"}}'
+echo
+
+echo "Relative path traversal (blocked)"
+test_block "mkdir with .." '{"tool_name":"Bash","tool_input":{"command":"mkdir ../../../tmp/escape"}}'
+test_block "cp with .. in dest" '{"tool_name":"Bash","tool_input":{"command":"cp -n file ../../outside/"}}'
+test_block "touch with .." '{"tool_name":"Bash","tool_input":{"command":"touch ../file.txt"}}'
+test_block "mv with .." '{"tool_name":"Bash","tool_input":{"command":"mv file ../outside/"}}'
+test_pass "ls with .." '{"tool_name":"Bash","tool_input":{"command":"ls ../"}}'
+test_pass "cat with .." '{"tool_name":"Bash","tool_input":{"command":"cat ../file.txt"}}'
+echo
+
+echo "Subshell execution (dangerous commands blocked)"
+test_block "echo with rm subshell" '{"tool_name":"Bash","tool_input":{"command":"echo $(rm file.txt)"}}'
+test_block "rm in backticks" '{"tool_name":"Bash","tool_input":{"command":"echo `rm file.txt`"}}'
+test_block "dd in subshell" '{"tool_name":"Bash","tool_input":{"command":"result=$(dd if=/dev/zero of=file)"}}'
+test_block "eval in subshell" '{"tool_name":"Bash","tool_input":{"command":"echo $(eval dangerous)"}}'
+test_pass "safe command in subshell" '{"tool_name":"Bash","tool_input":{"command":"echo $(date)"}}'
+test_pass "pwd in backticks" '{"tool_name":"Bash","tool_input":{"command":"dir=`pwd`"}}'
+echo
+
+echo "Command chaining (dangerous commands blocked)"
+test_block "safe && rm" '{"tool_name":"Bash","tool_input":{"command":"cd /tmp && rm file"}}'
+test_block "safe; rm" '{"tool_name":"Bash","tool_input":{"command":"ls; rm file"}}'
+test_block "safe || dd" '{"tool_name":"Bash","tool_input":{"command":"false || dd if=/dev/zero of=file"}}'
+test_pass "safe && safe" '{"tool_name":"Bash","tool_input":{"command":"cd /tmp && ls"}}'
+test_pass "safe; safe" '{"tool_name":"Bash","tool_input":{"command":"date; pwd"}}'
+echo
+
+echo "Force symlinks (blocked)"
+test_block "ln -sf" '{"tool_name":"Bash","tool_input":{"command":"ln -sf target link"}}'
+test_block "ln -fs" '{"tool_name":"Bash","tool_input":{"command":"ln -fs target link"}}'
+test_block "ln --force" '{"tool_name":"Bash","tool_input":{"command":"ln --force -s target link"}}'
+test_pass "ln -s" '{"tool_name":"Bash","tool_input":{"command":"ln -s target link"}}'
+echo
+
+echo "rsync --delete (blocked)"
+test_block "rsync --delete" '{"tool_name":"Bash","tool_input":{"command":"rsync --delete src/ dest/"}}'
+test_block "rsync -av --delete" '{"tool_name":"Bash","tool_input":{"command":"rsync -av --delete src/ dest/"}}'
+test_pass "rsync without delete" '{"tool_name":"Bash","tool_input":{"command":"rsync -av src/ dest/"}}'
+echo
+
+echo "git commit --amend (blocked)"
+test_block "git commit --amend" '{"tool_name":"Bash","tool_input":{"command":"git commit --amend"}}'
+test_block "git commit --amend -m" '{"tool_name":"Bash","tool_input":{"command":"git commit --amend -m \"fix\""}}'
+test_pass "git commit" '{"tool_name":"Bash","tool_input":{"command":"git commit -m \"message\""}}'
+echo
+
+echo "git rebase (blocked)"
+test_block "git rebase" '{"tool_name":"Bash","tool_input":{"command":"git rebase main"}}'
+test_block "git rebase -i" '{"tool_name":"Bash","tool_input":{"command":"git rebase -i HEAD~3"}}'
+test_block "git rebase --onto" '{"tool_name":"Bash","tool_input":{"command":"git rebase --onto main feature"}}'
+test_pass "git merge" '{"tool_name":"Bash","tool_input":{"command":"git merge feature"}}'
+echo
+
+echo "launchctl (blocked)"
+test_block "launchctl load" '{"tool_name":"Bash","tool_input":{"command":"launchctl load ~/Library/LaunchAgents/com.example.plist"}}'
+test_block "launchctl unload" '{"tool_name":"Bash","tool_input":{"command":"launchctl unload ~/Library/LaunchAgents/com.example.plist"}}'
+test_block "launchctl list" '{"tool_name":"Bash","tool_input":{"command":"launchctl list"}}'
+echo
+
+echo "defaults write (blocked)"
+test_block "defaults write" '{"tool_name":"Bash","tool_input":{"command":"defaults write com.apple.finder ShowAllFiles -bool true"}}'
+test_block "defaults write NSGlobalDomain" '{"tool_name":"Bash","tool_input":{"command":"defaults write NSGlobalDomain AppleShowAllExtensions -bool true"}}'
+test_pass "defaults read" '{"tool_name":"Bash","tool_input":{"command":"defaults read com.apple.finder"}}'
 echo
 
 echo "============================"

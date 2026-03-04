@@ -12,6 +12,66 @@ if [[ "$TOOL" != "Bash" ]]; then
 fi
 
 # =============================================================================
+# HIGH-PRIORITY BYPASS PREVENTION
+# =============================================================================
+
+# --- Relative path traversal detection ---
+# Block writes that use .. to escape the sandbox
+# Pattern: write commands with paths containing .. that could escape
+WRITE_CMDS_PATTERN='^(cp|mv|tar|unzip|mkdir|touch|tee|ln)[[:space:]]'
+if [[ "$COMMAND" =~ $WRITE_CMDS_PATTERN ]]; then
+	# Check for .. in any path argument (not just absolute paths)
+	if [[ "$COMMAND" =~ (^|[[:space:]])\.\.[/[:space:]] ]] || [[ "$COMMAND" =~ [[:space:]]\.\.\$ ]]; then
+		echo "BLOCKED: Relative path traversal (..) not allowed in write commands" >&2
+		exit 2
+	fi
+fi
+
+# --- Subshell execution validation ---
+# Extract and validate commands inside $() and backticks
+# This catches: echo $(rm -rf /), `dangerous command`
+
+# Check for dangerous commands inside $(...) - match the pattern directly
+# Pattern matches: $( followed by optional space, then dangerous cmd, then space
+SUBSHELL_DANGER='\$\([[:space:]]*(rm|dd|eval)[[:space:]]'
+if [[ "$COMMAND" =~ $SUBSHELL_DANGER ]]; then
+	echo "BLOCKED: Dangerous command in subshell" >&2
+	exit 2
+fi
+
+# Check for dangerous commands inside backticks
+BACKTICK_DANGER='`[[:space:]]*(rm|dd|eval)[[:space:]]'
+if [[ "$COMMAND" =~ $BACKTICK_DANGER ]]; then
+	echo "BLOCKED: Dangerous command in backticks" >&2
+	exit 2
+fi
+
+# --- Command chaining validation ---
+# Split on &&, ||, ; and validate each segment
+# This catches: cd /tmp && touch file, safe; dangerous
+validate_chained_commands() {
+	local cmd="$1"
+	local segment
+	local dangerous_pattern='^[[:space:]]*(rm|dd|eval|bash[[:space:]]+-c|sh[[:space:]]+-c)[[:space:]]'
+
+	# Simple split on command separators (outside quotes - approximation)
+	# Replace separators with newline, then check each line
+	local segments
+	segments=$(echo "$cmd" | sed 's/[[:space:]]&&[[:space:]]/\n/g; s/[[:space:]]||[[:space:]]/\n/g; s/;[[:space:]]*/\n/g')
+
+	while IFS= read -r segment; do
+		# Skip empty segments
+		[[ -z "$segment" ]] && continue
+		# Check if segment starts with a dangerous command
+		if [[ "$segment" =~ $dangerous_pattern ]]; then
+			echo "BLOCKED: Dangerous command in chain: $segment" >&2
+			exit 2
+		fi
+	done <<< "$segments"
+}
+validate_chained_commands "$COMMAND"
+
+# =============================================================================
 # SANDBOX: Restrict file modifications to allowed directories
 # =============================================================================
 
@@ -26,14 +86,20 @@ fi
 
 # Block writes to system directories
 # Match these paths anywhere in the command (as they shouldn't appear in safe commands)
-SYSTEM_PATHS='(^|[[:space:]]|"|'"'"')/((etc|usr|var|System|Library|bin|sbin|opt|private|Applications)/)'
+# Exception: /var/folders is macOS user temp ($TMPDIR)
+SYSTEM_PATHS='(^|[[:space:]]|"|'"'"')/((etc|usr|System|Library|bin|sbin|opt|private|Applications)/)'
 if [[ "$COMMAND" =~ $SYSTEM_PATHS ]]; then
+	echo "BLOCKED: Cannot write to system directories" >&2
+	exit 2
+fi
+# Block /var except /var/folders
+if [[ "$COMMAND" =~ (^|[[:space:]]|\"|\')\/var\/ ]] && [[ ! "$COMMAND" =~ \/var\/folders\/ ]]; then
 	echo "BLOCKED: Cannot write to system directories" >&2
 	exit 2
 fi
 
 # For file-writing commands, block absolute paths outside allowed directories
-# Allowed: ~/projects, ~/eonnext, ~/.Trash (and /dev/null)
+# Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
 WRITE_COMMANDS='^(cp|mv|tar|unzip|mkdir|touch|tee)[[:space:]]'
 if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 	# Extract all absolute paths from command
@@ -43,13 +109,15 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 		# Expand ~ to $HOME
 		expanded_path="${path/#\~/$HOME}"
 
-		# Skip /dev/null
+		# Skip /dev/null and temp directories
 		[[ "$expanded_path" == "/dev/null" ]] && continue
+		[[ "$expanded_path" =~ ^/tmp(/|$) ]] && continue
+		[[ "$expanded_path" =~ ^/var/folders/ ]] && continue
 
 		# Check if path is within allowed directories
 		if [[ "$expanded_path" =~ ^/ ]]; then
-			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|eonnext|\.Trash)(/?|/.*)$ ]]; then
-				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/eonnext, ~/.Trash" >&2
+			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|eonnext|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
+				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
 				exit 2
 			fi
 		fi
@@ -179,11 +247,14 @@ if [[ "$COMMAND" =~ '>>'[[:space:]]*([^[:space:]]+) ]]; then
 	# Expand ~ to $HOME
 	APPEND_TARGET="${APPEND_TARGET/#\~/$HOME}"
 
-	if [[ "$APPEND_TARGET" != "/dev/null" ]]; then
+	# Skip /dev/null and temp directories
+	if [[ "$APPEND_TARGET" != "/dev/null" ]] &&
+		[[ ! "$APPEND_TARGET" =~ ^/tmp(/|$) ]] &&
+		[[ ! "$APPEND_TARGET" =~ ^/var/folders/ ]]; then
 		# Check if path is absolute and outside allowed directories
 		if [[ "$APPEND_TARGET" =~ ^/ ]]; then
-			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|eonnext|\.Trash)(/?|/.*)$ ]]; then
-				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/eonnext, ~/.Trash" >&2
+			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|eonnext|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
+				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
 				exit 2
 			fi
 		fi
@@ -342,6 +413,46 @@ fi
 # Block piped tee (can overwrite files mid-pipeline)
 if [[ "$COMMAND" =~ \|[[:space:]]*tee[[:space:]] ]]; then
 	echo "BLOCKED: Piped tee not allowed" >&2
+	exit 2
+fi
+
+# =============================================================================
+# MEDIUM-PRIORITY: Additional protections (would prompt anyway, extra safety)
+# =============================================================================
+
+# Block force symlinks (can overwrite via symlink)
+if [[ "$COMMAND" =~ ^ln[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*f|--force ]]; then
+	echo "BLOCKED: ln -f/--force can overwrite files via symlink" >&2
+	exit 2
+fi
+
+# Block rsync --delete (mass deletion)
+if [[ "$COMMAND" =~ ^rsync[[:space:]] ]] && [[ "$COMMAND" =~ --delete ]]; then
+	echo "BLOCKED: rsync --delete can cause mass deletion" >&2
+	exit 2
+fi
+
+# Block git commit --amend (rewrites history)
+if [[ "$COMMAND" =~ ^git[[:space:]]commit[[:space:]] ]] && [[ "$COMMAND" =~ --amend ]]; then
+	echo "BLOCKED: git commit --amend rewrites recent history" >&2
+	exit 2
+fi
+
+# Block git rebase (history rewriting)
+if [[ "$COMMAND" =~ ^git[[:space:]]rebase ]]; then
+	echo "BLOCKED: git rebase rewrites commit history" >&2
+	exit 2
+fi
+
+# Block launchctl (system service control)
+if [[ "$COMMAND" =~ ^launchctl[[:space:]] ]]; then
+	echo "BLOCKED: launchctl controls system services" >&2
+	exit 2
+fi
+
+# Block defaults write (macOS preferences)
+if [[ "$COMMAND" =~ ^defaults[[:space:]]write ]]; then
+	echo "BLOCKED: defaults write modifies macOS system preferences" >&2
 	exit 2
 fi
 
