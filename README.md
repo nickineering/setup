@@ -20,3 +20,12 @@ Once you run that script you will have to
 Changes to your dotfiles will be mirrored in your local copy of the repo in the
 `linked` folder to make contributing upstream easier. Do not move the repo or it
 will break the links!
+
+## Maintenance
+
+Periodically update dependencies:
+
+```bash
+make update-formatters  # Update dprint plugins
+make update-actions     # Update GitHub Actions versions
+```
