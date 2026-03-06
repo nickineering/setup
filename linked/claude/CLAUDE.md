@@ -42,8 +42,8 @@ approval.
 
 # Git Commits
 
-Do NOT add `Co-Authored-By` trailers crediting yourself. Only add co-author
-trailers when crediting other humans.
+**IMPORTANT: Do NOT add `Co-Authored-By` trailers crediting yourself.** Only add
+co-author trailers when crediting humans.
 
 # Backwards compatibility
 
