@@ -1,0 +1,65 @@
+{
+  "$schema": "https://dprint.dev/schemas/v0.json",
+  // dprint respects .gitignore, but these provide a safety net for common
+  // directories that may not always be gitignored
+  "excludes": [
+    // Git internals (not in .gitignore because git ignores itself implicitly)
+    "**/.git",
+    // Python
+    "**/__pycache__",
+    "**/.eggs",
+    "**/*.egg-info",
+    "**/.venv",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.ruff_cache",
+    "**/.tox",
+    "**/.nox",
+    "**/.ipynb_checkpoints",
+    "**/htmlcov",
+    // JavaScript/Node
+    "**/node_modules",
+    "**/coverage",
+    // Build outputs
+    "**/build",
+    "**/dist",
+  ],
+  // Shell formatting via shfmt (installed via Homebrew)
+  // The exec plugin runs external commands - requires SHA-256 hash for security
+  "exec": {
+    "commands": [
+      {
+        "command": "shfmt",
+        // Standard shell extensions
+        "exts": [
+          "bash",
+          "sh",
+        ],
+        // Shell config files without extensions
+        "fileNames": [
+          ".bash_profile",
+          ".bashrc",
+          ".profile",
+          ".zprofile",
+          ".zshrc",
+        ],
+      },
+    ],
+  },
+  // LF line endings for cross-platform consistency
+  "newLineKind": "lf",
+  // Run `make update-formatters` to update plugin versions
+  "plugins": [
+    "https://plugins.dprint.dev/dockerfile-0.3.3.wasm",
+    // exec plugin is JSON (not WASM) because it runs shell commands - hash required
+    "https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364",
+    "https://plugins.dprint.dev/g-plane/malva-v0.15.2.wasm", // CSS/SCSS/Less
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.26.0.wasm", // HTML
+    "https://plugins.dprint.dev/g-plane/pretty_graphql-v0.2.3.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm",
+    "https://plugins.dprint.dev/json-0.21.1.wasm",
+    "https://plugins.dprint.dev/markdown-0.21.1.wasm",
+    "https://plugins.dprint.dev/toml-0.7.0.wasm",
+    "https://plugins.dprint.dev/typescript-0.95.15.wasm", // Also JS/JSX/TSX
+  ],
+}

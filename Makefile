@@ -1,16 +1,14 @@
-.PHONY: lint fix shellcheck format format-check
+.PHONY: lint fix check update-formatters
 
 lint: fix shellcheck
 
 fix:
 	shellharden --replace **/*.sh
-	shfmt -w .
+	dprint fmt
 
-shellcheck:
+check:
 	shellcheck -S warning **/*.sh
+	dprint check
 
-format:
-	shfmt -w .
-
-format-check:
-	shfmt -d .
+update-formatters:
+	dprint config update

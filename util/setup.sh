@@ -41,6 +41,7 @@ while IFS= read -r file; do
 done <"$SETUP"/state/linked_files.txt
 backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json"
 backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
+backup_or_delete ~/dprint.jsonc
 print_green "Deleted existing links so they can be freshly created"
 
 # Brew taps
@@ -123,6 +124,11 @@ if [ -d "$VSCODE_USER_DIR" ]; then
 	fi
 else
 	print_green "Warning: VSCode user directory not found. Skipping settings link."
+fi
+
+# Link dprint config (from repo root, not linked/, to avoid dprint excluding linked/)
+if ! ln -s "$SETUP"/dprint.jsonc ~/dprint.jsonc; then
+	echo "Warning: Failed to link dprint.jsonc" >&2
 fi
 
 source configure_firefox.sh

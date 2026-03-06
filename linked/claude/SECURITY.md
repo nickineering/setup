@@ -4,22 +4,22 @@ This document explains this user's security model for Claude Code.
 
 ## Philosophy: Trust Zones
 
-| Zone                  | Scope                                                            | Behavior                                                                                       |
-| --------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Current Directory** | `./`                                                             | YOLO mode - auto-allow most operations except git history changes and hard-to-undo operations  |
-| **Safe Read Zones**   | `~/projects`, `~/eonnext`                                        | Read/analyze freely, no modifications                                                          |
-| **Temp/Cache**        | `/tmp`, `/var/folders` ($TMPDIR), `~/.cache`, `~/Library/Caches` | Always allowed - ephemeral/regenerable storage                                                 |
-| **Null**              | `/dev/null`                                                      | Always allowed - output sink                                                                   |
-| **Outside**           | Everything else                                                  | Blocked (system dirs)                                                                          |
+| Zone                  | Scope                                                            | Behavior                                                                                      |
+| --------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Current Directory** | `./`                                                             | YOLO mode - auto-allow most operations except git history changes and hard-to-undo operations |
+| **Safe Read Zones**   | `~/projects`, `~/eonnext`                                        | Read/analyze freely, no modifications                                                         |
+| **Temp/Cache**        | `/tmp`, `/var/folders` ($TMPDIR), `~/.cache`, `~/Library/Caches` | Always allowed - ephemeral/regenerable storage                                                |
+| **Null**              | `/dev/null`                                                      | Always allowed - output sink                                                                  |
+| **Outside**           | Everything else                                                  | Blocked (system dirs)                                                                         |
 
 **Core principle:** Maximum productivity while preventing irreversible
 operations or system integrity violations.
 
 ## Network Access
 
-| Method      | Behavior                                      |
-| ----------- | --------------------------------------------- |
-| GET/HEAD    | Allowed anywhere - reading is safe            |
+| Method                | Behavior                                |
+| --------------------- | --------------------------------------- |
+| GET/HEAD              | Allowed anywhere - reading is safe      |
 | POST/PUT/DELETE/PATCH | Blocked by hook, requires user approval |
 
 Fetching from the internet is fine. Only write operations (which could leak

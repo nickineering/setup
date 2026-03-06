@@ -10,6 +10,7 @@ fd                      # Fast find alternative written in Rust
 findutils               # Mac default outdated
 gawk                    # Mac default outdated
 geckodriver             # WebDriver for Firefox, used by Selenium
+dprint                  # Fast Rust based formatter for web languages
 gh                      # Github CLI
 git-lfs                 # Better handling of large files by Git
 gnu-indent              # Mac default outdated
