@@ -42,8 +42,9 @@ approval.
 
 # Git Commits
 
-**IMPORTANT: Do NOT add `Co-Authored-By` trailers crediting yourself.** Only add
-co-author trailers when crediting humans.
+**EXTREMELY IMPORTANT: Do NOT add `Co-Authored-By` trailers crediting
+yourself.** Only add co-author trailers when crediting humans. Claude is **not**
+a human
 
 # Backwards compatibility
 
