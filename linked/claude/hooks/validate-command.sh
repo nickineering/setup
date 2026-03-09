@@ -102,8 +102,10 @@ fi
 # Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
 WRITE_COMMANDS='^(cp|mv|tar|unzip|mkdir|touch|tee)[[:space:]]'
 if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
-	# Extract all absolute paths from command
-	PATHS_IN_CMD=$(echo "$COMMAND" | grep -oE '(/[^[:space:]]+|~[^[:space:]]*)' || true)
+	# Extract absolute paths that are complete arguments (preceded by space)
+	# This avoids matching embedded paths like templates/_shared/.gitignore or }}/.gitignore
+	# Prepend space to handle paths at start of arguments
+	PATHS_IN_CMD=$(printf ' %s' "$COMMAND" | grep -oE '[[:space:]]['"'"'"]?(/[^[:space:]'"'"'"]+|~[^[:space:]'"'"'"]+)' | sed "s/^[[:space:]]['\"]*//" || true)
 
 	for path in $PATHS_IN_CMD; do
 		# Expand ~ to $HOME
@@ -220,10 +222,13 @@ if [[ "$COMMAND" =~ ^git[[:space:]]branch[[:space:]]+-[a-zA-Z]*D ]]; then
 	exit 2
 fi
 
-# Block cp/mv without -n (no-clobber) flag when destination could be overwritten
-# Allow if -n flag is present
-if [[ "$COMMAND" =~ ^cp[[:space:]] ]] && ! [[ "$COMMAND" =~ ([[:space:]]-[a-zA-Z]*n|--no-clobber) ]]; then
+# Block cp/mv without -n (no-clobber) flag to prevent accidental overwrites
+if [[ "$COMMAND" =~ ^cp[[:space:]] ]] && ! [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*n ]]; then
 	echo "BLOCKED: Use 'cp -n' to prevent overwriting existing files" >&2
+	exit 2
+fi
+if [[ "$COMMAND" =~ ^mv[[:space:]] ]] && ! [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*n ]]; then
+	echo "BLOCKED: Use 'mv -n' to prevent overwriting existing files" >&2
 	exit 2
 fi
 
