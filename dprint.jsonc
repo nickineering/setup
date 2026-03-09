@@ -48,6 +48,9 @@
   },
   // LF line endings for cross-platform consistency
   "newLineKind": "lf",
+  "markdown": {
+    "textWrap": "always"
+  },
   // Run `make update-formatters` to update plugin versions
   "plugins": [
     "https://plugins.dprint.dev/dockerfile-0.3.3.wasm",
