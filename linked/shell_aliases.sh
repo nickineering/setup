@@ -18,10 +18,6 @@ alias env.sh="vim ~/.env.sh"
 # Find the following directory if nested within the current directory
 alias finddir='fd --type d --glob'
 
-# Use zsh-colorize for cat and less everywhere
-alias cat=ccat
-alias less=cless
-
 # Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
 alias ...="cd ../.."
