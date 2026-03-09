@@ -22,8 +22,8 @@ operations or system integrity violations.
 | GET/HEAD              | Allowed anywhere - reading is safe      |
 | POST/PUT/DELETE/PATCH | Blocked by hook, requires user approval |
 
-Fetching from the internet is fine. Only write operations (which could leak
-data or modify remote state) are blocked.
+Fetching from the internet is fine. Only write operations (which could leak data
+or modify remote state) are blocked.
 
 ## Two-Layer Architecture
 
