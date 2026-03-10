@@ -13,10 +13,12 @@ mkdir -p "$CLAUDE_DIR"
 source backup_or_delete.sh
 backup_or_delete "$CLAUDE_DIR/settings.json"
 backup_or_delete "$CLAUDE_DIR/CLAUDE.md"
+backup_or_delete "$CLAUDE_DIR/skills"
 
-# Symlink settings and instructions
+# Symlink settings, instructions, and skills
 ln -s "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json"
 ln -s "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+ln -s "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills"
 
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
