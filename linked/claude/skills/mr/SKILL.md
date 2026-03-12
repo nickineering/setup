@@ -39,7 +39,7 @@ description. Always generate fresh content based on the **final diff**.
 
 ```bash
 git diff origin/<target>...HEAD --stat
-git log origin/<target>..HEAD --oneline
+git log origin/<target>..HEAD --oneline --no-color
 ```
 
 Classify as:
@@ -50,12 +50,13 @@ Classify as:
 #### 3b. For large changes: systematic review
 
 1. **Group files by area** from the stat output (e.g., CI, templates, tests,
-   config, core logic)
+   config, core logic). Plan your sampling strategy before reading any diffs.
 2. **Use commits as a discovery map**: commit messages reveal the author's
    intent and help identify distinct changes you might otherwise miss. But
    verify against final diffs—don't describe work that was reverted.
-3. **Sample each group**: read at least one representative diff from each
-   logical area. Don't skip areas based on hunches about importance.
+3. **Sample each group in parallel**: read representative diffs from multiple
+   logical areas simultaneously. Don't wait for one area before reading another
+   and don't skip areas based on hunches about importance.
 4. **Look for these commonly-missed changes**:
    - New options/features
    - Dependency/version bumps
@@ -98,7 +99,7 @@ glab mr update <number> --title "..." --description "..."
 glab mr update <number> --ready  # if draft
 
 # Or create new:
-glab mr create --target-branch <target> --title "..." --description "..." --no-prompt
+glab mr create --target-branch <target> --title "..." --description "..." --yes
 ```
 
 ### 5. Handle pipeline failures
