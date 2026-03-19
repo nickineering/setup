@@ -222,14 +222,23 @@ if [[ "$COMMAND" =~ ^git[[:space:]]branch[[:space:]]+-[a-zA-Z]*D ]]; then
 	exit 2
 fi
 
-# Block cp/mv without -n (no-clobber) flag to prevent accidental overwrites
-if [[ "$COMMAND" =~ ^cp[[:space:]] ]] && ! [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*n ]]; then
-	echo "BLOCKED: Use 'cp -n' to prevent overwriting existing files" >&2
-	exit 2
+# Block cp/mv without -n/--no-clobber flag to prevent accidental overwrites
+# Exception: allow without -n when destination is temp directory (/tmp or /var/folders)
+if [[ "$COMMAND" =~ ^cp[[:space:]] ]]; then
+	if ! [[ "$COMMAND" =~ [[:space:]](-[a-zA-Z]*n|--no-clobber) ]]; then
+		if ! [[ "$COMMAND" =~ [[:space:]](/tmp/|/var/folders/) ]]; then
+			echo "BLOCKED: Use 'cp -n' to prevent overwriting existing files" >&2
+			exit 2
+		fi
+	fi
 fi
-if [[ "$COMMAND" =~ ^mv[[:space:]] ]] && ! [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*n ]]; then
-	echo "BLOCKED: Use 'mv -n' to prevent overwriting existing files" >&2
-	exit 2
+if [[ "$COMMAND" =~ ^mv[[:space:]] ]]; then
+	if ! [[ "$COMMAND" =~ [[:space:]](-[a-zA-Z]*n|--no-clobber) ]]; then
+		if ! [[ "$COMMAND" =~ [[:space:]](/tmp/|/var/folders/) ]]; then
+			echo "BLOCKED: Use 'mv -n' to prevent overwriting existing files" >&2
+			exit 2
+		fi
+	fi
 fi
 
 # Block output redirection that could clobber files (allow /dev/null)
