@@ -1,36 +1,37 @@
 {
+  "env": {},
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh"
+            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh"
+            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh",
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "Bash"
       },
       {
-        "matcher": "Write",
         "hooks": [
           {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh"
+            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh",
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "Write"
       }
     ]
   },
   "permissions": {
     "allow": [
-      "Bash(awk -F* *)",
-      "Bash(awk -v * *)",
       "Bash(awk '{print *}' *)",
       "Bash(awk '{print*}' *)",
+      "Bash(awk -F* *)",
+      "Bash(awk -v * *)",
       "Bash(aws *)",
       "Bash(base64 *)",
       "Bash(cat *)",
@@ -121,16 +122,16 @@
       "Bash(mkdir *)",
       "Bash(mv *)",
       "Bash(mypy *)",
-      "Bash(node --version)",
       "Bash(node *.cjs)",
       "Bash(node *.js)",
       "Bash(node *.mjs)",
+      "Bash(node --version)",
       "Bash(npm *)",
       "Bash(pwd)",
       "Bash(pytest *)",
+      "Bash(python *.py)",
       "Bash(python --version)",
       "Bash(python -m *)",
-      "Bash(python *.py)",
       "Bash(ruff *)",
       "Bash(sam *)",
       "Bash(sed *)",
@@ -182,9 +183,9 @@
       "Write(./**)"
     ],
     "deny": [
-      "Bash(* > /etc/*)",
       "Bash(* > /Library/*)",
       "Bash(* > /System/*)",
+      "Bash(* > /etc/*)",
       "Bash(* > /usr/*)",
       "Bash(* > /var/*)",
       "Edit(**/.git/**)",
@@ -201,6 +202,5 @@
       "Read(~/.ssh/*)",
       "Write(**/.git/**)"
     ]
-  },
-  "env": {}
+  }
 }
