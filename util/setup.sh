@@ -15,6 +15,20 @@ cd "$SETUP"/util
 # Generic printing utility
 source print.sh
 
+# Trap handler for cleanup on interruption
+CURRENT_STEP=""
+cleanup_on_interrupt() {
+	echo "" >&2
+	echo "Setup interrupted!" >&2
+	if [ -n "$CURRENT_STEP" ]; then
+		echo "Stopped during: $CURRENT_STEP" >&2
+	fi
+	echo "To resume, run: $SETUP/util/setup.sh" >&2
+	echo "Backups (if any) are in: ~/Documents/backups/" >&2
+	exit 130
+}
+trap cleanup_on_interrupt INT TERM
+
 # Validate that a required state file exists and is readable
 require_state_file() {
 	local file="$SETUP/state/$1"
@@ -34,6 +48,7 @@ for state_file in linked_files.txt brew_packages.txt brew_casks.txt vscode_exten
 done
 print_green "Validated all required state files"
 
+CURRENT_STEP="backing up existing files"
 # Move all files that will be destroyed to the backups folder so they are not overwritten
 source backup_or_delete.sh
 while IFS= read -r file; do
@@ -44,10 +59,12 @@ backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml"
 backup_or_delete ~/dprint.jsonc
 print_green "Deleted existing links so they can be freshly created"
 
+CURRENT_STEP="configuring Homebrew taps"
 # Brew taps
 brew tap beeftornado/rmtree # Run `brew rmtree` to remove package and dependencies
 brew tap hashicorp/tap      # For Terraform
 
+CURRENT_STEP="installing Homebrew packages"
 # Install Homebrew packages
 source strip_comments.sh
 while IFS= read -r package; do
@@ -65,6 +82,7 @@ if [ -f "$CHROMEDRIVER_PATH" ]; then
 fi
 print_green "Installed Homebrew packages"
 
+CURRENT_STEP="installing Homebrew casks"
 # Install Homebrew casks
 while IFS= read -r cask; do
 	cask_name=$(strip_comments "$cask")
@@ -76,6 +94,7 @@ while IFS= read -r cask; do
 done <"$SETUP"/state/brew_casks.txt
 print_green "Installed Homebrew casks"
 
+CURRENT_STEP="installing VSCode extensions"
 # Install VSCode extensions. View current with `code --list-extensions`
 if command -v code &>/dev/null; then
 	while IFS= read -r extension; do
@@ -90,9 +109,11 @@ else
 	print_green "Warning: VSCode CLI not found. Skipping extension installation."
 fi
 
+CURRENT_STEP="configuring Zsh"
 # Configure Zsh to use Oh My Zsh. Affects ~/.zshrc so must be before linking.
 source configure_zsh.sh
 
+CURRENT_STEP="copying template files"
 # Copy templates for customization files if they do not already exist
 while IFS= read -r file; do
 	if [ -e ~/"$file" ]; then
@@ -103,6 +124,7 @@ do so manually."
 	fi
 done <"$SETUP"/state/copied_files.txt
 
+CURRENT_STEP="creating symlinks"
 # Link custom settings so that they are updated automatically when changes are pulled
 while IFS= read -r file; do
 	# Skip empty lines
@@ -111,7 +133,7 @@ while IFS= read -r file; do
 		echo "Warning: Dotfile not found: $DOTFILES/$file" >&2
 		continue
 	fi
-	if ! ln -s "$DOTFILES/$file" ~/; then
+	if ! ln -sfn "$DOTFILES/$file" ~/; then
 		echo "Warning: Failed to link $file" >&2
 	fi
 done <"$SETUP"/state/linked_files.txt
@@ -119,7 +141,7 @@ done <"$SETUP"/state/linked_files.txt
 # Link VSCode settings if the directory exists
 VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
 if [ -d "$VSCODE_USER_DIR" ]; then
-	if ! ln -s "$DOTFILES"/settings.json "$VSCODE_USER_DIR/"; then
+	if ! ln -sfn "$DOTFILES"/settings.json "$VSCODE_USER_DIR/settings.json"; then
 		echo "Warning: Failed to link VSCode settings.json" >&2
 	fi
 else
@@ -127,7 +149,7 @@ else
 fi
 
 # Link dprint config (from repo root, not linked/, to avoid dprint excluding linked/)
-if ! ln -s "$SETUP"/dprint.jsonc ~/dprint.jsonc; then
+if ! ln -sfn "$SETUP"/dprint.jsonc ~/dprint.jsonc; then
 	echo "Warning: Failed to link dprint.jsonc" >&2
 fi
 
@@ -140,14 +162,18 @@ mkdir -p ~/.vim/undo/
 
 print_green "Copied and linked required files"
 
+CURRENT_STEP="configuring Ruff"
 source configure_ruff.sh
 print_green "Configured Ruff"
 
+CURRENT_STEP="configuring Claude"
 source configure_claude.sh
 
+CURRENT_STEP="configuring Python"
 source configure_python.sh
 print_green "Completed Python installs"
 
+CURRENT_STEP="configuring Node"
 source configure_node.sh
 print_green "Completed installs. Now configuring settings..."
 
@@ -159,11 +185,13 @@ else
 	print_green "Zoom daemon not found. Skipping auto-update configuration."
 fi
 
+CURRENT_STEP="configuring macOS"
 # Configures the operating system on import
 source configure_macos.sh
 
 print_green "Configured MacOS. Now downloading OS updates. This could take a while..."
 
+CURRENT_STEP="installing macOS updates"
 # Install MacOS updates
 sudo softwareupdate -i -a
 

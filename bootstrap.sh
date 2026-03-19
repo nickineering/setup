@@ -10,6 +10,19 @@ set -euo pipefail
 # Print commands as they are run
 set -v
 
+# Trap handler for cleanup on interruption
+CURRENT_STEP=""
+cleanup_on_interrupt() {
+	echo "" >&2
+	echo "Bootstrap interrupted!" >&2
+	if [ -n "$CURRENT_STEP" ]; then
+		echo "Stopped during: $CURRENT_STEP" >&2
+	fi
+	echo "To resume, re-run: curl -s https://raw.githubusercontent.com/nickineering/setup/master/bootstrap.sh | /bin/bash" >&2
+	exit 130
+}
+trap cleanup_on_interrupt INT TERM
+
 # Start running the print utility first so we can update the user on progress.
 # We must save the file first because we are on Bash 3.2
 if ! curl -fsSL https://raw.githubusercontent.com/nickineering/setup/master/util/print.sh >/tmp/print.sh; then
@@ -22,6 +35,7 @@ source /tmp/print.sh
 print_green "Please leave everything closed and wait for your Mac to be configured. \
 This will take a while." "AUTOMATICALLY CONFIGURING MAC"
 
+CURRENT_STEP="installing Homebrew"
 # Install Homebrew, a Mac package manager
 if command -v brew; then
 	brew upgrade || print_green "Warning: Some Homebrew packages failed to upgrade"
@@ -41,6 +55,7 @@ else
 	print_green "Installed Homebrew"
 fi
 
+CURRENT_STEP="cloning setup repository"
 # Make a projects directory and clone the repo into it
 mkdir -p ~/projects
 export SETUP=~/projects/setup
@@ -56,6 +71,7 @@ else
 	print_green "Cloned repo into projects directory"
 fi
 
+CURRENT_STEP="installing modern Bash"
 # MacOS comes with Bash 3.2, but we want the latest. Download the latest Bash and then
 # continue using it.
 if ! brew install bash; then
