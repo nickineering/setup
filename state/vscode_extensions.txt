@@ -21,6 +21,7 @@ hbenl.vscode-test-explorer
 hbenl.vscode-test-explorer-liveshare
 humao.rest-client
 ibm.output-colorizer
+jetmartin.bats
 littlefoxteam.vscode-python-test-adapter
 markis.code-coverage
 mechatroner.rainbow-csv

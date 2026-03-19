@@ -1,6 +1,14 @@
-.PHONY: lint fix check update-formatters update-actions
+.PHONY: dev lint test setup fix check update-formatters update-actions
+
+dev: lint test
 
 lint: fix shellcheck
+
+test:
+	bats tests/
+
+setup:
+	./util/setup.sh
 
 fix:
 	shellharden --replace **/*.sh
