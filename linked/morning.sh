@@ -70,12 +70,15 @@ morning() {
 	if [[ "$gitlab_configured" == "true" ]]; then
 		# --- Fetch repo list from GitLab ---
 		echo -e "${bold}${cyan}=== Fetching repo list from GitLab ===${reset}"
-		local remote_repos tmpdir
+		local remote_repos tmpdir total_pages
 		tmpdir=$(mktemp -d)
 		# Cleanup temp dir on exit or error
 		trap 'rm -rf "$tmpdir"' EXIT
-		# Fetch pages in parallel, print dot as each completes
-		seq 1 "$parallel_jobs" | xargs -P "$parallel_jobs" -I{} sh -c \
+		# Get total page count from first request headers
+		total_pages=$(glab api "groups/$MORNING_GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>/dev/null | grep -i '^x-total-pages:' | tr -d '[:space:]' | cut -d: -f2)
+		total_pages=${total_pages:-1}
+		# Fetch all pages in parallel, print dot as each completes
+		seq 1 "$total_pages" | xargs -P "$parallel_jobs" -I{} sh -c \
 			'glab api "groups/'"$MORNING_GITLAB_GROUP"'/projects?per_page=100&page={}&include_subgroups=true" 2>/dev/null > "$1/page_{}.json" && printf "."' _ "$tmpdir"
 		echo ""
 		# Combine all pages and extract repo paths
