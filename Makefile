@@ -2,7 +2,7 @@
 
 dev: lint test
 
-lint: fix shellcheck
+lint: fix check
 
 test:
 	bats tests/
