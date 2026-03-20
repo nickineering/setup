@@ -1,9 +1,9 @@
 ---
-description: Create or update a GitLab merge request for the current branch
+description: Create or update a GitHub pull request for the current branch
 argument-hint: branch
 ---
 
-Manage a GitLab merge request for the current branch.
+Manage a GitHub pull request for the current branch.
 
 $ARGUMENTS - Optional target branch (defaults to repository's default branch).
 
@@ -15,14 +15,14 @@ $ARGUMENTS - Optional target branch (defaults to repository's default branch).
 ~/.claude/skills/_shared/change-analysis.md
 ```
 
-### 2. Sync, push, and check for existing MR
+### 2. Sync, push, and check for existing PR
 
 ```bash
 git status
 git pull
 git push
 git branch --show-current
-glab mr list --source-branch=<branch>
+gh pr list --head <branch> --json number,baseRefName
 ```
 
 Push early so CI runs while preparing the description.
@@ -32,13 +32,12 @@ for non-obvious ones.
 
 ### 3. Determine target branch
 
-- **Existing MR**: Get target branch only (e.g.,
-  `glab mr view <n> --output json | jq -r .target_branch`)
-- **New MR**: Use `$ARGUMENTS` if provided, otherwise repository default
+- **Existing PR**: Get target branch from the existing PR's `baseRefName`
+- **New PR**: Use `$ARGUMENTS` if provided, otherwise repository default
 
 ### 4. Prepare title and description
 
-**Regenerate from scratch.** Do not read or reuse the existing MR title or
+**Regenerate from scratch.** Do not read or reuse the existing PR title or
 description. Always generate fresh content based on the **final diff**.
 
 ```bash
@@ -52,16 +51,15 @@ Follow the full analysis and description process from the shared reference.
 
 ```bash
 # Update existing:
-glab mr update <number> --title "..." --description "..."
-glab mr update <number> --ready  # if draft
+gh pr edit <number> --title "..." --body "..."
 
 # Or create new:
-glab mr create --target-branch <target> --title "..." --description "..." --yes
+gh pr create --base <target> --title "..." --body "..."
 ```
 
-### 6. Handle pipeline failures
+### 6. Handle check failures
 
-Check `glab ci status`, fix issues, push again. Repeat until passing.
+Check `gh pr checks`, fix issues, push again. Repeat until passing.
 
 If failures reveal deeper issues (e.g., architectural problems, widespread type
 errors, test design flaws), STOP and consult the user rather than applying quick
@@ -71,4 +69,4 @@ green.
 ## Rules
 
 - Do NOT add Co-Authored-By trailers for Claude
-- Do NOT add "Generated with Claude Code" or similar footers to MR descriptions
+- Do NOT add "Generated with Claude Code" or similar footers to PR descriptions
