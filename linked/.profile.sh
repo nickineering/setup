@@ -39,9 +39,13 @@ source "$DOTFILES/shell_aliases.sh"
 # shellcheck disable=SC1090
 source "$DOTFILES/shell_functions.sh"
 
-# Load morning routine
-# shellcheck disable=SC1090
-source "$DOTFILES/morning.sh"
+# Lazy-load morning routine (only loads when `morning` is first called)
+morning() {
+	unset -f morning
+	# shellcheck disable=SC1090
+	source "$DOTFILES/morning.sh"
+	morning "$@"
+}
 
 # Changes not tracked in git
 # shellcheck disable=SC1090
