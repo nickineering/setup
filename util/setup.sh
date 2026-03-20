@@ -17,10 +17,11 @@ source print.sh
 
 # Trap handler for cleanup on interruption
 CURRENT_STEP=""
+# shellcheck disable=SC2329  # Invoked by trap
 cleanup_on_interrupt() {
 	echo "" >&2
 	echo "Setup interrupted!" >&2
-	if [ -n "$CURRENT_STEP" ]; then
+	if [ "$CURRENT_STEP" != "" ]; then
 		echo "Stopped during: $CURRENT_STEP" >&2
 	fi
 	echo "To resume, run: $SETUP/util/setup.sh" >&2

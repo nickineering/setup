@@ -107,7 +107,9 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 	# Prepend space to handle paths at start of arguments
 	PATHS_IN_CMD=$(printf ' %s' "$COMMAND" | grep -oE '[[:space:]]['"'"'"]?(/[^[:space:]'"'"'"]+|~[^[:space:]'"'"'"]+)' | sed "s/^[[:space:]]['\"]*//" || true)
 
-	for path in $PATHS_IN_CMD; do
+	while IFS= read -r path; do
+		# Skip empty lines
+		[[ -z "$path" ]] && continue
 		# Expand ~ to $HOME
 		expanded_path="${path/#\~/$HOME}"
 
@@ -123,7 +125,7 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 				exit 2
 			fi
 		fi
-	done
+	done <<<"$PATHS_IN_CMD"
 fi
 
 # AWS: only allow read-only commands
