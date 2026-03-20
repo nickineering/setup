@@ -487,8 +487,12 @@ bash_cmd() {
     pass "$(bash_cmd 'mkdir ~/projects/newdir')"
 }
 
-@test "touch in eonnext" {
-    pass "$(bash_cmd 'touch ~/eonnext/file.txt')"
+@test "touch in work" {
+    pass "$(bash_cmd 'touch ~/work/file.txt')"
+}
+
+@test "touch outside allowed dirs blocked" {
+    block "$(bash_cmd 'touch ~/other/file.txt')"
 }
 
 @test "unzip to projects" {

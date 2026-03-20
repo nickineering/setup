@@ -7,7 +7,7 @@ This document explains this user's security model for Claude Code.
 | Zone                  | Scope                                                            | Behavior                                                                                      |
 | --------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | **Current Directory** | `./`                                                             | YOLO mode - auto-allow most operations except git history changes and hard-to-undo operations |
-| **Safe Read Zones**   | `~/projects`, `~/eonnext`                                        | Read/analyze freely, no modifications                                                         |
+| **Safe Zones**        | `~/projects`, `~/work`                                           | Read/analyze/write freely                                                                     |
 | **Temp/Cache**        | `/tmp`, `/var/folders` ($TMPDIR), `~/.cache`, `~/Library/Caches` | Always allowed - ephemeral/regenerable storage                                                |
 | **Null**              | `/dev/null`                                                      | Always allowed - output sink                                                                  |
 | **Outside**           | Everything else                                                  | Blocked (system dirs)                                                                         |

@@ -41,6 +41,27 @@ git config --global user.name "Your Name"
 git config --global user.email "Your email specifically for git"
 ```
 
+## Morning routine setup
+
+To enable the `morning` command for GitLab repo syncing:
+
+1. Create the work directory:
+   ```bash
+   mkdir ~/work
+   ```
+
+2. Configure your GitLab group in `~/.env.sh`:
+   ```bash
+   export MORNING_GITLAB_GROUP="your-group"
+   # Optional: exclude specific subdirectories
+   export MORNING_EXCLUDE_DIRS="unsynced|bugs"
+   ```
+
+3. Authenticate with GitLab:
+   ```bash
+   glab auth login
+   ```
+
 Next, you will need to sign in or otherwise activate the following apps, being
 sure to complete any steps noted:
 

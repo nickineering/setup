@@ -99,7 +99,7 @@ if [[ "$COMMAND" =~ (^|[[:space:]]|\"|\')\/var\/ ]] && [[ ! "$COMMAND" =~ \/var\
 fi
 
 # For file-writing commands, block absolute paths outside allowed directories
-# Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
+# Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
 WRITE_COMMANDS='^(cp|mv|tar|unzip|mkdir|touch|tee)[[:space:]]'
 if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 	# Extract absolute paths that are complete arguments (preceded by space)
@@ -118,10 +118,11 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 		[[ "$expanded_path" =~ ^/tmp(/|$) ]] && continue
 		[[ "$expanded_path" =~ ^/var/folders/ ]] && continue
 
-		# Check if path is within allowed directories
+		# Check if path is within allowed directories: projects, work, .Trash, .cache, Library/Caches
 		if [[ "$expanded_path" =~ ^/ ]]; then
-			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|eonnext|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
-				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
+			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
+				# shellcheck disable=SC2088 # Tilde is intentional in user-facing message
+				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
 				exit 2
 			fi
 		fi
@@ -190,7 +191,7 @@ if [[ "$COMMAND" =~ ^docker[[:space:]].*(run|create)[[:space:]] ]]; then
 		HOST_PATH="${HOST_PATH/#\~/$HOME}"
 
 		if [[ "$HOST_PATH" =~ ^/ ]]; then
-			if [[ ! "$HOST_PATH" =~ ^"$HOME"/(projects|eonnext)(/?|/.*)$ ]]; then
+			if [[ ! "$HOST_PATH" =~ ^"$HOME"/(projects|work)(/?|/.*)$ ]]; then
 				echo "BLOCKED: Docker volume mount $HOST_PATH outside allowed directories" >&2
 				exit 2
 			fi
@@ -269,8 +270,9 @@ if [[ "$COMMAND" =~ '>>'[[:space:]]*([^[:space:]]+) ]]; then
 		[[ ! "$APPEND_TARGET" =~ ^/var/folders/ ]]; then
 		# Check if path is absolute and outside allowed directories
 		if [[ "$APPEND_TARGET" =~ ^/ ]]; then
-			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|eonnext|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
-				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/eonnext, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
+			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
+				# shellcheck disable=SC2088 # Tilde is intentional in user-facing message
+				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
 				exit 2
 			fi
 		fi

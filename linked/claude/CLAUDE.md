@@ -32,7 +32,7 @@ State any tradeoffs to approaches and if you think they are acceptable.
 
 # Sandbox
 
-**Write zones:** `~/projects/`, `~/eonnext/`, `~/.Trash/`, `~/.cache/`,
+**Write zones:** `~/projects/`, `~/work/`, `~/.Trash/`, `~/.cache/`,
 `~/Library/Caches/`, `/tmp/`, `/dev/null`
 
 **Blocked:** System dirs, `.git/` folders, `rm` command (use `trash` instead)

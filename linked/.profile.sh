@@ -39,6 +39,10 @@ source "$DOTFILES/shell_aliases.sh"
 # shellcheck disable=SC1090
 source "$DOTFILES/shell_functions.sh"
 
+# Load morning routine
+# shellcheck disable=SC1090
+source "$DOTFILES/morning.sh"
+
 # Changes not tracked in git
 # shellcheck disable=SC1090
 source ~/.env.sh

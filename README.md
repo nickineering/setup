@@ -55,6 +55,39 @@ echo "my-package" >> state/brew_packages.txt
 
 Edit `~/.env.sh` for environment variables that shouldn't be committed.
 
+## Work directories
+
+This setup uses two main directories:
+
+| Directory     | Purpose                                       |
+| ------------- | --------------------------------------------- |
+| `~/projects/` | Personal projects (including this setup repo) |
+| `~/work/`     | Work repositories (synced via `morning`)      |
+
+These paths are hardcoded in the Claude sandbox permissions, so Claude Code can
+read and write to both.
+
+## Morning routine
+
+The `morning` command syncs GitLab repos and updates dev tools. To enable:
+
+1. Create the work directory:
+   ```bash
+   mkdir ~/work
+   ```
+
+2. Configure your GitLab group in `~/.env.sh`:
+   ```bash
+   export MORNING_GITLAB_GROUP="your-group"
+   # Optional: exclude specific subdirectories
+   export MORNING_EXCLUDE_DIRS="unsynced|bugs"
+   ```
+
+3. Run `morning` to sync repos and update tools.
+
+If `MORNING_GITLAB_GROUP` is not set, the command skips GitLab sync but still
+runs brew upgrade and other tool updates.
+
 ## Re-running and updating
 
 The setup is idempotent - safe to re-run after pulling updates:
