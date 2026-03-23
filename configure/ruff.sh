@@ -6,14 +6,14 @@ export RUFF_CONFIG=~/projects/ruff-config
 if [ -d "$RUFF_CONFIG" ]; then
 	output=$(git -C "$RUFF_CONFIG" pull 2>&1) || echo -e "${yellow}Warning: Failed to update Ruff config${reset}"
 	if [[ "$output" != "Already up to date." ]]; then
-		echo -e "${dim}Updated Ruff config${reset}"
+		echo -e "${dim}Ruff: updated config${reset}"
 	fi
 else
-	if ! git clone https://github.com/nickineering/ruff-config "$RUFF_CONFIG"; then
+	if ! git clone --quiet https://github.com/nickineering/ruff-config "$RUFF_CONFIG"; then
 		echo -e "${yellow}Warning: Failed to clone Ruff config repo, skipping Ruff setup${reset}" >&2
 		return 0
 	fi
-	echo -e "${green}Cloned Ruff config repo${reset}"
+	echo -e "${dim}Ruff: cloned config repo${reset}"
 fi
 
 # Per platform determined by Rust: https://docs.rs/dirs/4.0.0/dirs/fn.config_dir.html

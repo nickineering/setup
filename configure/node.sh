@@ -19,9 +19,13 @@ set +u
 
 PREVIOUS_NODE_VERSION=$(nvm current)
 # shellcheck disable=SC1090 # nvm is a shell function, not a file
-if ! nvm install --lts; then
+output=$(nvm install --lts 2>&1) || {
 	echo -e "${yellow}Warning: Failed to install Node LTS${reset}" >&2
 	return 0
+}
+# Only show output if a new version was installed
+if [[ "$output" != *"already installed"* ]]; then
+	echo "$output"
 fi
 
 NEW_NODE_VERSION=$(nvm current)
@@ -36,4 +40,5 @@ if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ] && [ "$PREVIOUS_NODE_VERS
 	fi
 fi
 
-npm install -g npm || echo -e "${yellow}Warning: Failed to upgrade npm${reset}"
+# Update npm silently (warnings will still show on failure)
+npm install -g --fund=false --audit=false npm >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to upgrade npm${reset}"

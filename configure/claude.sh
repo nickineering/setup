@@ -24,7 +24,5 @@ ln -sfn "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills"
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
 	cp "$CLAUDE_COPIED/CLAUDE.local.md" "$CLAUDE_DIR/CLAUDE.local.md"
-	echo -e "${green}Created Claude local instructions template${reset}"
+	echo -e "${dim}Claude Code: created local instructions template${reset}"
 fi
-
-echo -e "${dim}Configured Claude Code${reset}"

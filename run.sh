@@ -63,8 +63,13 @@ old_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
 old_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
 old_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
 
-if ! git -C "$SETUP" pull; then
+pull_output=$(git -C "$SETUP" pull 2>&1) || {
 	echo -e "${yellow}Warning: git pull failed (local changes?) - state file changes won't be detected${reset}"
+}
+if [[ "$pull_output" == "Already up to date." ]]; then
+	echo -e "${dim}Up to date${reset}"
+else
+	echo "$pull_output"
 fi
 
 # Compare after pull to find what changed
@@ -83,8 +88,8 @@ echo ""
 # =============================================================================
 CURRENT_STEP="configuring Homebrew taps"
 echo -e "${bold}${cyan}=== Configuring Homebrew taps ===${reset}"
-brew tap beeftornado/rmtree 2>/dev/null || true
-brew tap hashicorp/tap 2>/dev/null || true
+brew tap beeftornado/rmtree >/dev/null 2>&1 || true
+brew tap hashicorp/tap >/dev/null 2>&1 || true
 echo -e "${dim}Taps configured${reset}"
 echo ""
 
@@ -92,9 +97,14 @@ echo ""
 # Step 3: Homebrew upgrade (update existing packages first)
 # =============================================================================
 CURRENT_STEP="upgrading Homebrew packages"
-echo -e "${bold}${cyan}=== Upgrading existing Homebrew packages ===${reset}"
-echo -e "${dim}This may take several minutes...${reset}"
-brew upgrade || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
+echo -e "${bold}${cyan}=== Upgrading Homebrew packages ===${reset}"
+outdated=$(brew outdated --formula --cask 2>/dev/null || true)
+if [[ -n "$outdated" ]]; then
+	echo -e "${dim}Upgrading: $(echo "$outdated" | tr '\n' ' ')${reset}"
+	brew upgrade || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
+else
+	echo -e "${dim}All packages up to date${reset}"
+fi
 echo ""
 
 # =============================================================================
@@ -210,7 +220,7 @@ else
 	echo -e "${yellow}Warning: nvm not found, skipping Node configuration${reset}"
 fi
 
-echo -e "${dim}Tool configurations applied${reset}"
+echo -e "${dim}Checked: Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
 echo ""
 
 # =============================================================================
@@ -240,7 +250,12 @@ if command -v code &>/dev/null; then
 	echo ""
 
 	echo -e "${bold}${cyan}=== Updating VSCode extensions ===${reset}"
-	code --update-extensions
+	update_output=$(code --update-extensions 2>&1)
+	if [[ "$update_output" == "No extension to update" ]]; then
+		echo -e "${dim}All extensions up to date${reset}"
+	else
+		echo "$update_output"
+	fi
 else
 	echo -e "${dim}VSCode CLI not found - skipping (install VSCode cask first)${reset}"
 fi
@@ -260,33 +275,38 @@ echo ""
 # =============================================================================
 CURRENT_STEP="updating tools"
 
+echo -e "${bold}${cyan}=== Updating development tools ===${reset}"
+
 if command -v uv &>/dev/null; then
-	echo -e "${bold}${cyan}=== Updating uv tools ===${reset}"
-	uv tool upgrade --all || echo -e "${yellow}Warning: uv tool upgrade failed${reset}"
-	echo ""
+	uv_output=$(uv tool upgrade --all 2>&1) || echo -e "${yellow}Warning: uv tool upgrade failed${reset}"
+	if [[ "$uv_output" == "Nothing to upgrade" ]]; then
+		echo -e "${dim}uv tools: up to date${reset}"
+	else
+		echo -e "${dim}uv tools: $uv_output${reset}"
+	fi
 fi
 
 if command -v tldr &>/dev/null; then
-	echo -e "${bold}${cyan}=== Updating tldr pages ===${reset}"
-	tldr --update || echo -e "${yellow}Warning: tldr update failed${reset}"
-	echo ""
+	tldr --update >/dev/null 2>&1 || echo -e "${yellow}Warning: tldr update failed${reset}"
+	echo -e "${dim}tldr: pages updated${reset}"
 fi
 
-# Oh My Zsh update (set ZSH with fallback for first run)
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
-	echo -e "${bold}${cyan}=== Updating Oh My Zsh ===${reset}"
-	"$ZSH/tools/upgrade.sh" -v minimal || echo -e "${yellow}Warning: Oh My Zsh update failed${reset}"
-	echo ""
+	omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo -e "${yellow}Warning: Oh My Zsh update failed${reset}"
+	if [[ "$omz_output" == *"already at the latest"* ]]; then
+		echo -e "${dim}Oh My Zsh: up to date${reset}"
+	else
+		echo -e "${dim}Oh My Zsh: updated${reset}"
+	fi
 fi
 
 if command -v go &>/dev/null; then
-	echo -e "${bold}${cyan}=== Updating Go tools ===${reset}"
 	go install golang.org/x/tools/gopls@latest 2>/dev/null || echo -e "${yellow}Warning: gopls update failed${reset}"
 	go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${yellow}Warning: staticcheck update failed${reset}"
-	echo -e "${dim}Go tools updated${reset}"
-	echo ""
+	echo -e "${dim}Go tools: gopls, staticcheck${reset}"
 fi
+echo ""
 
 # =============================================================================
 # Step 11: Privileged operations (grouped at end, single sudo prompt)
