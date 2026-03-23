@@ -88,9 +88,17 @@ echo ""
 # =============================================================================
 CURRENT_STEP="configuring Homebrew taps"
 echo -e "${bold}${cyan}=== Configuring Homebrew taps ===${reset}"
-brew tap beeftornado/rmtree >/dev/null 2>&1 || true
-brew tap hashicorp/tap >/dev/null 2>&1 || true
-echo -e "${dim}Taps configured${reset}"
+taps_added=0
+for tap in beeftornado/rmtree hashicorp/tap; do
+	if ! brew tap | grep -q "^${tap}$"; then
+		echo "Adding tap: ${tap}"
+		brew tap "$tap" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to tap ${tap}${reset}"
+		((taps_added++)) || true
+	fi
+done
+if [[ $taps_added -eq 0 ]]; then
+	echo -e "${dim}All taps already configured${reset}"
+fi
 echo ""
 
 # =============================================================================
@@ -151,23 +159,41 @@ echo ""
 CURRENT_STEP="creating symlinks"
 echo -e "${bold}${cyan}=== Creating symlinks ===${reset}"
 
-# Backup/remove existing files before linking
-while IFS= read -r file; do
-	[[ -z "$file" || "$file" == \#* ]] && continue
-	backup_or_delete ~/"$file" || true
-done <"$SETUP"/state/linked_files.txt
-backup_or_delete "$HOME/Library/Application Support/Code/User/settings.json" || true
-backup_or_delete "$HOME/Library/Application Support/ruff/ruff.toml" || true
-backup_or_delete ~/dprint.jsonc || true
+links_created=0
 
-# Create symlinks
+# Helper: create symlink and report if new/updated
+create_link() {
+	local source="$1" target="$2" label="${3:-}"
+	local target_dir
+	target_dir=$(dirname "$target")
+	[[ -d "$target_dir" ]] || return 0  # Skip if parent dir doesn't exist
+
+	# Check if link already points to correct source
+	if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+		return 0
+	fi
+
+	backup_or_delete "$target" || true
+	if ln -sfn "$source" "$target"; then
+		if [[ -n "$label" ]]; then
+			echo "Linked: ${label}"
+		else
+			echo "Linked: $(basename "$target")"
+		fi
+		((links_created++)) || true
+	else
+		echo -e "${yellow}Warning: Failed to link $(basename "$target")${reset}" >&2
+	fi
+}
+
+# Create symlinks for dotfiles
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -f "$DOTFILES/$file" ]]; then
 		echo -e "${yellow}Warning: Dotfile not found: $DOTFILES/$file${reset}" >&2
 		continue
 	fi
-	ln -sfn "$DOTFILES/$file" ~/ || echo -e "${yellow}Warning: Failed to link $file${reset}" >&2
+	create_link "$DOTFILES/$file" ~/"$file"
 done <"$SETUP"/state/linked_files.txt
 
 # VSCode settings (create User dir if VSCode is installed but dir doesn't exist)
@@ -176,23 +202,35 @@ if command -v code &>/dev/null && [[ ! -d "$VSCODE_USER_DIR" ]]; then
 	mkdir -p "$VSCODE_USER_DIR"
 fi
 if [[ -d "$VSCODE_USER_DIR" ]]; then
-	ln -sfn "$DOTFILES"/settings.json "$VSCODE_USER_DIR/settings.json" || true
+	create_link "$DOTFILES/settings.json" "$VSCODE_USER_DIR/settings.json" "settings.json -> VSCode"
+fi
+
+# Ruff config
+RUFF_CONFIG_DIR="$HOME/Library/Application Support/ruff"
+if [[ -d "$RUFF_CONFIG_DIR" ]]; then
+	create_link "$DOTFILES/ruff.toml" "$RUFF_CONFIG_DIR/ruff.toml" "ruff.toml -> Ruff"
 fi
 
 # dprint config
-ln -sfn "$SETUP"/dprint.jsonc ~/dprint.jsonc || true
+create_link "$SETUP/dprint.jsonc" ~/dprint.jsonc
 
 # Copy templates (only if not exists)
+files_copied=0
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -e ~/"$file" ]]; then
 		cp "$SETUP/copied/$file" ~/
+		echo "Created: ~/$file (from template)"
+		((files_copied++)) || true
 	fi
 done <"$SETUP"/state/copied_files.txt
 
 # Vim directories
 mkdir -p ~/.vim/swaps/ ~/.vim/backups/ ~/.vim/undo/
-echo -e "${dim}Symlinks created${reset}"
+
+if [[ $links_created -eq 0 && $files_copied -eq 0 ]]; then
+	echo -e "${dim}All symlinks up to date${reset}"
+fi
 echo ""
 
 # =============================================================================
@@ -293,9 +331,22 @@ if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 fi
 
 if command -v go &>/dev/null; then
+	# Capture current versions before update
+	gopls_before=$(gopls version 2>/dev/null | head -1 || echo "none")
+	staticcheck_before=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
+
 	go install golang.org/x/tools/gopls@latest 2>/dev/null || echo -e "${yellow}Warning: gopls update failed${reset}"
 	go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${yellow}Warning: staticcheck update failed${reset}"
-	echo -e "${dim}Go tools: gopls, staticcheck${reset}"
+
+	gopls_after=$(gopls version 2>/dev/null | head -1 || echo "none")
+	staticcheck_after=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
+
+	if [[ "$gopls_before" != "$gopls_after" || "$staticcheck_before" != "$staticcheck_after" ]]; then
+		[[ "$gopls_before" != "$gopls_after" ]] && echo "Updated: gopls"
+		[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo "Updated: staticcheck"
+	else
+		echo -e "${dim}Go tools: up to date${reset}"
+	fi
 fi
 echo ""
 

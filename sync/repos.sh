@@ -97,7 +97,6 @@ sync_repos() {
 		echo "$new_repos" | xargs -P "$parallel_jobs" -I{} sh -c \
 			'"$1/sync/clone_repo.sh" "$2" "$3" "$4" || echo "$2" >> "$5"' _ \
 			"$SETUP" {} "$repos_dir" "$GITLAB_GROUP" "$clone_errors"
-		echo "" # newline after progress dots
 		if [[ -s "$clone_errors" ]]; then
 			echo -e "${yellow}Warning: Failed to clone some repos:${reset}"
 			sed 's/^/  /' "$clone_errors"

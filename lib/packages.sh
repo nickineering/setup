@@ -70,12 +70,9 @@ install_missing() {
 		return 0
 	fi
 
-	local count
-	count=$(echo "$list" | wc -l | tr -d ' ')
-	echo "Installing $count missing ${type}(s)..."
-
 	while IFS= read -r item; do
 		[[ -z "$item" ]] && continue
+		echo "Installing ${type}: ${item}"
 		local install_cmd
 		case "$type" in
 		package) install_cmd=(brew install) ;;

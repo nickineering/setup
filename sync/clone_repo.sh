@@ -13,9 +13,9 @@ dir="$2"
 group="$3"
 
 mkdir -p "$dir/$(dirname "$repo")"
-# Suppress verbose output, print dot for progress
+# Suppress verbose output, print repo name on success
 if glab repo clone "$group/$repo" "$dir/$repo" >/dev/null 2>&1; then
-	printf "."
+	printf "Cloned: %s\n" "$repo"
 else
 	exit 1
 fi
