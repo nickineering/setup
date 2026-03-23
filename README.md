@@ -78,14 +78,14 @@ The `morning` command syncs GitLab repos and updates dev tools. To enable:
 
 2. Configure your GitLab group in `~/.env.sh`:
    ```bash
-   export MORNING_GITLAB_GROUP="your-group"
+   export GITLAB_GROUP="your-group"
    # Optional: exclude specific subdirectories
-   export MORNING_EXCLUDE_DIRS="unsynced|bugs"
+   export GITLAB_EXCLUDE_DIRS="unsynced|bugs"
    ```
 
 3. Run `morning` to sync repos and update tools.
 
-If `MORNING_GITLAB_GROUP` is not set, the command skips GitLab sync but still
+If `GITLAB_GROUP` is not set, the command skips GitLab sync but still
 runs brew upgrade and other tool updates.
 
 ## Re-running and updating

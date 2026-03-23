@@ -171,7 +171,7 @@ sync_repos() {
 		echo -e "Found ${bold}${yellow}${stale_count}${reset} stale branch(es)"
 		echo ""
 		while IFS=: read -r repo branch; do
-			echo -n "Delete ${yellow}${branch}${reset} from ${cyan}${repo}${reset}? [y/N]: "
+			printf "Delete ${yellow}%s${reset} from ${cyan}%s${reset}? [y/N]: " "$branch" "$repo"
 			read -r -n 1 confirm </dev/tty
 			echo ""
 			if [[ "$confirm" =~ ^[Yy]$ ]]; then

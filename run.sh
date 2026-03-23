@@ -262,16 +262,7 @@ fi
 echo ""
 
 # =============================================================================
-# Step 9: GitLab repo sync (after glab installed)
-# =============================================================================
-CURRENT_STEP="syncing GitLab repos"
-echo -e "${bold}${cyan}=== Syncing GitLab repos ===${reset}"
-source sync/repos.sh
-sync_repos
-echo ""
-
-# =============================================================================
-# Step 10: Tool updates (with first-run guards)
+# Step 9: Tool updates (with first-run guards)
 # =============================================================================
 CURRENT_STEP="updating tools"
 
@@ -306,6 +297,15 @@ if command -v go &>/dev/null; then
 	go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${yellow}Warning: staticcheck update failed${reset}"
 	echo -e "${dim}Go tools: gopls, staticcheck${reset}"
 fi
+echo ""
+
+# =============================================================================
+# Step 10: GitLab repo sync (after glab installed)
+# =============================================================================
+CURRENT_STEP="syncing GitLab repos"
+echo -e "${bold}${cyan}=== Syncing GitLab repos ===${reset}"
+source sync/repos.sh
+sync_repos
 echo ""
 
 # =============================================================================
