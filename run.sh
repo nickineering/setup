@@ -358,8 +358,8 @@ echo -e "${bold}${green}=== Setup complete! ===${reset}"
 
 # Remind about post-setup steps
 echo ""
-echo -e "${bold}Next steps:${reset} See ${cyan}MANUAL_STEPS.md${reset} for remaining manual configuration."
+echo -e "${bold}Next steps:${reset} See ${cyan}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
 if [[ "${FIREFOX_NEEDS_SETUP:-}" == "1" ]]; then
 	echo -e "${yellow}Note:${reset} Firefox settings were skipped. Launch Firefox and sign in, then run:"
-	echo -e "  ${cyan}cd $SETUP && ./configure/after_signin.sh${reset}"
+	echo -e "  ${cyan}$SETUP/configure/after_signin.sh${reset}"
 fi
