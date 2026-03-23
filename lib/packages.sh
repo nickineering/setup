@@ -50,7 +50,10 @@ get_installed_extensions() {
 set_difference() {
 	local exclude="$1" full="$2"
 	[[ -z "$full" ]] && return
-	[[ -z "$exclude" ]] && { echo "$full"; return; }
+	[[ -z "$exclude" ]] && {
+		echo "$full"
+		return
+	}
 	echo "$full" | grep -vxF -f <(echo "$exclude") || true
 }
 
@@ -75,11 +78,11 @@ install_missing() {
 		[[ -z "$item" ]] && continue
 		local install_cmd
 		case "$type" in
-		package) install_cmd="brew install" ;;
-		cask) install_cmd="brew install --cask" ;;
-		extension) install_cmd="code --install-extension" ;;
+		package) install_cmd=(brew install) ;;
+		cask) install_cmd=(brew install --cask) ;;
+		extension) install_cmd=(code --install-extension) ;;
 		esac
-		if ! $install_cmd "$item"; then
+		if ! "${install_cmd[@]}" "$item"; then
 			echo "Warning: Failed to install $type: $item" >&2
 		fi
 	done <<<"$list"
@@ -154,11 +157,11 @@ prompt_uninstall() {
 		[[ -z "$item" ]] && continue
 		local uninstall_cmd
 		case "$type" in
-		package) uninstall_cmd="brew uninstall" ;;
-		cask) uninstall_cmd="brew uninstall --cask" ;;
-		extension) uninstall_cmd="code --uninstall-extension" ;;
+		package) uninstall_cmd=(brew uninstall) ;;
+		cask) uninstall_cmd=(brew uninstall --cask) ;;
+		extension) uninstall_cmd=(code --uninstall-extension) ;;
 		esac
-		if ! $uninstall_cmd "$item"; then
+		if ! "${uninstall_cmd[@]}" "$item"; then
 			echo "Warning: Failed to uninstall $type: $item" >&2
 		fi
 	done <<<"$safe_to_remove"
