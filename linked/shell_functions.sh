@@ -28,11 +28,9 @@ mcd() {
 	cd "$1" || return 1
 }
 
-# Update everything on the computer
-update() {
-	cd "$SETUP" || return 1
-	git pull
-	. "$SETUP/util/setup.sh"
+# Dev environment setup/maintenance
+devenv() {
+	"$SETUP/run.sh"
 }
 
 # Count lines of code by file extension: $1=EXTENSION (e.g., "py", "js")

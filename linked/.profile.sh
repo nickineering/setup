@@ -32,21 +32,13 @@ export SETUP=~/projects/setup
 export DOTFILES=~/projects/setup/linked
 
 # Load handy aliases
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090 # Can't follow dynamic source path
 source "$DOTFILES/shell_aliases.sh"
 
 # Load handy functions
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090 # Can't follow dynamic source path
 source "$DOTFILES/shell_functions.sh"
 
-# Lazy-load morning routine (only loads when `morning` is first called)
-morning() {
-	unset -f morning
-	# shellcheck disable=SC1090
-	source "$DOTFILES/morning.sh"
-	morning "$@"
-}
-
 # Changes not tracked in git
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090 # Can't follow dynamic source path
 source ~/.env.sh

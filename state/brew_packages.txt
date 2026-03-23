@@ -2,12 +2,11 @@ autojump                # Quickly jump among directories
 bash-completion         # Autocomplete for Git
 bats-core               # Bash Automated Testing System
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
-copilot-cli             # Github Copilot AI assistance from terminal
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
 exiftool                # Remove metadata from images
 fd                      # Fast find alternative written in Rust
-findutils               # Mac default outdated
+findutils                # Mac default outdated
 gawk                    # Mac default outdated
 dprint                  # Fast Rust based formatter for web languages
 gh                      # Github CLI
@@ -17,7 +16,7 @@ go                      # Go programming language
 jq                      # JSON query and processor
 gopls                   # Go Language Server
 gzip                    # Mac default outdated
-hashicorp/tap/terraform # Infrastructure as Code tool
+terraform               # Infrastructure as Code tool (via hashicorp/tap)
 jupyterlab              # Interactive code editing notebook
 make                    # Mac default outdated
 nvm                     # local JavaScript runtime

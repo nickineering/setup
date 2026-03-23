@@ -24,7 +24,7 @@ credit() {
 delete_branches() {
 	# ^* is regex matching the literal * that git uses to mark the current branch
 	local branches
-	# shellcheck disable=SC2063
+	# shellcheck disable=SC2063 # Literal * is intentional, not a glob
 	branches=$(git branch | grep -v '^*')
 	if [[ -z "$branches" ]]; then
 		echo "No other branches to delete"

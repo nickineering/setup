@@ -1,16 +1,16 @@
 #!/opt/homebrew/bin/bash
 
 # Sync a single git repo: fetch, pull main+develop, checkout preferred branch.
-# Called by morning() via xargs for parallel execution.
+# Called by sync_repos via xargs for parallel execution.
 #
-# Usage: morning_sync.sh <repo_dir> <base_dir> [stale_branches_file]
-# Example: morning_sync.sh ~/eonnext/backend/foo ~/eonnext /tmp/stale.txt
+# Usage: sync_repo.sh <repo_dir> <base_dir> [stale_branches_dir]
+# Example: sync_repo.sh ~/work/backend/foo ~/work /tmp/stale
 
 set -euo pipefail
 
 repo_dir="$1"
 base_dir="$2"
-stale_file="${3:-}"
+stale_dir="${3:-}"
 repo_name="${repo_dir#"$base_dir"/}"
 
 # Colors
@@ -37,16 +37,21 @@ sync_branch() {
 }
 
 cd "$repo_dir" || exit 1
+
+# Track original branch to warn user if we switch away from it
+original_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
 git fetch --all --prune --quiet
 
 # Detect stale branches (local branches whose upstream is gone after prune)
-if [[ -n "$stale_file" ]]; then
+if [[ -n "$stale_dir" ]]; then
 	# git branch -vv shows "[origin/branch: gone]" for branches with deleted upstreams
 	stale_branches=$(git branch -vv 2>/dev/null | grep ': gone]' | awk '{print $1}' || true)
 	if [[ -n "$stale_branches" ]]; then
-		# Append each stale branch as "repo_name:branch" to the shared file
+		# Write to a unique file per repo (avoids race condition with parallel syncs)
+		stale_file="$stale_dir/$(echo "$repo_name" | tr '/' '_')"
 		while IFS= read -r branch; do
-			echo "${repo_name}:${branch}" >>"$stale_file"
+			printf '%s:%s\n' "$repo_name" "$branch" >>"$stale_file"
 		done <<<"$stale_branches"
 	fi
 fi
@@ -68,21 +73,37 @@ if [[ "$has_develop" == "yes" ]]; then
 	develop_status="$branch_status"
 fi
 
+# Helper: warn if we switched away from a feature branch
+_warn_branch_switch() {
+	local target="$1"
+	if [[ -n "$original_branch" && "$original_branch" != "$target" && "$original_branch" != "develop" && "$original_branch" != "main" ]]; then
+		printf " ${yellow}(was on %s)${reset}" "$original_branch"
+	fi
+}
+
 # Report status (end on develop if it exists, otherwise main)
 if [[ "$has_develop" == "yes" ]] && [[ "$has_main" == "yes" ]]; then
 	git checkout develop --quiet 2>/dev/null
-	printf "%s: %b, %b\n" "$repo_name" "$develop_status" "$main_status"
+	printf "%s: %b, %b" "$repo_name" "$develop_status" "$main_status"
+	_warn_branch_switch develop
+	printf "\n"
 elif [[ "$has_develop" == "yes" ]]; then
-	printf "%s: %b\n" "$repo_name" "$develop_status"
+	printf "%s: %b" "$repo_name" "$develop_status"
+	_warn_branch_switch develop
+	printf "\n"
 elif [[ "$has_main" == "yes" ]]; then
-	printf "%s: %b\n" "$repo_name" "$main_status"
+	printf "%s: %b" "$repo_name" "$main_status"
+	_warn_branch_switch main
+	printf "\n"
 else
 	# Fallback: use repo's default branch
 	default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
 	if [[ -n "$default_branch" ]]; then
 		sync_branch "$default_branch"
-		printf "%s: %b\n" "$repo_name" "$branch_status"
+		printf "%s: %b" "$repo_name" "$branch_status"
+		_warn_branch_switch "$default_branch"
+		printf "\n"
 	else
-		printf "%s: ${yellow}⚠️  no default branch${reset}\n" "$repo_name"
+		printf "%s: ${yellow}no default branch${reset}\n" "$repo_name"
 	fi
 fi

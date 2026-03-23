@@ -1,4 +1,6 @@
-#!/opt/homebrew/bin/bash
+# shellcheck shell=bash
+# shellcheck disable=SC2154 # Variables like $dim defined in lib/colors.sh
+# Sourced by run.sh - configure macOS system preferences and Dock
 
 # Disable screensaver
 defaults -currentHost write com.apple.screensaver idleTime 0
@@ -21,8 +23,15 @@ defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 # Speeds up window minimizing and maximizing
 defaults write com.apple.dock mineffect -string "scale"
 
-# Remove all apps kept in Dock by default
-defaults write com.apple.dock persistent-apps -array
+# Clear Dock apps only if Dock is at default (has Mail/Safari) - skip on re-runs
+current_dock=$(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -c "file-label") || current_dock=0
+if [[ "$current_dock" -gt 0 ]]; then
+	# Check if it looks like default Dock (has Safari)
+	has_safari=$(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -c "Safari") || has_safari=0
+	if [[ "$has_safari" -gt 0 ]]; then
+		defaults write com.apple.dock persistent-apps -array
+	fi
+fi
 
 # Don't show recent apps not presently open in the dock
 defaults write com.apple.dock show-recents -bool FALSE
@@ -77,27 +86,32 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled 0
 
 # Import `add_to_dock` function
-source add_to_dock.sh
+source "$SETUP/lib/add_to_dock.sh"
 
 # Add the following applications to the Mac dock
-add_to_dock "1Password"
-add_to_dock "Boop"
-add_to_dock "Calculator" "System"
-add_to_dock "Firefox Developer Edition"
-add_to_dock "Google Chrome"
-add_to_dock "iPhone Mirroring" "System"
-add_to_dock "iTerm"
-add_to_dock "NordVPN"
-add_to_dock "Notes" "System"
-add_to_dock "Photo Booth" "System"
-add_to_dock "Reminders" "System"
-add_to_dock "Spotify"
-add_to_dock "Utilities/Activity Monitor" "System"
-add_to_dock "Visual Studio Code"
-add_to_dock "Weather" "System"
-# Required to make changes to the Dock and Finder take effect
-killall Dock
-killall Finder
+# Track if any apps were added (return 0 = added, 2 = already present)
+dock_changed=false
+add_to_dock "1Password" && dock_changed=true
+add_to_dock "Boop" && dock_changed=true
+add_to_dock "Calculator" "System" && dock_changed=true
+add_to_dock "Firefox Developer Edition" && dock_changed=true
+add_to_dock "Google Chrome" && dock_changed=true
+add_to_dock "iPhone Mirroring" "System" && dock_changed=true
+add_to_dock "iTerm" && dock_changed=true
+add_to_dock "NordVPN" && dock_changed=true
+add_to_dock "Notes" "System" && dock_changed=true
+add_to_dock "Photo Booth" "System" && dock_changed=true
+add_to_dock "Reminders" "System" && dock_changed=true
+add_to_dock "Spotify" && dock_changed=true
+add_to_dock "Utilities/Activity Monitor" "System" && dock_changed=true
+add_to_dock "Visual Studio Code" && dock_changed=true
+add_to_dock "Weather" "System" && dock_changed=true
+
+# Only restart Dock if apps were added
+if [[ "$dock_changed" == "true" ]]; then
+	killall Dock
+fi
+# Finder settings apply on next window open, no restart needed
 
 # Add directories to Finder favorites
 # brew install --cask mysides
@@ -105,3 +119,5 @@ killall Finder
 # mysides add "$USER" file:///Users/"$USER"/
 # mysides add Projects file:///Users/"$USER"/projects/
 # brew remove mysides
+
+echo -e "${dim}macOS preferences configured${reset}"

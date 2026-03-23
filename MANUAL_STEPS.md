@@ -41,23 +41,18 @@ git config --global user.name "Your Name"
 git config --global user.email "Your email specifically for git"
 ```
 
-## Morning routine setup
+## GitLab repo sync setup
 
-To enable the `morning` command for GitLab repo syncing:
+To enable GitLab repo syncing:
 
-1. Create the work directory:
+1. Configure your GitLab group in `~/.env.sh`:
    ```bash
-   mkdir ~/work
+   export GITLAB_GROUP="your-group"
+   # Optional: exclude specific subdirectories (pipe-separated)
+   export GITLAB_EXCLUDE_DIRS="archived|sandbox"
    ```
 
-2. Configure your GitLab group in `~/.env.sh`:
-   ```bash
-   export MORNING_GITLAB_GROUP="your-group"
-   # Optional: exclude specific subdirectories
-   export MORNING_EXCLUDE_DIRS="unsynced|bugs"
-   ```
-
-3. Authenticate with GitLab:
+2. Authenticate with GitLab:
    ```bash
    glab auth login
    ```
@@ -112,9 +107,9 @@ sure to complete any steps noted:
 1. WhatsApp
 1. Zoom
 
-Finally, you need to run the following command in your terminal to finish the
-automated setups:
+Finally, after signing in to Firefox (to create the profile folder), run the
+following command to finish automated setup:
 
 ```bash
-chmod +x ~/projects/setup/util/after_signin.sh && ~/projects/setup/util/after_signin.sh
+~/projects/setup/configure/after_signin.sh
 ```

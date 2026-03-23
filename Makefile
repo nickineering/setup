@@ -8,7 +8,7 @@ test:
 	bats tests/
 
 setup:
-	./util/setup.sh
+	./run.sh
 
 fix:
 	shellharden --replace **/*.sh

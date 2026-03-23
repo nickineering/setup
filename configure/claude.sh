@@ -1,4 +1,6 @@
-#!/opt/homebrew/bin/bash
+# shellcheck shell=bash
+# shellcheck disable=SC2154 # Variables like $green are defined in lib/colors.sh
+# Sourced by run.sh
 
 # Configure Claude Code settings and instructions
 
@@ -10,20 +12,19 @@ CLAUDE_COPIED="$SETUP/copied/claude"
 mkdir -p "$CLAUDE_DIR"
 
 # Backup existing files
-source backup_or_delete.sh
 backup_or_delete "$CLAUDE_DIR/settings.json"
 backup_or_delete "$CLAUDE_DIR/CLAUDE.md"
 backup_or_delete "$CLAUDE_DIR/skills"
 
 # Symlink settings, instructions, and skills
-ln -s "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json"
-ln -s "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
-ln -s "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills"
+ln -sf "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json"
+ln -sf "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+ln -sfn "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills"
 
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
 	cp "$CLAUDE_COPIED/CLAUDE.local.md" "$CLAUDE_DIR/CLAUDE.local.md"
-	print_green "Created Claude local instructions template"
+	echo -e "${green}Created Claude local instructions template${reset}"
 fi
 
-print_green "Configured Claude Code"
+echo -e "${dim}Configured Claude Code${reset}"

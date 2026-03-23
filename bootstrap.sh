@@ -7,12 +7,15 @@
 # Bash strict mode
 set -euo pipefail
 
-# Print commands as they are run
-set -v
+# Guard: refuse to run as root
+if [ "$(id -u)" -eq 0 ]; then
+	echo "Error: Do not run this script as root" >&2
+	exit 1
+fi
 
 # Trap handler for cleanup on interruption
 CURRENT_STEP=""
-# shellcheck disable=SC2329  # Invoked by trap
+# shellcheck disable=SC2329 # Function appears unused but is invoked by trap
 cleanup_on_interrupt() {
 	echo "" >&2
 	echo "Bootstrap interrupted!" >&2
@@ -24,25 +27,22 @@ cleanup_on_interrupt() {
 }
 trap cleanup_on_interrupt INT TERM
 
-# Start running the print utility first so we can update the user on progress.
-# We must save the file first because we are on Bash 3.2
-if ! curl -fsSL https://raw.githubusercontent.com/nickineering/setup/master/util/print.sh >/tmp/print.sh; then
-	echo "Error: Failed to download print utility. Check your internet connection." >&2
-	exit 1
-fi
-# shellcheck source=util/print.sh
-source /tmp/print.sh
+# Colors for output
+green='\033[32m'
+yellow='\033[33m'
+cyan='\033[36m'
+bold='\033[1m'
+reset='\033[0m'
 
-print_green "Please leave everything closed and wait for your Mac to be configured. \
-This will take a while." "AUTOMATICALLY CONFIGURING MAC"
+echo -e "${bold}${cyan}=== AUTOMATICALLY CONFIGURING MAC ===${reset}"
+echo -e "${green}Please leave everything closed and wait for your Mac to be configured. This will take a while.${reset}"
 
 CURRENT_STEP="installing Homebrew"
 # Install Homebrew, a Mac package manager
 if command -v brew; then
-	brew upgrade || print_green "Warning: Some Homebrew packages failed to upgrade"
-	print_green "Upgraded Homebrew packages"
+	echo -e "${green}Homebrew already installed${reset}"
 else
-	print_green "Installing Homebrew..."
+	echo -e "${green}Installing Homebrew...${reset}"
 	HOMEBREW_INSTALL_SCRIPT=$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)
 	if [ "$HOMEBREW_INSTALL_SCRIPT" = "" ]; then
 		echo "Error: Failed to download Homebrew installer" >&2
@@ -53,7 +53,7 @@ else
 		exit 1
 	fi
 	eval "$(/opt/homebrew/bin/brew shellenv)"
-	print_green "Installed Homebrew"
+	echo -e "${green}Installed Homebrew${reset}"
 fi
 
 CURRENT_STEP="cloning setup repository"
@@ -62,14 +62,14 @@ mkdir -p ~/projects
 export SETUP=~/projects/setup
 brew install git # Use Homebrew so that updates are easy
 if [ -d "$SETUP" ]; then
-	git -C "$SETUP" pull || print_green "Warning: Failed to pull latest commits"
-	print_green "Pulled latest commits from repo"
+	git -C "$SETUP" pull || echo -e "${yellow}Warning: Failed to pull latest commits${reset}"
+	echo -e "${green}Pulled latest commits from repo${reset}"
 else
 	if ! git clone https://github.com/nickineering/setup.git "$SETUP"; then
 		echo "Error: Failed to clone setup repo" >&2
 		exit 1
 	fi
-	print_green "Cloned repo into projects directory"
+	echo -e "${green}Cloned setup repo into projects directory${reset}"
 fi
 
 CURRENT_STEP="installing modern Bash"
@@ -79,4 +79,4 @@ if ! brew install bash; then
 	echo "Error: Failed to install bash via Homebrew" >&2
 	exit 1
 fi
-source "$SETUP"/util/setup.sh
+"$SETUP"/run.sh

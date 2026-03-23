@@ -66,6 +66,12 @@ teardown() {
     [[ "$output" == "tap/package" ]]
 }
 
+@test "strip_comments: skips comment-only lines" {
+    run strip_comments "# this is a comment"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "" ]]
+}
+
 # ============================================
 # backup_or_delete.sh tests
 # ============================================
@@ -102,6 +108,37 @@ teardown() {
 @test "backup_or_delete: empty argument fails" {
     run backup_or_delete ""
     [[ "$status" -eq 1 ]]
+}
+
+@test "backup_or_delete: rejects root path" {
+    run backup_or_delete "/"
+    [[ "$status" -eq 1 ]]
+    [[ "$output" == *"critical path"* ]]
+}
+
+@test "backup_or_delete: rejects /etc path" {
+    run backup_or_delete "/etc/passwd"
+    [[ "$status" -eq 1 ]]
+    [[ "$output" == *"critical path"* ]]
+}
+
+@test "backup_or_delete: rejects /usr path" {
+    run backup_or_delete "/usr/bin/ls"
+    [[ "$status" -eq 1 ]]
+    [[ "$output" == *"critical path"* ]]
+}
+
+@test "backup_or_delete: rejects home directory itself" {
+    run backup_or_delete "$HOME"
+    [[ "$status" -eq 1 ]]
+    [[ "$output" == *"critical path"* ]]
+}
+
+@test "backup_or_delete: allows files under home" {
+    # Should not reject paths under $HOME (just not $HOME itself)
+    echo "test" > "$TEST_DIR/homefile.txt"
+    run backup_or_delete "$TEST_DIR/homefile.txt"
+    [[ "$status" -eq 0 ]]
 }
 
 # ============================================
@@ -196,4 +233,17 @@ teardown() {
         echo "Missing files: ${missing[*]}" >&2
         false
     }
+}
+
+# ============================================
+# Package utilities tests (packages.sh)
+# ============================================
+
+@test "PROTECTED_PACKAGES includes critical packages" {
+    # Verify the protected list contains expected critical packages
+    [[ "$PROTECTED_PACKAGES" == *"bash"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"git"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"openssl"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"curl"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"coreutils"* ]]
 }
