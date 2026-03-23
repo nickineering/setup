@@ -85,8 +85,8 @@ The `morning` command syncs GitLab repos and updates dev tools. To enable:
 
 3. Run `morning` to sync repos and update tools.
 
-If `GITLAB_GROUP` is not set, the command skips GitLab sync but still
-runs brew upgrade and other tool updates.
+If `GITLAB_GROUP` is not set, the command skips GitLab sync but still runs brew
+upgrade and other tool updates.
 
 ## Re-running and updating
 

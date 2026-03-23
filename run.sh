@@ -166,7 +166,7 @@ create_link() {
 	local source="$1" target="$2" label="${3:-}"
 	local target_dir
 	target_dir=$(dirname "$target")
-	[[ -d "$target_dir" ]] || return 0  # Skip if parent dir doesn't exist
+	[[ -d "$target_dir" ]] || return 0 # Skip if parent dir doesn't exist
 
 	# Check if link already points to correct source
 	if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
