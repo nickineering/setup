@@ -205,12 +205,6 @@ if [[ -d "$VSCODE_USER_DIR" ]]; then
 	create_link "$DOTFILES/settings.json" "$VSCODE_USER_DIR/settings.json" "settings.json -> VSCode"
 fi
 
-# Ruff config
-RUFF_CONFIG_DIR="$HOME/Library/Application Support/ruff"
-if [[ -d "$RUFF_CONFIG_DIR" ]]; then
-	create_link "$DOTFILES/ruff.toml" "$RUFF_CONFIG_DIR/ruff.toml" "ruff.toml -> Ruff"
-fi
-
 # dprint config
 create_link "$SETUP/dprint.jsonc" ~/dprint.jsonc
 

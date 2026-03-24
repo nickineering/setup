@@ -65,9 +65,38 @@ sync_repos() {
 
 	# Fetch repo list from GitLab
 	echo -e "${bold}${cyan}=== Fetching repo list from GitLab ===${reset}"
-	local total_pages remote_repos
+	local total_pages remote_repos glab_response
 
-	total_pages=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>/dev/null | grep -i '^x-total-pages:' | tr -d '[:space:]' | cut -d: -f2)
+	# Test glab authentication, offer login if needed
+	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>&1); then
+		if [[ "$glab_response" == *"auth"* || "$glab_response" == *"401"* || "$glab_response" == *"login"* ]]; then
+			echo -e "${yellow}GitLab authentication required${reset}"
+			echo -n "Run glab auth login? [Y/n]: "
+			read -r -n 1 do_login </dev/tty
+			echo ""
+			if [[ ! "$do_login" =~ ^[Nn]$ ]]; then
+				glab auth login </dev/tty || {
+					echo -e "${yellow}Login failed - skipping GitLab sync${reset}"
+					return 0
+				}
+				# Retry after login
+				if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>&1); then
+					echo -e "${yellow}Warning: Still unable to fetch repos after login${reset}"
+					echo -e "${dim}$glab_response${reset}"
+					return 0
+				fi
+			else
+				echo -e "${dim}Skipping GitLab sync${reset}"
+				return 0
+			fi
+		else
+			echo -e "${yellow}Warning: Failed to fetch repos from GitLab${reset}"
+			echo -e "${dim}$glab_response${reset}"
+			return 0
+		fi
+	fi
+
+	total_pages=$(echo "$glab_response" | grep -i '^x-total-pages:' | tr -d '[:space:]' | cut -d: -f2 || true)
 	total_pages=${total_pages:-1}
 
 	seq 1 "$total_pages" | xargs -P "$parallel_jobs" -I{} sh -c \
