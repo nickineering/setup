@@ -3,7 +3,7 @@
 boop                      # Scratchpad for developers with text wrangling tools
 cheatsheet                # Easily see keyboard shortcuts for the current app
 copilot-cli               # Github Copilot AI assistance from terminal
-docker                    # Code containerisation
+docker-desktop                    # Code containerisation
 firefox@developer-edition  # Web browser with added dev tools
 google-chrome             # Web browser
 gpg-suite                 # GPG key generator
