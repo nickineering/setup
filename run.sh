@@ -106,10 +106,10 @@ echo ""
 # =============================================================================
 CURRENT_STEP="upgrading Homebrew packages"
 echo -e "${bold}${cyan}=== Upgrading Homebrew packages ===${reset}"
-outdated=$(brew outdated --formula --cask 2>/dev/null || true)
+outdated=$(brew outdated --greedy 2>/dev/null || true)
 if [[ -n "$outdated" ]]; then
 	echo -e "${dim}Upgrading: $(echo "$outdated" | tr '\n' ' ')${reset}"
-	brew upgrade || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
+	brew upgrade --greedy || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
 else
 	echo -e "${dim}All packages up to date${reset}"
 fi
