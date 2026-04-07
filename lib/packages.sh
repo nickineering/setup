@@ -76,7 +76,7 @@ install_missing() {
 		local install_cmd
 		case "$type" in
 		package) install_cmd=(brew install) ;;
-		cask) install_cmd=(brew install --cask) ;;
+		cask) install_cmd=(brew install --cask --adopt) ;; # --adopt: claim existing apps
 		extension) install_cmd=(code --install-extension) ;;
 		esac
 		if ! "${install_cmd[@]}" "$item"; then
