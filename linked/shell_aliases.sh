@@ -35,6 +35,10 @@ alias localip="ipconfig getifaddr en0"
 # Recursively delete `.DS_Store` files
 alias cleanup="fd --type f --no-ignore '\.DS_Store$' --exec rm -v {}"
 
+# ⚠️  DANGEROUS: Delete EVERYTHING in current directory except .git (moves to trash)
+# Useful for resetting a repo to empty state while preserving git history
+alias nuke-keep-git='fd --max-depth 1 --hidden --exclude .git . -x trash'
+
 # URL-encode strings
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))"'
 
