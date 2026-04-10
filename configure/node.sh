@@ -42,3 +42,20 @@ fi
 
 # Update npm silently (warnings will still show on failure)
 npm install -g --fund=false --audit=false npm >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to upgrade npm${reset}"
+
+# Install missing global npm packages
+NPM_STATE_FILE="$SETUP/state/npm_packages.txt"
+if [[ -f "$NPM_STATE_FILE" ]]; then
+	desired_npm=$(parse_state_file "$NPM_STATE_FILE")
+	installed_npm=$(get_installed_npm_packages)
+	missing_npm=$(set_difference "$installed_npm" "$desired_npm")
+	if [[ -n "$missing_npm" ]]; then
+		install_missing npm "$missing_npm"
+	fi
+
+	# Update all managed npm packages
+	while IFS= read -r pkg; do
+		[[ -z "$pkg" ]] && continue
+		npm update -g --fund=false --audit=false "$pkg" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to update $pkg${reset}"
+	done <<<"$desired_npm"
+fi

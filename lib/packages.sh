@@ -42,6 +42,15 @@ get_installed_extensions() {
 	fi
 }
 
+# Get installed global npm packages (excludes npm itself and corepack)
+get_installed_npm_packages() {
+	if command -v npm &>/dev/null; then
+		npm list -g --depth=0 --json 2>/dev/null |
+			jq -r '.dependencies // {} | keys[]' 2>/dev/null |
+			grep -vE '^(npm|corepack)$' || true
+	fi
+}
+
 # Set difference: returns items in $2 that are NOT in $1
 # Usage: set_difference <exclude_list> <full_list>
 # Examples:
@@ -78,6 +87,7 @@ install_missing() {
 		package) install_cmd=(brew install) ;;
 		cask) install_cmd=(brew install --cask --adopt) ;; # --adopt: claim existing apps
 		extension) install_cmd=(code --install-extension) ;;
+		npm) install_cmd=(npm install -g --fund=false --audit=false) ;;
 		esac
 		if ! "${install_cmd[@]}" "$item"; then
 			echo "Warning: Failed to install $type: $item" >&2
@@ -157,6 +167,7 @@ prompt_uninstall() {
 		package) uninstall_cmd=(brew uninstall) ;;
 		cask) uninstall_cmd=(brew uninstall --cask) ;;
 		extension) uninstall_cmd=(code --uninstall-extension) ;;
+		npm) uninstall_cmd=(npm uninstall -g) ;;
 		esac
 		if ! "${uninstall_cmd[@]}" "$item"; then
 			echo "Warning: Failed to uninstall $type: $item" >&2

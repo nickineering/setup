@@ -1,0 +1,4 @@
+# Global npm packages managed by this setup repo
+# Format: package-name (one per line, comments supported)
+
+@mermaid-js/mermaid-cli # Mermaid diagram CLI (mmdc)
