@@ -30,7 +30,6 @@
   "chat.editing.confirmEditRequestRemoval": false,
   "chat.editing.confirmEditRequestRetry": false,
   "chat.editor.wordWrap": "on",
-  "chat.renderRelatedFiles": true,
   "comment-divider.shouldLengthIncludeIndent": true,
   "css.lint.duplicateProperties": "warning",
   "diffEditor.ignoreTrimWhitespace": false,
@@ -96,7 +95,7 @@
   "github.copilot.nextEditSuggestions.enabled": true,
   "gitlens.gitCommands.closeOnFocusOut": true,
   "go.toolsManagement.autoUpdate": true,
-  "javascript.updateImportsOnFileMove.enabled": "always",
+  "js/ts.updateImportsOnFileMove.enabled": "always",
   "json.schemas": [
     {
       "fileMatch": [
@@ -167,8 +166,6 @@
   "terminal.integrated.showExitAlert": false,
   "terminal.integrated.tabs.enabled": true,
   "testExplorer.useNativeTesting": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
   "window.closeWhenEmpty": true,
   "window.newWindowDimensions": "maximized",
   "window.zoomLevel": 1,
