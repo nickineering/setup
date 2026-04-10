@@ -120,6 +120,7 @@
       "Bash(jq *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
+      "Bash(mmdc *)",
       "Bash(mv *)",
       "Bash(mypy *)",
       "Bash(node *.cjs)",
