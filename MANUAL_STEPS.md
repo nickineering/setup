@@ -61,7 +61,7 @@ Next, you will need to sign in or otherwise activate the following apps, being
 sure to complete any steps noted:
 
 1. 1Password
-1. Cheatsheet
+1. Keyclu
    1. Grant permissions
 1. Chrome - all profiles
 1. Docker
