@@ -68,7 +68,7 @@ sync_repos() {
 	local total_pages remote_repos glab_response
 
 	# Test glab authentication, offer login if needed
-	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>&1); then
+	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 		if [[ "$glab_response" == *"auth"* || "$glab_response" == *"401"* || "$glab_response" == *"login"* ]]; then
 			echo -e "${yellow}GitLab authentication required${reset}"
 			echo -n "Run glab auth login? [Y/n]: "
@@ -80,7 +80,7 @@ sync_repos() {
 					return 0
 				}
 				# Retry after login
-				if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true" --include 2>&1); then
+				if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 					echo -e "${yellow}Warning: Still unable to fetch repos after login${reset}"
 					echo -e "${dim}$glab_response${reset}"
 					return 0
@@ -100,7 +100,7 @@ sync_repos() {
 	total_pages=${total_pages:-1}
 
 	seq 1 "$total_pages" | xargs -P "$parallel_jobs" -I{} sh -c \
-		'glab api "groups/'"$GITLAB_GROUP"'/projects?per_page=100&page={}&include_subgroups=true" 2>/dev/null > "$1/page_{}.json" && printf "."' _ "$tmpdir"
+		'glab api "groups/'"$GITLAB_GROUP"'/projects?per_page=100&page={}&include_subgroups=true&archived=false" 2>/dev/null > "$1/page_{}.json" && printf "."' _ "$tmpdir"
 	echo ""
 
 	# Validate we got data before parsing
@@ -108,7 +108,7 @@ sync_repos() {
 		echo -e "${yellow}Warning: Failed to fetch repos from GitLab${reset}"
 		return 0
 	fi
-	remote_repos=$(jq -s 'add | .[].path_with_namespace' -r "$tmpdir"/page_*.json 2>/dev/null | sed "s|^$GITLAB_GROUP/||" | sort -u)
+	remote_repos=$(jq -s 'add | .[] | select(.empty_repo == false) | .path_with_namespace' -r "$tmpdir"/page_*.json 2>/dev/null | sed "s|^$GITLAB_GROUP/||" | sort -u)
 	echo -e "Found ${bold}$(_count_lines "$remote_repos")${reset} repos on GitLab"
 	echo ""
 

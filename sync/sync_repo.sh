@@ -41,7 +41,7 @@ cd "$repo_dir" || exit 1
 # Track original branch to warn user if we switch away from it
 original_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
-git fetch --all --prune --quiet
+git fetch --all --prune --prune-tags --force --quiet
 
 # Detect stale branches (local branches whose upstream is gone after prune)
 if [[ -n "$stale_dir" ]]; then
