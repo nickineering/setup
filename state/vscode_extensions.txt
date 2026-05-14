@@ -44,6 +44,7 @@ ms-vscode-remote.remote-ssh-edit
 ms-vscode.makefile-tools
 ms-vscode.remote-explorer
 ms-vscode.test-adapter-converter
+ms-vscode.vscode-chat-customizations-evaluations
 ms-vsliveshare.vsliveshare
 mtxr.sqltools
 orta.vscode-jest
