@@ -30,6 +30,8 @@
   "chat.editing.confirmEditRequestRemoval": false,
   "chat.editing.confirmEditRequestRetry": false,
   "chat.editor.wordWrap": "on",
+  "claudeCode.disableLoginPrompt": true,
+  "claudeCode.useTerminal": false,
   "comment-divider.shouldLengthIncludeIndent": true,
   "css.lint.duplicateProperties": "warning",
   "diffEditor.ignoreTrimWhitespace": false,
