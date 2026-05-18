@@ -19,6 +19,17 @@ dim='\033[2m'
 green='\033[32m'
 yellow='\033[33m'
 
+_retry() {
+	local attempts=3 delay=5 i
+	for ((i = 1; i <= attempts; i++)); do
+		if "$@"; then
+			return 0
+		fi
+		[[ $i -lt $attempts ]] && sleep "$delay"
+	done
+	return 1
+}
+
 # Sync a branch: checkout, pull, return status string
 # Usage: sync_branch <branch_name>
 # Output: Sets $branch_status variable
@@ -26,9 +37,13 @@ sync_branch() {
 	local branch="$1"
 	local before after
 	before=$(git rev-parse "$branch" 2>/dev/null || echo "none")
-	git checkout "$branch" --quiet 2>/dev/null || git checkout -b "$branch" "origin/$branch" --quiet 2>/dev/null
-	git pull --quiet origin "$branch" 2>/dev/null || true
-	after=$(git rev-parse "$branch" 2>/dev/null)
+	# Fast-forward the local branch without checking it out
+	if ! git fetch origin "$branch:$branch" --quiet 2>/dev/null; then
+		# fetch branch:branch fails on non-fast-forward or if branch doesn't exist locally yet
+		# Fall back to creating or force-updating the local ref from remote
+		git branch -f "$branch" "origin/$branch" 2>/dev/null || true
+	fi
+	after=$(git rev-parse "$branch" 2>/dev/null || echo "none")
 	if [[ "$before" == "$after" ]]; then
 		branch_status="${dim}${branch}${reset}"
 	else
@@ -41,12 +56,12 @@ cd "$repo_dir" || exit 1
 # Track original branch to warn user if we switch away from it
 original_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
-git fetch --all --prune --prune-tags --force --quiet
+_retry git fetch --all --prune --prune-tags --force --quiet
 
 # Detect stale branches (local branches whose upstream is gone after prune)
 if [[ -n "$stale_dir" ]]; then
 	# git branch -vv shows "[origin/branch: gone]" for branches with deleted upstreams
-	stale_branches=$(git branch -vv 2>/dev/null | grep ': gone]' | awk '{print $1}' || true)
+	stale_branches=$(git branch -vv 2>/dev/null | grep ': gone]' | sed 's/^[* ]*//' | awk '{print $1}' || true)
 	if [[ -n "$stale_branches" ]]; then
 		# Write to a unique file per repo (avoids race condition with parallel syncs)
 		stale_file="$stale_dir/$(echo "$repo_name" | tr '/' '_')"
@@ -73,37 +88,67 @@ if [[ "$has_develop" == "yes" ]]; then
 	develop_status="$branch_status"
 fi
 
-# Helper: warn if we switched away from a feature branch
-_warn_branch_switch() {
-	local target="$1"
-	if [[ -n "$original_branch" && "$original_branch" != "$target" && "$original_branch" != "develop" && "$original_branch" != "main" ]]; then
-		printf " ${yellow}(was on %s)${reset}" "$original_branch"
-	fi
+# Determine if we should return to the original feature branch.
+# Stay on feature branch unless it's stale or inactive (>30 days since last commit).
+# Never pull the feature branch — local history rewrites may not be pushed yet.
+_should_keep_feature_branch() {
+	local branch="$1"
+	# Not a feature branch (also excludes detached HEAD)
+	[[ "$branch" != "main" && "$branch" != "develop" && "$branch" != "HEAD" && -n "$branch" ]] || return 1
+	# Branch must still exist locally
+	git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null || return 1
+	# Stale: upstream was deleted
+	local upstream
+	upstream=$(git for-each-ref --format='%(upstream:track)' "refs/heads/$branch" 2>/dev/null)
+	[[ "$upstream" != "[gone]" ]] || return 1
+	# Inactive: last commit more than 30 days ago
+	local last_commit_epoch now_epoch age_days
+	last_commit_epoch=$(git log -1 --format='%ct' "$branch" 2>/dev/null) || return 1
+	now_epoch=$(date +%s)
+	age_days=$(((now_epoch - last_commit_epoch) / 86400))
+	[[ $age_days -le 30 ]] || return 1
+	return 0
 }
 
-# Report status (end on develop if it exists, otherwise main)
-if [[ "$has_develop" == "yes" ]] && [[ "$has_main" == "yes" ]]; then
-	git checkout develop --quiet 2>/dev/null
-	printf "%s: %b, %b" "$repo_name" "$develop_status" "$main_status"
-	_warn_branch_switch develop
-	printf "\n"
-elif [[ "$has_develop" == "yes" ]]; then
-	printf "%s: %b" "$repo_name" "$develop_status"
-	_warn_branch_switch develop
-	printf "\n"
+# Determine preferred default branch
+if [[ "$has_develop" == "yes" ]]; then
+	preferred_default="develop"
 elif [[ "$has_main" == "yes" ]]; then
-	printf "%s: %b" "$repo_name" "$main_status"
-	_warn_branch_switch main
-	printf "\n"
+	preferred_default="main"
 else
-	# Fallback: use repo's default branch
-	default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
-	if [[ -n "$default_branch" ]]; then
-		sync_branch "$default_branch"
-		printf "%s: %b" "$repo_name" "$branch_status"
-		_warn_branch_switch "$default_branch"
-		printf "\n"
-	else
-		printf "%s: ${yellow}no default branch${reset}\n" "$repo_name"
+	preferred_default=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
+	if [[ -n "$preferred_default" ]]; then
+		sync_branch "$preferred_default"
 	fi
 fi
+
+# Decide which branch to end on
+if _should_keep_feature_branch "$original_branch"; then
+	git checkout "$original_branch" --quiet 2>/dev/null || true
+	final_branch="$original_branch"
+elif [[ -n "${preferred_default:-}" ]]; then
+	git checkout "$preferred_default" --quiet 2>/dev/null || true
+	final_branch="$preferred_default"
+fi
+
+# Build output line, then print atomically to avoid interleaving with parallel jobs
+output=""
+if [[ "$has_develop" == "yes" ]] && [[ "$has_main" == "yes" ]]; then
+	output="$repo_name: $(printf '%b, %b' "$develop_status" "$main_status")"
+elif [[ "$has_develop" == "yes" ]]; then
+	output="$repo_name: $(printf '%b' "$develop_status")"
+elif [[ "$has_main" == "yes" ]]; then
+	output="$repo_name: $(printf '%b' "$main_status")"
+elif [[ -n "${preferred_default:-}" ]]; then
+	output="$repo_name: $(printf '%b' "$branch_status")"
+else
+	output="$repo_name: $(printf "${yellow}no default branch${reset}")"
+fi
+
+if [[ -n "${final_branch:-}" && "$final_branch" != "${preferred_default:-}" ]]; then
+	output+=" $(printf "${green}(staying on %s)${reset}" "$final_branch")"
+elif [[ -n "$original_branch" && "$original_branch" != "${final_branch:-}" && "$original_branch" != "develop" && "$original_branch" != "main" ]]; then
+	output+=" $(printf "${yellow}(left %s)${reset}" "$original_branch")"
+fi
+
+printf '%s\n' "$output"

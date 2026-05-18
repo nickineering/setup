@@ -12,9 +12,19 @@ repo="$1"
 dir="$2"
 group="$3"
 
+_retry() {
+	local attempts=3 delay=5 i
+	for ((i = 1; i <= attempts; i++)); do
+		if "$@"; then
+			return 0
+		fi
+		[[ $i -lt $attempts ]] && sleep "$delay"
+	done
+	return 1
+}
+
 mkdir -p "$dir/$(dirname "$repo")"
-# Suppress verbose output, print repo name on success
-if glab repo clone "$group/$repo" "$dir/$repo" >/dev/null 2>&1; then
+if _retry glab repo clone "$group/$repo" "$dir/$repo" >/dev/null 2>&1; then
 	printf "Cloned: %s\n" "$repo"
 else
 	exit 1
