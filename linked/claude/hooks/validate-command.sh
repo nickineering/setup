@@ -75,6 +75,23 @@ validate_chained_commands "$COMMAND"
 # SANDBOX: Restrict file modifications to allowed directories
 # =============================================================================
 
+# API-only CLIs (glab, gh) pass arguments to remote servers, not the filesystem.
+# Their arguments (MR descriptions, PR bodies) can contain paths, redirects, etc.
+# that trigger false positives in filesystem-protection rules below.
+if [[ "$COMMAND" =~ ^(glab|gh)[[:space:]] ]]; then
+	# Block destructive remote operations
+	if [[ "$COMMAND" =~ [[:space:]](delete|archive)[[:space:]] ]] ||
+		[[ "$COMMAND" =~ api[[:space:]].*(--method|-X)[[:space:]]*(DELETE|PUT|PATCH) ]] ||
+		[[ "$COMMAND" =~ (repo|project)[[:space:]]+(delete|archive|rename) ]] ||
+		[[ "$COMMAND" =~ (mr|pr|issue)[[:space:]]+(close|delete|merge) ]] ||
+		[[ "$COMMAND" =~ (variable|secret)[[:space:]]+set ]] ||
+		[[ "$COMMAND" =~ workflow[[:space:]]+disable ]]; then
+		echo "BLOCKED: Destructive glab/gh operation. Confirm with user first." >&2
+		exit 2
+	fi
+	exit 0
+fi
+
 # Block any direct access to .git directories (except via git commands)
 if [[ ! "$COMMAND" =~ ^git[[:space:]] ]]; then
 	# Match .git as a path component (not in the middle of a word)
