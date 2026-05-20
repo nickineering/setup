@@ -75,6 +75,12 @@ validate_chained_commands "$COMMAND"
 # SANDBOX: Restrict file modifications to allowed directories
 # =============================================================================
 
+# git commit/tag -m content is just a message string, not a filesystem operation.
+# System paths or redirects mentioned in commit messages trigger false positives.
+if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]]; then
+	exit 0
+fi
+
 # API-only CLIs (glab, gh) pass arguments to remote servers, not the filesystem.
 # Their arguments (MR descriptions, PR bodies) can contain paths, redirects, etc.
 # that trigger false positives in filesystem-protection rules below.
