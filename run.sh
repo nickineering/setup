@@ -10,6 +10,14 @@
 
 set -euo pipefail
 
+# Parse flags
+CLEAN_CACHES=false
+for arg in "$@"; do
+	case "$arg" in
+		--clean) CLEAN_CACHES=true ;;
+	esac
+done
+
 # Guard: refuse to run as root
 if [[ $EUID -eq 0 ]]; then
 	echo "Error: Do not run this script as root" >&2
@@ -157,7 +165,39 @@ fi
 echo ""
 
 # =============================================================================
-# Step 5: Symlinks and file copies
+# Step 5: Cache cleanup (--clean flag)
+# =============================================================================
+if [[ "$CLEAN_CACHES" == "true" ]]; then
+	CURRENT_STEP="cleaning caches"
+	echo -e "${bold}${cyan}=== Cleaning caches ===${reset}"
+	disk_before=$(df -k / | awk 'NR==2 {print $4}')
+	cleanup_output=$(brew cleanup --prune=7 2>&1)
+	if [[ -z "$cleanup_output" ]]; then
+		echo -e "${dim}Homebrew: cache already clean${reset}"
+	else
+		echo "$cleanup_output"
+	fi
+	npm cache clean --force >/dev/null 2>&1 && echo -e "${dim}npm: cache cleared${reset}"
+	command -v uv &>/dev/null && uv cache prune >/dev/null 2>&1 && echo -e "${dim}uv: cache pruned${reset}"
+	command -v go &>/dev/null && go clean -cache >/dev/null 2>&1 && echo -e "${dim}Go: build cache cleared${reset}"
+	[[ -d ~/.nvm/.cache ]] && rm -rf ~/.nvm/.cache && echo -e "${dim}nvm: cache cleared${reset}"
+	pip cache purge >/dev/null 2>&1 && echo -e "${dim}pip: cache cleared${reset}"
+	disk_after=$(df -k / | awk 'NR==2 {print $4}')
+	freed_mb=$(( (disk_after - disk_before) / 1024 ))
+	if [[ $freed_mb -gt 0 ]]; then
+		if [[ $freed_mb -ge 1024 ]]; then
+			echo -e "${green}Freed $(awk "BEGIN {printf \"%.1f\", $freed_mb/1024}") GB${reset}"
+		else
+			echo -e "${green}Freed ${freed_mb} MB${reset}"
+		fi
+	else
+		echo -e "${dim}Caches already clean${reset}"
+	fi
+	echo ""
+fi
+
+# =============================================================================
+# Step 6: Symlinks and file copies
 # =============================================================================
 CURRENT_STEP="creating symlinks"
 echo -e "${bold}${cyan}=== Creating symlinks ===${reset}"
@@ -231,7 +271,7 @@ fi
 echo ""
 
 # =============================================================================
-# Step 6: Tool configurations
+# Step 7: Tool configurations
 # =============================================================================
 CURRENT_STEP="configuring tools"
 echo -e "${bold}${cyan}=== Configuring tools ===${reset}"
@@ -261,7 +301,7 @@ echo -e "${dim}Checked: Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
 echo ""
 
 # =============================================================================
-# Step 7: macOS configuration (after casks so Dock apps exist)
+# Step 8: macOS configuration (after casks so Dock apps exist)
 # =============================================================================
 CURRENT_STEP="configuring macOS"
 echo -e "${bold}${cyan}=== Configuring macOS ===${reset}"
@@ -269,7 +309,7 @@ source configure/macos.sh
 echo ""
 
 # =============================================================================
-# Step 8: VSCode extensions (after casks so `code` CLI exists)
+# Step 9: VSCode extensions (after casks so `code` CLI exists)
 # =============================================================================
 CURRENT_STEP="installing VSCode extensions"
 echo -e "${bold}${cyan}=== Installing VSCode extensions ===${reset}"
@@ -299,7 +339,7 @@ fi
 echo ""
 
 # =============================================================================
-# Step 9: Tool updates (with first-run guards)
+# Step 10: Tool updates (with first-run guards)
 # =============================================================================
 CURRENT_STEP="updating tools"
 
@@ -350,7 +390,7 @@ fi
 echo ""
 
 # =============================================================================
-# Step 10: GitLab repo sync (after glab installed)
+# Step 11: GitLab repo sync (after glab installed)
 # =============================================================================
 CURRENT_STEP="syncing GitLab repos"
 echo -e "${bold}${cyan}=== Syncing GitLab repos ===${reset}"
@@ -359,7 +399,7 @@ sync_repos
 echo ""
 
 # =============================================================================
-# Step 11: Privileged operations (grouped at end, single sudo prompt)
+# Step 12: Privileged operations (grouped at end, single sudo prompt)
 # =============================================================================
 CURRENT_STEP="" # Clear so interrupt doesn't look like an error
 echo -e "${bold}${cyan}=== Privileged operations ===${reset}"

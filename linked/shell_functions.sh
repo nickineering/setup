@@ -30,7 +30,7 @@ mcd() {
 
 # Dev environment setup/maintenance
 devenv() {
-	"$SETUP/run.sh"
+	"$SETUP/run.sh" "$@"
 }
 
 # Count lines of code by file extension: $1=EXTENSION (e.g., "py", "js")

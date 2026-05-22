@@ -96,6 +96,7 @@ See `git-aliases` and `git-functions` for the full list.
 | Command             | Description                           |
 | ------------------- | ------------------------------------- |
 | `devenv`            | Re-run setup (safe, idempotent)       |
+| `devenv --clean`    | Also clear tool caches                |
 | `godir <pat>`       | Find and cd to a directory by pattern |
 | `finddir <pat>`     | Find directories matching pattern     |
 | `cs <dir>`          | cd + ls                               |
@@ -197,6 +198,7 @@ Safe to run anytime - all operations are idempotent:
 
 ```bash
 devenv          # or: make setup
+devenv --clean  # also clear package manager caches
 ```
 
 ## Development
