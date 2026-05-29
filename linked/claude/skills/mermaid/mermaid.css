@@ -1,0 +1,28 @@
+/* Mermaid Branding */
+
+/* Font - use system font by family name */
+*, text {
+  font-family: 'Haas Grot Disp R', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}
+
+/* Rounded corners */
+svg .cluster rect { rx: 16px; ry: 16px; }
+svg .node rect { rx: 12px; ry: 12px; }
+
+/* Edge labels - solid white background to fully cover lines */
+/* Mermaid sets opacity:0.5 by default - override it */
+.edgeLabel rect,
+.edgeLabel .label rect {
+  fill: #ffffff !important;
+  opacity: 1 !important;
+  stroke: none !important;
+}
+
+/* All lines 2px thick */
+.cluster rect,
+.cluster polygon,
+.edgePath path,
+.flowchart-link,
+path.path {
+  stroke-width: 2px !important;
+}
