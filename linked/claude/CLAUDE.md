@@ -46,6 +46,12 @@ approval.
 yourself.** Only add co-author trailers when crediting humans. Claude is **not**
 a human
 
+# Leave Things Working
+
+Never finish with anything broken. If you notice something is broken — tests,
+lint, types, builds, features — fix it, even if unrelated to the current task.
+Only leave things broken if explicitly told to.
+
 # Backwards compatibility
 
 Assume everything is greenfield unless otherwise stated. Don't worry about
