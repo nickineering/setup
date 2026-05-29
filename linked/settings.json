@@ -158,6 +158,7 @@
     "reportUnnecessaryTypeIgnoreComment": "error",
     "reportUnusedCallResult": "error"
   },
+  "python.analysis.extraPaths": [],
   "python.analysis.inlayHints.functionReturnTypes": true,
   "python.analysis.inlayHints.pytestParameters": true,
   "python.analysis.inlayHints.variableTypes": true,
