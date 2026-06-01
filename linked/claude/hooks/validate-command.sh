@@ -77,7 +77,8 @@ validate_chained_commands "$COMMAND"
 
 # git commit/tag -m content is just a message string, not a filesystem operation.
 # System paths or redirects mentioned in commit messages trigger false positives.
-if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]]; then
+# But still block --amend which rewrites history.
+if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]] && [[ ! "$COMMAND" =~ --amend ]]; then
 	exit 0
 fi
 

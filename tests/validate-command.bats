@@ -1012,7 +1012,7 @@ bash_cmd() {
 }
 
 @test "git commit --amend -m blocked" {
-    block "$(bash_cmd 'git commit --amend -m \"fix\"')"
+    block "$(bash_cmd 'git commit --amend -m fix')"
 }
 
 @test "git commit" {
