@@ -33,5 +33,9 @@ else
 	echo -e "${dim}GitHub CLI already authenticated${reset}"
 fi
 
+# GPG key generation and git signing setup
+echo ""
+source configure/gpg.sh
+
 echo ""
 echo -e "${green}Done!${reset}"

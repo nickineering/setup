@@ -14,7 +14,7 @@ set -euo pipefail
 CLEAN_CACHES=false
 for arg in "$@"; do
 	case "$arg" in
-		--clean) CLEAN_CACHES=true ;;
+	--clean) CLEAN_CACHES=true ;;
 	esac
 done
 
@@ -183,7 +183,7 @@ if [[ "$CLEAN_CACHES" == "true" ]]; then
 	[[ -d ~/.nvm/.cache ]] && rm -rf ~/.nvm/.cache && echo -e "${dim}nvm: cache cleared${reset}"
 	pip cache purge >/dev/null 2>&1 && echo -e "${dim}pip: cache cleared${reset}"
 	disk_after=$(df -k / | awk 'NR==2 {print $4}')
-	freed_mb=$(( (disk_after - disk_before) / 1024 ))
+	freed_mb=$(((disk_after - disk_before) / 1024))
 	if [[ $freed_mb -gt 0 ]]; then
 		if [[ $freed_mb -ge 1024 ]]; then
 			echo -e "${green}Freed $(awk "BEGIN {printf \"%.1f\", $freed_mb/1024}") GB${reset}"
@@ -276,6 +276,7 @@ echo ""
 CURRENT_STEP="configuring tools"
 echo -e "${bold}${cyan}=== Configuring tools ===${reset}"
 
+source configure/git.sh
 source configure/zsh.sh
 source configure/firefox.sh
 source configure/ruff.sh
@@ -297,7 +298,7 @@ else
 	echo -e "${yellow}Warning: nvm not found, skipping Node configuration${reset}"
 fi
 
-echo -e "${dim}Checked: Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
+echo -e "${dim}Checked: Git, Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
 echo ""
 
 # =============================================================================
@@ -404,14 +405,29 @@ echo ""
 CURRENT_STEP="" # Clear so interrupt doesn't look like an error
 echo -e "${bold}${cyan}=== Privileged operations ===${reset}"
 
-# Check what needs sudo
+# Detect which privileged operations are needed (checked before prompting)
 sudo_tasks=()
+
 ZOOM_DAEMON="/Library/LaunchDaemons/us.zoom.ZoomDaemon.plist"
 needs_zoom=false
 if [[ -f "$ZOOM_DAEMON" ]] && ! launchctl list 2>/dev/null | grep -q 'us.zoom.ZoomDaemon'; then
 	sudo_tasks+=("Enable Zoom auto-update daemon")
 	needs_zoom=true
 fi
+
+needs_womp=false
+if ! pmset -g | grep -q 'womp.*1'; then
+	sudo_tasks+=("Enable wake for network access")
+	needs_womp=true
+fi
+
+needs_lockscreen=false
+current_lockscreen=$(defaults read /Library/Preferences/com.apple.loginwindow LoginwindowText 2>/dev/null || echo "")
+if [[ -z "$current_lockscreen" ]]; then
+	sudo_tasks+=("Set lock screen message (contact info if laptop is found)")
+	needs_lockscreen=true
+fi
+
 sudo_tasks+=("Install macOS system updates (optional)")
 
 echo "The following operations require sudo:"
@@ -424,10 +440,22 @@ read -r -n 1 run_sudo </dev/tty
 echo ""
 
 if [[ "$run_sudo" =~ ^[Yy]$ ]]; then
-	# Zoom daemon (if needed)
+	# Execute privileged operations
 	if [[ "$needs_zoom" == "true" ]]; then
-		echo -e "${dim}Enabling Zoom auto-update daemon...${reset}"
 		sudo launchctl load -w "$ZOOM_DAEMON" 2>/dev/null || echo -e "${yellow}Warning: Failed to load Zoom daemon${reset}"
+	fi
+	if [[ "$needs_womp" == "true" ]]; then
+		sudo pmset -a womp 1 || echo -e "${yellow}Warning: Failed to set wake on LAN${reset}"
+	fi
+	if [[ "$needs_lockscreen" == "true" ]]; then
+		echo -n "Enter lock screen message (e.g. your email for if laptop is found): "
+		read -r lockscreen_msg </dev/tty
+		if [[ -n "$lockscreen_msg" ]]; then
+			sudo defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText "$lockscreen_msg"
+			echo -e "${dim}Lock screen message set${reset}"
+		else
+			echo -e "${dim}Skipped lock screen message${reset}"
+		fi
 	fi
 
 	# macOS updates (sub-prompt since it can take a while)

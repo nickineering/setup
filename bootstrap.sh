@@ -1,8 +1,8 @@
 #!/bin/bash
 # * Bash 3.2 (2007)
-
-# This is the entrypoint
-# Run to setup a new Mac or reconfigure an existing Mac
+# Entrypoint: run on a new Mac or to reconfigure an existing one.
+# Installs Homebrew, clones the repo, gets modern Bash, then hands off to run.sh.
+# Keep this minimal (ancient shell here) — all configuration belongs in run.sh or configure/*.sh.
 
 # Bash strict mode
 set -euo pipefail
@@ -79,4 +79,5 @@ if ! brew install bash; then
 	echo "Error: Failed to install bash via Homebrew" >&2
 	exit 1
 fi
+
 "$SETUP"/run.sh

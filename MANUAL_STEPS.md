@@ -6,9 +6,6 @@ Apple just really wants you do do manually. Once
 [the bootstrap script](bootstrap.sh) finishes you will have to follow the
 following manual steps to finish setting up your Mac:
 
-1. [Generate a new GPG key and add it to Github](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key)
-   and then
-   [configure git to sign commits with the new GPG key](https://docs.github.com/en/authentication/managing-commit-signature-verification/telling-git-about-your-signing-key)
 1. Add system languages and keyboard layouts to the OS
 1. Pair your Bluetooth devices
 1. Search for "extensions" in System Settings. Click "Finder extensions" ->
@@ -16,30 +13,10 @@ following manual steps to finish setting up your Mac:
 1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
 1. Remove Apple News and Apple Stocks widgets from the Notification Center and
    replace them with weather, connected devices, Github, and Google Translate.
-1. Go to System Settings -> Trackpad and increase the Tracking Speed. By default
-   it can be tricky to cross the whole screen in one gesture.
 1. Go to System settings -> Menu Bar -> Battery Options -> Show Percentage
-1. Go to System Settings -> Battery -> Options -> Wake for network access ->
-   "Always"
-1. This uses Raycast instead of Spotlight, so Spotlight should be moved out of
-   the way. Search for "spotlight" in System Settings. Click on "Keyboard
-   Shortcuts" -> "Spotlight". Then uncheck "Show Spotlight search" and "Show
-   Finder search window"
-1. Set a
-   [lock screen message](https://support.apple.com/en-ie/guide/mac-help/mh35890/mac)
-   including your email in case your laptop is misplaced and someone kind finds
-   it.
 1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.
-1. Set 1Password and Chrome to start at login
-
-Then run the following git commands:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "Your email specifically for git"
-```
 
 ## GitLab repo sync setup
 

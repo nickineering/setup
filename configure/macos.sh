@@ -2,6 +2,18 @@
 # shellcheck disable=SC2154 # Variables like $dim defined in lib/colors.sh
 # Sourced by run.sh - configure macOS system preferences and Dock
 
+# Trackpad: increase tracking speed (requires reboot)
+defaults write -g com.apple.trackpad.scaling 1.5
+
+# Spotlight: disable keyboard shortcuts, using Raycast instead (requires reboot)
+# Key 64 = Show Spotlight search (Cmd+Space)
+# Key 65 = Show Finder search window (Cmd+Opt+Space)
+HOTKEYS_PLIST=~/Library/Preferences/com.apple.symbolichotkeys.plist
+/usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:64:enabled false" "$HOTKEYS_PLIST" 2>/dev/null ||
+	/usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:64:enabled bool false" "$HOTKEYS_PLIST"
+/usr/libexec/PlistBuddy -c "Set :AppleSymbolicHotKeys:65:enabled false" "$HOTKEYS_PLIST" 2>/dev/null ||
+	/usr/libexec/PlistBuddy -c "Add :AppleSymbolicHotKeys:65:enabled bool false" "$HOTKEYS_PLIST"
+
 # Disable screensaver
 defaults -currentHost write com.apple.screensaver idleTime 0
 
@@ -119,5 +131,20 @@ fi
 # mysides add "$USER" file:///Users/"$USER"/
 # mysides add Projects file:///Users/"$USER"/projects/
 # brew remove mysides
+
+# Login items: wipe all existing, then add exactly what we want
+osascript -e 'tell application "System Events" to delete every login item' 2>/dev/null || true
+
+login_items=(
+	"/Applications/1Password.app"
+	"/Applications/Google Chrome.app"
+	"/Applications/KeyClu.app"
+	"/Applications/Raycast.app"
+	"/Applications/Rocket.app"
+	"/Applications/Shottr.app"
+)
+for app_path in "${login_items[@]}"; do
+	osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$app_path\", hidden:false}" 2>/dev/null || true
+done
 
 echo -e "${dim}macOS preferences configured${reset}"
