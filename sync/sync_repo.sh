@@ -13,11 +13,7 @@ base_dir="$2"
 stale_dir="${3:-}"
 repo_name="${repo_dir#"$base_dir"/}"
 
-# Colors
-reset='\033[0m'
-dim='\033[2m'
-green='\033[32m'
-yellow='\033[33m'
+source "$SETUP/lib/colors.sh"
 
 _retry() {
 	local attempts=3 delay=5 i
