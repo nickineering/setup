@@ -106,6 +106,7 @@ for tap in beeftornado/rmtree hashicorp/tap; do
 		brew tap "$tap" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to tap ${tap}${reset}"
 		((taps_added++)) || true
 	fi
+	brew trust "$tap" &>/dev/null || true
 done
 if [[ $taps_added -eq 0 ]]; then
 	echo -e "${dim}All taps already configured${reset}"
@@ -328,7 +329,11 @@ if command -v code &>/dev/null; then
 	echo ""
 
 	echo -e "${bold}${cyan}=== Updating VSCode extensions ===${reset}"
-	update_output=$(code --update-extensions 2>&1)
+	update_output=$(NODE_OPTIONS="--no-deprecation" code --update-extensions 2>&1)
+	if echo "$update_output" | grep -q "ENOTEMPTY"; then
+		sleep 2
+		update_output=$(NODE_OPTIONS="--no-deprecation" code --update-extensions 2>&1)
+	fi
 	if [[ "$update_output" == "No extension to update" ]]; then
 		echo -e "${dim}All extensions up to date${reset}"
 	else
