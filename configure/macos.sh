@@ -132,9 +132,7 @@ fi
 # mysides add Projects file:///Users/"$USER"/projects/
 # brew remove mysides
 
-# Login items: wipe all existing, then add exactly what we want
-osascript -e 'tell application "System Events" to delete every login item' 2>/dev/null || true
-
+# Login items: only add missing ones (avoid wiping + re-adding which triggers notifications)
 login_items=(
 	"/Applications/1Password.app"
 	"/Applications/Google Chrome.app"
@@ -143,8 +141,11 @@ login_items=(
 	"/Applications/Rocket.app"
 	"/Applications/Shottr.app"
 )
+current_login_items=$(osascript -e 'tell application "System Events" to get the path of every login item' 2>/dev/null || true)
 for app_path in "${login_items[@]}"; do
-	osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$app_path\", hidden:false}" 2>/dev/null || true
+	if [[ "$current_login_items" != *"$app_path"* ]]; then
+		osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$app_path\", hidden:false}" 2>/dev/null || true
+	fi
 done
 
 echo -e "${dim}macOS preferences configured${reset}"
