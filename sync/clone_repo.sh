@@ -13,19 +13,38 @@ dir="$2"
 group="$3"
 
 _retry() {
-	local attempts=3 delay=5 i
+	local attempts=4 delay=5 i output
 	for ((i = 1; i <= attempts; i++)); do
-		if "$@"; then
+		if output=$("$@" 2>&1); then
 			return 0
 		fi
-		[[ $i -lt $attempts ]] && sleep "$delay"
+		[[ $i -lt $attempts ]] && sleep "$((delay * i))"
 	done
+	echo "$output"
 	return 1
 }
 
+# Extract a short reason from git/glab error output
+_error_reason() {
+	local output="$1"
+	if echo "$output" | grep -q "502\|503\|500"; then
+		echo "server error (retried)"
+	elif echo "$output" | grep -q "404\|not found"; then
+		echo "not found"
+	elif echo "$output" | grep -q "403\|permission\|denied\|access"; then
+		echo "permission denied"
+	elif echo "$output" | grep -q "timeout\|timed out"; then
+		echo "timeout (retried)"
+	else
+		echo "$output" | tail -1 | cut -c1-80
+	fi
+}
+
 mkdir -p "$dir/$(dirname "$repo")"
-if _retry glab repo clone "$group/$repo" "$dir/$repo" >/dev/null 2>&1; then
+if output=$(_retry glab repo clone "$group/$repo" "$dir/$repo"); then
 	printf "Cloned: %s\n" "$repo"
 else
+	reason=$(_error_reason "$output")
+	printf "%s: %s\n" "$repo" "$reason" >&2
 	exit 1
 fi
