@@ -6,6 +6,11 @@ argument-hint: base-ref
 Show a formatted summary of changes, like what would appear in a PR/MR
 description.
 
+## Model
+
+Delegate this skill to a subagent using `Agent` with `model: "sonnet"`. Include
+the full workflow and rules below in the agent's prompt.
+
 $ARGUMENTS - Optional base reference (commit, branch, or tag) to compare
 against. Defaults to uncommitted changes, then falls back to the default branch.
 

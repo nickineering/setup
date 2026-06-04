@@ -4,6 +4,11 @@ description: Create Mermaid diagrams from documentation and export to PNG
 
 Create visual diagrams from documentation or requirements, then export to PNG.
 
+## Model
+
+Delegate this skill to a subagent using `Agent` with `model: "sonnet"`. Include
+the full workflow, rules, and config paths below in the agent's prompt.
+
 ## Usage
 
 - `/mermaid <source> ["prompt"]` - Generate a diagram from source file(s)

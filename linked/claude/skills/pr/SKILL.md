@@ -5,6 +5,11 @@ argument-hint: branch
 
 Manage a GitHub pull request for the current branch.
 
+## Model
+
+Delegate this skill to a subagent using `Agent` with `model: "sonnet"`. Include
+the full workflow and rules below in the agent's prompt.
+
 $ARGUMENTS - Optional target branch (defaults to repository's default branch).
 
 ## Workflow

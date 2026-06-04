@@ -4,6 +4,11 @@ description: Stage Claude's changes, commit with a generated message, and push
 
 Commit and push changes from the current Claude session.
 
+## Model
+
+Delegate this skill to a subagent using `Agent` with `model: "sonnet"`. Include
+the full workflow and rules below in the agent's prompt.
+
 ## Workflow
 
 ### 1. Determine files to stage
