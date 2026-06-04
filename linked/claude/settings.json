@@ -4,6 +4,7 @@
     "allow": [
       "Bash(awk *)",
       "Bash(aws *)",
+      "Bash(~/.claude/skills/cost/cost.sh*)",
       "Bash(base64 *)",
       "Bash(cat *)",
       "Bash(cdk *)",
