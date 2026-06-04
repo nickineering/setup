@@ -110,6 +110,11 @@ sync_repos() {
 	fi
 	remote_repos=$(jq -s 'add | .[] | select(.empty_repo == false) | .path_with_namespace' -r "$tmpdir"/page_*.json 2>/dev/null | sed "s|^$GITLAB_GROUP/||" | sort -u)
 	echo -e "Found ${bold}$(_count_lines "$remote_repos")${reset} repos on GitLab"
+
+	# Filter remote repos with the same exclusions used for local scanning
+	if [[ -n "${GITLAB_EXCLUDE_DIRS:-}" ]]; then
+		remote_repos=$(echo "$remote_repos" | grep -Ev "^($GITLAB_EXCLUDE_DIRS)/")
+	fi
 	echo ""
 
 	local repo_list local_repos
@@ -124,11 +129,16 @@ sync_repos() {
 	if [[ -n "$new_repos" ]]; then
 		echo -e "Cloning ${bold}${green}$(_count_lines "$new_repos")${reset} new repos..."
 		echo "$new_repos" | xargs -P "$parallel_jobs" -I{} sh -c \
-			'"$1/sync/clone_repo.sh" "$2" "$3" "$4" || echo "$2" >> "$5"' _ \
+			'"$1/sync/clone_repo.sh" "$2" "$3" "$4" 2>>"$5"' _ \
 			"$SETUP" {} "$repos_dir" "$GITLAB_GROUP" "$clone_errors"
 		if [[ -s "$clone_errors" ]]; then
-			echo -e "${yellow}Warning: Failed to clone some repos:${reset}"
-			sed 's/^/  /' "$clone_errors"
+			local fail_count
+			fail_count=$(wc -l <"$clone_errors" | tr -d ' ')
+			echo -e "${yellow}Warning: Failed to clone ${fail_count} repo(s):${reset}"
+			# Group by reason (text after first ": ")
+			sort -t: -k2 "$clone_errors" | while IFS= read -r line; do
+				printf "  %s\n" "$line"
+			done
 		fi
 		repo_list=$(_find_repos)
 	else
