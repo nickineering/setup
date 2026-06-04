@@ -89,7 +89,7 @@ if [[ "$has_develop" == "yes" ]]; then
 fi
 
 # Determine if we should return to the original feature branch.
-# Stay on feature branch unless it's stale or inactive (>30 days since last commit).
+# Stay on feature branch if it has unmerged commits.
 # Never pull the feature branch — local history rewrites may not be pushed yet.
 _should_keep_feature_branch() {
 	local branch="$1"
@@ -101,12 +101,10 @@ _should_keep_feature_branch() {
 	local upstream
 	upstream=$(git for-each-ref --format='%(upstream:track)' "refs/heads/$branch" 2>/dev/null)
 	[[ "$upstream" != "[gone]" ]] || return 1
-	# Inactive: last commit more than 30 days ago
-	local last_commit_epoch now_epoch age_days
-	last_commit_epoch=$(git log -1 --format='%ct' "$branch" 2>/dev/null) || return 1
-	now_epoch=$(date +%s)
-	age_days=$(((now_epoch - last_commit_epoch) / 86400))
-	[[ $age_days -le 30 ]] || return 1
+	# Only keep if there are commits not yet merged into the default branch
+	local unmerged
+	unmerged=$(git log "${preferred_default}..${branch}" --oneline 2>/dev/null | head -1)
+	[[ -n "$unmerged" ]] || return 1
 	return 0
 }
 
