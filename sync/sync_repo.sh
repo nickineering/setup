@@ -11,6 +11,7 @@ set -euo pipefail
 repo_dir="$1"
 base_dir="$2"
 stale_dir="${3:-}"
+active_branches_dir="${4:-}"
 repo_name="${repo_dir#"$base_dir"/}"
 
 source "$SETUP/lib/colors.sh"
@@ -31,12 +32,15 @@ _retry() {
 # Output: Sets $branch_status variable
 sync_branch() {
 	local branch="$1"
-	local before after
+	local before after current_branch
 	before=$(git rev-parse "$branch" 2>/dev/null || echo "none")
-	# Fast-forward the local branch without checking it out
-	if ! git fetch origin "$branch:$branch" --quiet 2>/dev/null; then
+	current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
+	if [[ "$current_branch" == "$branch" ]]; then
+		# Branch is checked out — can't update ref directly, merge instead
+		git merge --ff-only "origin/$branch" --quiet 2>/dev/null || true
+	elif ! git fetch origin "$branch:$branch" --quiet 2>/dev/null; then
 		# fetch branch:branch fails on non-fast-forward or if branch doesn't exist locally yet
-		# Fall back to creating or force-updating the local ref from remote
 		git branch -f "$branch" "origin/$branch" 2>/dev/null || true
 	fi
 	after=$(git rev-parse "$branch" 2>/dev/null || echo "none")
@@ -120,6 +124,11 @@ fi
 if _should_keep_feature_branch "$original_branch"; then
 	git checkout "$original_branch" --quiet 2>/dev/null || true
 	final_branch="$original_branch"
+	# Record active feature branch for end-of-sync summary
+	if [[ -n "$active_branches_dir" ]]; then
+		active_file="$active_branches_dir/$(echo "$repo_name" | tr '/' '_')"
+		printf '%s:%s\n' "$repo_name" "$final_branch" >>"$active_file"
+	fi
 elif [[ -n "${preferred_default:-}" ]]; then
 	git checkout "$preferred_default" --quiet 2>/dev/null || true
 	final_branch="$preferred_default"
