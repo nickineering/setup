@@ -329,10 +329,10 @@ if command -v code &>/dev/null; then
 	echo ""
 
 	echo -e "${bold}${cyan}=== Updating VSCode extensions ===${reset}"
-	update_output=$(NODE_OPTIONS="--no-deprecation" code --update-extensions 2>&1)
+	update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	if echo "$update_output" | grep -q "ENOTEMPTY"; then
 		sleep 2
-		update_output=$(NODE_OPTIONS="--no-deprecation" code --update-extensions 2>&1)
+		update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	fi
 	if [[ "$update_output" == "No extension to update" ]]; then
 		echo -e "${dim}All extensions up to date${reset}"

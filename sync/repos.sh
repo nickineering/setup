@@ -55,13 +55,15 @@ sync_repos() {
 	fi
 
 	# Create temp files/dirs upfront for clean trap-based cleanup
-	local tmpdir stale_branches_dir clone_errors sync_errors stale_branches_file
+	local tmpdir stale_branches_dir active_branches_dir clone_errors sync_errors stale_branches_file active_branches_file
 	tmpdir=$(mktemp -d)
 	stale_branches_dir=$(mktemp -d)
+	active_branches_dir=$(mktemp -d)
 	clone_errors=$(mktemp)
 	sync_errors=$(mktemp)
 	stale_branches_file=$(mktemp)
-	trap 'rm -rf "$tmpdir" "$stale_branches_dir" "$clone_errors" "$sync_errors" "$stale_branches_file"' RETURN
+	active_branches_file=$(mktemp)
+	trap 'rm -rf "$tmpdir" "$stale_branches_dir" "$active_branches_dir" "$clone_errors" "$sync_errors" "$stale_branches_file" "$active_branches_file"' RETURN
 
 	# Fetch repo list from GitLab
 	echo -e "${bold}${cyan}=== Fetching repo list from GitLab ===${reset}"
@@ -190,16 +192,17 @@ sync_repos() {
 	# Sync all repos
 	echo -e "${bold}${cyan}=== Syncing repos ===${reset}"
 	echo "$repo_list" | xargs -P "$parallel_jobs" -I{} sh -c \
-		'"$1/sync/sync_repo.sh" "$2" "$3" "$4" || echo "$2" >> "$5"' _ \
-		"$SETUP" {} "$repos_dir" "$stale_branches_dir" "$sync_errors"
+		'"$1/sync/sync_repo.sh" "$2" "$3" "$4" "$5" || echo "$2" >> "$6"' _ \
+		"$SETUP" {} "$repos_dir" "$stale_branches_dir" "$active_branches_dir" "$sync_errors"
 	if [[ -s "$sync_errors" ]]; then
 		echo -e "${yellow}Warning: Failed to sync some repos:${reset}"
 		sed 's|^'"$repos_dir"'/||; s/^/  /' "$sync_errors"
 	fi
 	echo ""
 
-	# Aggregate stale branches from all sync processes
+	# Aggregate from all sync processes
 	cat "$stale_branches_dir"/* 2>/dev/null >"$stale_branches_file" || true
+	cat "$active_branches_dir"/* 2>/dev/null >"$active_branches_file" || true
 
 	# Prompt to delete stale branches
 	if [[ -s "$stale_branches_file" ]]; then
@@ -220,6 +223,15 @@ sync_repos() {
 				echo -e "  ${dim}Skipped${reset}"
 			fi
 		done <"$stale_branches_file"
+		echo ""
+	fi
+
+	# Show repos with active feature branches (unmerged work)
+	if [[ -s "$active_branches_file" ]]; then
+		echo -e "${bold}${cyan}=== Active feature branches (unmerged) ===${reset}"
+		while IFS=: read -r repo branch; do
+			printf "  ${cyan}%s${reset} → ${green}%s${reset}\n" "$repo" "$branch"
+		done <"$active_branches_file"
 		echo ""
 	fi
 }
