@@ -9,31 +9,6 @@
 
 links_created=0
 
-# Helper: create symlink and report if new/updated
-create_link() {
-	local source="$1" target="$2" label="${3:-}"
-	local target_dir
-	target_dir=$(dirname "$target")
-	[[ -d "$target_dir" ]] || return 0 # Skip if parent dir doesn't exist
-
-	# Check if link already points to correct source
-	if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
-		return 0
-	fi
-
-	backup_or_delete "$target" || true
-	if ln -sfn "$source" "$target"; then
-		if [[ -n "$label" ]]; then
-			echo "Linked: ${label}"
-		else
-			echo "Linked: $(basename "$target")"
-		fi
-		((links_created++)) || true
-	else
-		echo -e "${yellow}Warning: Failed to link $(basename "$target")${reset}" >&2
-	fi
-}
-
 # Create symlinks for dotfiles
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue

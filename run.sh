@@ -42,6 +42,7 @@ cd "$SETUP"
 # Utilities
 source lib/colors.sh
 source lib/backup.sh
+source lib/links.sh
 source lib/packages.sh
 
 # Trap handler for cleanup on interruption
