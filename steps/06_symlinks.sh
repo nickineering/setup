@@ -5,7 +5,9 @@
 # Links dotfiles from linked/ into $HOME, VSCode settings into its User dir,
 # and dprint config to ~/. Copies template files (copied/) only when the target
 # doesn't already exist, so user edits are preserved. Creates Vim directories.
+# Requires: lib/links.sh (create_link), lib/backup.sh (backup_or_delete)
 # ─────────────────────────────────────────────────────────────────────────────
+: "${SETUP:?}" "${DOTFILES:?}"
 
 links_created=0
 

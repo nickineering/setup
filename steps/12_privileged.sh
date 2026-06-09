@@ -6,6 +6,7 @@
 # password once. Lists what needs doing and asks before proceeding. Covers:
 # Zoom auto-update daemon, wake-on-LAN, lock screen message, macOS updates.
 # ─────────────────────────────────────────────────────────────────────────────
+: "${SETUP:?}"
 
 CURRENT_STEP=""
 

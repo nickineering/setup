@@ -5,7 +5,12 @@
 # Installs missing extensions, prompts for removals from state file changes
 # (detected in step 01), then updates all installed extensions. Retries the
 # update once on ENOTEMPTY (a transient race in the VSCode CLI).
+# Requires: lib/packages.sh (parse_state_file, set_difference, install_missing,
+#           get_installed_extensions, prompt_uninstall)
+# Requires: steps/01 (removed_extensions)
 # ─────────────────────────────────────────────────────────────────────────────
+: "${SETUP:?}" "${removed_extensions?}"
+
 if command -v code &>/dev/null; then
 	desired_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
 	installed_extensions=$(get_installed_extensions)

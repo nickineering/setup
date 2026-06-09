@@ -5,6 +5,7 @@
 # Registers and trusts third-party taps. Must run before install/upgrade so
 # that packages from these taps are resolvable.
 # ─────────────────────────────────────────────────────────────────────────────
+
 taps_added=0
 for tap in beeftornado/rmtree hashicorp/tap; do
 	if ! brew tap | grep -q "^${tap}$"; then

@@ -5,7 +5,11 @@
 # Diffs desired state (state/*.txt) against what's installed and adds anything
 # missing. Also prompts the user to remove packages/casks that were deleted
 # from state files (detected in step 01).
+# Requires: lib/packages.sh (parse_state_file, set_difference, install_missing,
+#           get_installed_packages, get_installed_casks, prompt_uninstall)
+# Requires: steps/01 (removed_packages, removed_casks)
 # ─────────────────────────────────────────────────────────────────────────────
+: "${SETUP:?}" "${removed_packages?}" "${removed_casks?}"
 
 # Get full desired state and install anything missing
 desired_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")

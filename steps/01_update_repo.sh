@@ -5,7 +5,9 @@
 # Snapshots state files before and after pulling, then diffs them to find what
 # was added or removed upstream. The removed_* variables are consumed by steps
 # 4 (packages/casks), 7 (npm), and 9 (extensions) to prompt for uninstalls.
+# Requires: lib/packages.sh (parse_state_file, set_difference)
 # ─────────────────────────────────────────────────────────────────────────────
+: "${SETUP:?}"
 
 # Capture state before pull (for detecting changes after pull)
 old_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")

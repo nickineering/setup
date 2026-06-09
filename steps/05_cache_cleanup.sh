@@ -5,7 +5,9 @@
 # Purges caches across all package managers (Homebrew, npm, uv, Go, nvm, pip).
 # Gated on --clean flag — skipped entirely on normal runs to keep things fast.
 # Reports total disk freed at the end.
+# Requires: run.sh (CLEAN_CACHES)
 # ─────────────────────────────────────────────────────────────────────────────
+: "${CLEAN_CACHES?}"
 
 if [[ "$CLEAN_CACHES" == "true" ]]; then
 	CURRENT_STEP="cleaning caches"
