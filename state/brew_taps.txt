@@ -1,0 +1,5 @@
+# Homebrew taps (third-party package sources)
+# Format: owner/repo (one per line)
+
+beeftornado/rmtree
+hashicorp/tap

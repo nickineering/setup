@@ -11,15 +11,10 @@ CLAUDE_COPIED="$SETUP/copied/claude"
 # Create Claude directory if it doesn't exist
 mkdir -p "$CLAUDE_DIR"
 
-# Backup existing files
-backup_or_delete "$CLAUDE_DIR/settings.json"
-backup_or_delete "$CLAUDE_DIR/CLAUDE.md"
-backup_or_delete "$CLAUDE_DIR/skills"
-
 # Symlink settings, instructions, and skills
-ln -sf "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json"
-ln -sf "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
-ln -sfn "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills"
+create_link "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json" "claude/settings.json"
+create_link "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md" "claude/CLAUDE.md"
+create_link "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills" "claude/skills"
 
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then

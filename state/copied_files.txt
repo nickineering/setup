@@ -1,2 +1,4 @@
 .env.sh
+# .gitconfig is copied (not linked) because it holds device-specific config
+# (name, email, signing key). Shared settings live in linked/.gitconfig via [include].
 .gitconfig

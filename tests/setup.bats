@@ -197,6 +197,10 @@ teardown() {
     [[ -f "$REPO_ROOT/state/brew_casks.txt" ]]
 }
 
+@test "state/brew_taps.txt exists" {
+    [[ -f "$REPO_ROOT/state/brew_taps.txt" ]]
+}
+
 @test "state/vscode_extensions.txt exists" {
     [[ -f "$REPO_ROOT/state/vscode_extensions.txt" ]]
 }
@@ -212,7 +216,7 @@ teardown() {
 @test "all linked_files.txt entries exist in linked/" {
     local missing=()
     while IFS= read -r file; do
-        [[ -z "$file" ]] && continue
+        [[ -z "$file" || "$file" == \#* ]] && continue
         [[ -f "$REPO_ROOT/linked/$file" ]] || missing+=("$file")
     done < "$REPO_ROOT/state/linked_files.txt"
 
@@ -225,7 +229,7 @@ teardown() {
 @test "all copied_files.txt entries exist in copied/" {
     local missing=()
     while IFS= read -r file; do
-        [[ -z "$file" ]] && continue
+        [[ -z "$file" || "$file" == \#* ]] && continue
         [[ -f "$REPO_ROOT/copied/$file" ]] || missing+=("$file")
     done < "$REPO_ROOT/state/copied_files.txt"
 

@@ -123,6 +123,27 @@ add_to_dock "Weather" "System" && dock_changed=true
 if [[ "$dock_changed" == "true" ]]; then
 	killall Dock
 fi
+
+# Warn about Dock apps not in the desired list (may be orphaned from a previous config)
+desired_dock_apps=(
+	"1Password" "Boop" "Calculator" "Firefox Developer Edition" "Google Chrome"
+	"iPhone Mirroring" "iTerm" "NordVPN" "Notes" "Photo Booth" "Reminders"
+	"Spotify" "Activity Monitor" "Visual Studio Code" "Weather"
+)
+while IFS= read -r dock_app; do
+	[[ -z "$dock_app" ]] && continue
+	found=false
+	for desired in "${desired_dock_apps[@]}"; do
+		if [[ "$dock_app" == "$desired" ]]; then
+			found=true
+			break
+		fi
+	done
+	if [[ "$found" == "false" ]]; then
+		echo -e "${yellow}Warning: '$dock_app' is in Dock but not managed by setup — remove manually if unwanted${reset}"
+	fi
+done < <(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -o '"file-label" = [^;]*' | sed 's/"file-label" = //' | sed 's/"//g')
+
 # Finder settings apply on next window open, no restart needed
 
 # Add directories to Finder favorites
@@ -147,5 +168,26 @@ for app_path in "${login_items[@]}"; do
 		osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$app_path\", hidden:false}" 2>/dev/null || true
 	fi
 done
+
+# Warn about login items not in the desired list
+if [[ -n "$current_login_items" ]]; then
+	while IFS=', ' read -ra items; do
+		for item_path in "${items[@]}"; do
+			item_path=$(echo "$item_path" | xargs)
+			[[ -z "$item_path" ]] && continue
+			found=false
+			for desired in "${login_items[@]}"; do
+				if [[ "$item_path" == "$desired" ]]; then
+					found=true
+					break
+				fi
+			done
+			if [[ "$found" == "false" ]]; then
+				app_name=$(basename "$item_path" .app)
+				echo -e "${yellow}Warning: '$app_name' is a login item but not managed by setup — remove manually if unwanted${reset}"
+			fi
+		done
+	done <<<"$current_login_items"
+fi
 
 echo -e "${dim}macOS preferences configured${reset}"
