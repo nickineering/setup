@@ -57,448 +57,50 @@ cleanup_on_interrupt() {
 }
 trap cleanup_on_interrupt INT TERM
 
+run_step() {
+	local title="$1" file="$2"
+	CURRENT_STEP="${title,,}"
+	echo -e "${bold}${cyan}=== ${title} ===${reset}"
+	# shellcheck source=/dev/null
+	source "$file"
+}
+
 echo -e "${bold}${cyan}=== Starting setup ===${reset}"
 echo ""
 
-# =============================================================================
-# Step 1: Update setup repo and detect state file changes
-# =============================================================================
-CURRENT_STEP="updating setup repo"
-echo -e "${bold}${cyan}=== Updating setup repo ===${reset}"
+# Pull latest and diff state files to detect upstream additions/removals
+run_step "Updating setup repo" steps/01_update_repo.sh
 
-# Capture state before pull (for detecting changes after pull)
-old_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
-old_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
-old_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
-old_npm=$(parse_state_file "$SETUP/state/npm_packages.txt")
+# Taps must be registered before any install/upgrade can reference them
+run_step "Configuring Homebrew taps" steps/02_homebrew_taps.sh
 
-pull_output=$(git -C "$SETUP" pull 2>&1) || {
-	echo -e "${yellow}Warning: git pull failed (local changes?) - state file changes won't be detected${reset}"
-}
-if [[ "$pull_output" == "Already up to date." ]]; then
-	echo -e "${dim}Up to date${reset}"
-else
-	echo "$pull_output"
-fi
+# Upgrade existing packages first so new installs don't immediately go stale
+run_step "Upgrading Homebrew packages" steps/03_homebrew_upgrade.sh
 
-# Compare after pull to find what changed
-new_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
-new_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
-new_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
-new_npm=$(parse_state_file "$SETUP/state/npm_packages.txt")
+# Reconcile desired state against what's actually installed
+run_step "Installing Homebrew packages" steps/04_homebrew_install.sh
 
-# Calculate removals from state file changes (will prompt user in later steps)
-removed_packages=$(set_difference "$new_packages" "$old_packages")
-removed_casks=$(set_difference "$new_casks" "$old_casks")
-removed_extensions=$(set_difference "$new_extensions" "$old_extensions")
-removed_npm=$(set_difference "$new_npm" "$old_npm")
-echo ""
+# Optional deep clean — only when --clean flag is passed
+source steps/05_cache_cleanup.sh
 
-# =============================================================================
-# Step 2: Homebrew taps
-# =============================================================================
-CURRENT_STEP="configuring Homebrew taps"
-echo -e "${bold}${cyan}=== Configuring Homebrew taps ===${reset}"
-taps_added=0
-for tap in beeftornado/rmtree hashicorp/tap; do
-	if ! brew tap | grep -q "^${tap}$"; then
-		echo "Adding tap: ${tap}"
-		brew tap "$tap" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to tap ${tap}${reset}"
-		((taps_added++)) || true
-	fi
-	brew trust "$tap" &>/dev/null || true
-done
-if [[ $taps_added -eq 0 ]]; then
-	echo -e "${dim}All taps already configured${reset}"
-fi
-echo ""
+# Wire dotfiles/configs into their expected locations
+run_step "Creating symlinks" steps/06_symlinks.sh
 
-# =============================================================================
-# Step 3: Homebrew upgrade (update existing packages first)
-# =============================================================================
-CURRENT_STEP="upgrading Homebrew packages"
-echo -e "${bold}${cyan}=== Upgrading Homebrew packages ===${reset}"
-outdated=$(brew outdated --greedy 2>/dev/null || true)
-if [[ -n "$outdated" ]]; then
-	echo -e "${dim}Upgrading: $(echo "$outdated" | tr '\n' ' ')${reset}"
-	brew upgrade --greedy || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
-else
-	echo -e "${dim}All packages up to date${reset}"
-fi
-echo ""
+# Idempotent per-tool config (completions, default versions, global settings)
+run_step "Configuring tools" steps/07_configure_tools.sh
 
-# =============================================================================
-# Step 4: Install missing packages and casks
-# =============================================================================
-CURRENT_STEP="installing Homebrew packages and casks"
-echo -e "${bold}${cyan}=== Installing Homebrew packages ===${reset}"
+# System preferences and Dock — after cask installs so apps exist
+run_step "Configuring macOS" steps/08_macos.sh
 
-# Get full desired state and install anything missing
-desired_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
-installed_packages=$(get_installed_packages)
-missing_packages=$(set_difference "$installed_packages" "$desired_packages")
-if [[ -n "$missing_packages" ]]; then
-	install_missing package "$missing_packages"
-else
-	echo -e "${dim}All packages installed${reset}"
-fi
-echo ""
+# Extensions depend on `code` CLI existing (from cask install above)
+run_step "Installing VSCode extensions" steps/09_vscode_extensions.sh
 
-# Finish installing chromedriver
-CHROMEDRIVER_PATH="$(brew --prefix)/bin/chromedriver"
-if [[ -f "$CHROMEDRIVER_PATH" ]]; then
-	xattr -d com.apple.quarantine "$CHROMEDRIVER_PATH" 2>/dev/null || true
-fi
+# Network-heavy updates run in parallel for speed
+run_step "Updating development tools" steps/10_tool_updates.sh
 
-echo -e "${bold}${cyan}=== Installing Homebrew casks ===${reset}"
-desired_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
-installed_casks=$(get_installed_casks)
-missing_casks=$(set_difference "$installed_casks" "$desired_casks")
-if [[ -n "$missing_casks" ]]; then
-	install_missing cask "$missing_casks"
-else
-	echo -e "${dim}All casks installed${reset}"
-fi
+# Clone/pull repos — needs glab authenticated
+run_step "Syncing GitLab repos" steps/11_gitlab_sync.sh
 
-# Prompt for removals from state file changes (detected in step 1)
-[[ -n "$removed_packages" ]] && prompt_uninstall package "$removed_packages"
-[[ -n "$removed_casks" ]] && prompt_uninstall cask "$removed_casks"
-echo ""
-
-# =============================================================================
-# Step 5: Cache cleanup (--clean flag)
-# =============================================================================
-if [[ "$CLEAN_CACHES" == "true" ]]; then
-	CURRENT_STEP="cleaning caches"
-	echo -e "${bold}${cyan}=== Cleaning caches ===${reset}"
-	disk_before=$(df -k / | awk 'NR==2 {print $4}')
-	cleanup_output=$(brew cleanup --prune=7 2>&1)
-	if [[ -z "$cleanup_output" ]]; then
-		echo -e "${dim}Homebrew: cache already clean${reset}"
-	else
-		echo "$cleanup_output"
-	fi
-	npm cache clean --force >/dev/null 2>&1 && echo -e "${dim}npm: cache cleared${reset}"
-	command -v uv &>/dev/null && uv cache prune >/dev/null 2>&1 && echo -e "${dim}uv: cache pruned${reset}"
-	command -v go &>/dev/null && go clean -cache >/dev/null 2>&1 && echo -e "${dim}Go: build cache cleared${reset}"
-	[[ -d ~/.nvm/.cache ]] && rm -rf ~/.nvm/.cache && echo -e "${dim}nvm: cache cleared${reset}"
-	pip cache purge >/dev/null 2>&1 && echo -e "${dim}pip: cache cleared${reset}"
-	disk_after=$(df -k / | awk 'NR==2 {print $4}')
-	freed_mb=$(((disk_after - disk_before) / 1024))
-	if [[ $freed_mb -gt 0 ]]; then
-		if [[ $freed_mb -ge 1024 ]]; then
-			echo -e "${green}Freed $(awk "BEGIN {printf \"%.1f\", $freed_mb/1024}") GB${reset}"
-		else
-			echo -e "${green}Freed ${freed_mb} MB${reset}"
-		fi
-	else
-		echo -e "${dim}Caches already clean${reset}"
-	fi
-	echo ""
-fi
-
-# =============================================================================
-# Step 6: Symlinks and file copies
-# =============================================================================
-CURRENT_STEP="creating symlinks"
-echo -e "${bold}${cyan}=== Creating symlinks ===${reset}"
-
-links_created=0
-
-# Helper: create symlink and report if new/updated
-create_link() {
-	local source="$1" target="$2" label="${3:-}"
-	local target_dir
-	target_dir=$(dirname "$target")
-	[[ -d "$target_dir" ]] || return 0 # Skip if parent dir doesn't exist
-
-	# Check if link already points to correct source
-	if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
-		return 0
-	fi
-
-	backup_or_delete "$target" || true
-	if ln -sfn "$source" "$target"; then
-		if [[ -n "$label" ]]; then
-			echo "Linked: ${label}"
-		else
-			echo "Linked: $(basename "$target")"
-		fi
-		((links_created++)) || true
-	else
-		echo -e "${yellow}Warning: Failed to link $(basename "$target")${reset}" >&2
-	fi
-}
-
-# Create symlinks for dotfiles
-while IFS= read -r file; do
-	[[ -z "$file" || "$file" == \#* ]] && continue
-	if [[ ! -f "$DOTFILES/$file" ]]; then
-		echo -e "${yellow}Warning: Dotfile not found: $DOTFILES/$file${reset}" >&2
-		continue
-	fi
-	create_link "$DOTFILES/$file" ~/"$file"
-done <"$SETUP"/state/linked_files.txt
-
-# VSCode settings (create User dir if VSCode is installed but dir doesn't exist)
-VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
-if command -v code &>/dev/null && [[ ! -d "$VSCODE_USER_DIR" ]]; then
-	mkdir -p "$VSCODE_USER_DIR"
-fi
-if [[ -d "$VSCODE_USER_DIR" ]]; then
-	create_link "$DOTFILES/settings.json" "$VSCODE_USER_DIR/settings.json" "settings.json -> VSCode"
-fi
-
-# dprint config
-create_link "$SETUP/dprint.jsonc" ~/dprint.jsonc
-
-# Copy templates (only if not exists)
-files_copied=0
-while IFS= read -r file; do
-	[[ -z "$file" || "$file" == \#* ]] && continue
-	if [[ ! -e ~/"$file" ]]; then
-		cp "$SETUP/copied/$file" ~/
-		echo "Created: ~/$file (from template)"
-		((files_copied++)) || true
-	fi
-done <"$SETUP"/state/copied_files.txt
-
-# Vim directories
-mkdir -p ~/.vim/swaps/ ~/.vim/backups/ ~/.vim/undo/
-
-if [[ $links_created -eq 0 && $files_copied -eq 0 ]]; then
-	echo -e "${dim}All symlinks up to date${reset}"
-fi
-echo ""
-
-# =============================================================================
-# Step 7: Tool configurations
-# =============================================================================
-CURRENT_STEP="configuring tools"
-echo -e "${bold}${cyan}=== Configuring tools ===${reset}"
-
-source configure/git.sh
-source configure/zsh.sh
-source configure/firefox.sh
-source configure/ruff.sh
-source configure/claude.sh
-
-# Python config (guard: uv must be installed)
-if command -v uv &>/dev/null; then
-	source configure/python.sh
-else
-	echo -e "${yellow}Warning: uv not found, skipping Python configuration${reset}"
-fi
-
-# Node config (guard: nvm must be installed)
-if [[ -s "$(brew --prefix)/opt/nvm/nvm.sh" ]]; then
-	source configure/node.sh
-	# Handle npm package removals from state file changes
-	[[ -n "$removed_npm" ]] && prompt_uninstall npm "$removed_npm"
-else
-	echo -e "${yellow}Warning: nvm not found, skipping Node configuration${reset}"
-fi
-
-echo -e "${dim}Checked: Git, Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
-echo ""
-
-# =============================================================================
-# Step 8: macOS configuration (after casks so Dock apps exist)
-# =============================================================================
-CURRENT_STEP="configuring macOS"
-echo -e "${bold}${cyan}=== Configuring macOS ===${reset}"
-source configure/macos.sh
-echo ""
-
-# =============================================================================
-# Step 9: VSCode extensions (after casks so `code` CLI exists)
-# =============================================================================
-CURRENT_STEP="installing VSCode extensions"
-echo -e "${bold}${cyan}=== Installing VSCode extensions ===${reset}"
-if command -v code &>/dev/null; then
-	desired_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
-	installed_extensions=$(get_installed_extensions)
-	missing_extensions=$(set_difference "$installed_extensions" "$desired_extensions")
-	if [[ -n "$missing_extensions" ]]; then
-		install_missing extension "$missing_extensions"
-	else
-		echo -e "${dim}All extensions installed${reset}"
-	fi
-	# Handle removals from state file changes
-	[[ -n "$removed_extensions" ]] && prompt_uninstall extension "$removed_extensions"
-	echo ""
-
-	echo -e "${bold}${cyan}=== Updating VSCode extensions ===${reset}"
-	update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
-	if echo "$update_output" | grep -q "ENOTEMPTY"; then
-		sleep 2
-		update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
-	fi
-	if [[ "$update_output" == "No extension to update" ]]; then
-		echo -e "${dim}All extensions up to date${reset}"
-	else
-		echo "$update_output"
-	fi
-else
-	echo -e "${dim}VSCode CLI not found - skipping (install VSCode cask first)${reset}"
-fi
-echo ""
-
-# =============================================================================
-# Step 10: Tool updates (with first-run guards)
-# =============================================================================
-CURRENT_STEP="updating tools"
-
-echo -e "${bold}${cyan}=== Updating development tools ===${reset}"
-
-tool_update_dir=$(mktemp -d)
-
-if command -v uv &>/dev/null; then
-	(
-		uv_output=$(uv tool upgrade --all 2>&1) || echo -e "${yellow}Warning: uv tool upgrade failed${reset}"
-		if [[ "$uv_output" == "Nothing to upgrade" ]]; then
-			echo -e "${dim}uv tools: up to date${reset}"
-		else
-			echo -e "${dim}uv tools: $uv_output${reset}"
-		fi
-	) >"$tool_update_dir/uv" 2>&1 &
-fi
-
-if command -v tldr &>/dev/null; then
-	(
-		tldr --update >/dev/null 2>&1 || echo -e "${yellow}Warning: tldr update failed${reset}"
-		echo -e "${dim}tldr: pages updated${reset}"
-	) >"$tool_update_dir/tldr" 2>&1 &
-fi
-
-export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
-if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
-	(
-		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo -e "${yellow}Warning: Oh My Zsh update failed${reset}"
-		if [[ "$omz_output" == *"already at the latest"* ]]; then
-			echo -e "${dim}Oh My Zsh: up to date${reset}"
-		else
-			echo -e "${dim}Oh My Zsh: updated${reset}"
-		fi
-	) >"$tool_update_dir/omz" 2>&1 &
-fi
-
-if command -v go &>/dev/null; then
-	(
-		gopls_before=$(gopls version 2>/dev/null | head -1 || echo "none")
-		staticcheck_before=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
-
-		go install golang.org/x/tools/gopls@latest 2>/dev/null || echo -e "${yellow}Warning: gopls update failed${reset}"
-		go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${yellow}Warning: staticcheck update failed${reset}"
-
-		gopls_after=$(gopls version 2>/dev/null | head -1 || echo "none")
-		staticcheck_after=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
-
-		if [[ "$gopls_before" != "$gopls_after" || "$staticcheck_before" != "$staticcheck_after" ]]; then
-			[[ "$gopls_before" != "$gopls_after" ]] && echo "Updated: gopls"
-			[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo "Updated: staticcheck"
-		else
-			echo -e "${dim}Go tools: up to date${reset}"
-		fi
-	) >"$tool_update_dir/go" 2>&1 &
-fi
-
-wait
-
-for tool in uv tldr omz go; do
-	[[ -f "$tool_update_dir/$tool" ]] && cat "$tool_update_dir/$tool"
-done
-rm -rf "$tool_update_dir"
-echo ""
-
-# =============================================================================
-# Step 11: GitLab repo sync (after glab installed)
-# =============================================================================
-CURRENT_STEP="syncing GitLab repos"
-echo -e "${bold}${cyan}=== Syncing GitLab repos ===${reset}"
-source sync/repos.sh
-sync_repos
-echo ""
-
-# =============================================================================
-# Step 12: Privileged operations (grouped at end, single sudo prompt)
-# =============================================================================
-CURRENT_STEP="" # Clear so interrupt doesn't look like an error
-echo -e "${bold}${cyan}=== Privileged operations ===${reset}"
-
-# Detect which privileged operations are needed (checked before prompting)
-sudo_tasks=()
-
-ZOOM_DAEMON="/Library/LaunchDaemons/us.zoom.ZoomDaemon.plist"
-needs_zoom=false
-if [[ -f "$ZOOM_DAEMON" ]] && ! launchctl list 2>/dev/null | grep -q 'us.zoom.ZoomDaemon'; then
-	sudo_tasks+=("Enable Zoom auto-update daemon")
-	needs_zoom=true
-fi
-
-needs_womp=false
-if ! pmset -g | grep -q 'womp.*1'; then
-	sudo_tasks+=("Enable wake for network access")
-	needs_womp=true
-fi
-
-needs_lockscreen=false
-current_lockscreen=$(defaults read /Library/Preferences/com.apple.loginwindow LoginwindowText 2>/dev/null || echo "")
-if [[ -z "$current_lockscreen" ]]; then
-	sudo_tasks+=("Set lock screen message (contact info if laptop is found)")
-	needs_lockscreen=true
-fi
-
-sudo_tasks+=("Install macOS system updates (optional)")
-
-echo "The following operations require sudo:"
-for task in "${sudo_tasks[@]}"; do
-	echo "  - $task"
-done
-echo ""
-echo -n "Continue with privileged operations? [y/N]: "
-read -r -n 1 run_sudo </dev/tty
-echo ""
-
-if [[ "$run_sudo" =~ ^[Yy]$ ]]; then
-	# Execute privileged operations
-	if [[ "$needs_zoom" == "true" ]]; then
-		sudo launchctl load -w "$ZOOM_DAEMON" 2>/dev/null || echo -e "${yellow}Warning: Failed to load Zoom daemon${reset}"
-	fi
-	if [[ "$needs_womp" == "true" ]]; then
-		sudo pmset -a womp 1 || echo -e "${yellow}Warning: Failed to set wake on LAN${reset}"
-	fi
-	if [[ "$needs_lockscreen" == "true" ]]; then
-		echo -n "Enter lock screen message (e.g. your email for if laptop is found): "
-		read -r lockscreen_msg </dev/tty
-		if [[ -n "$lockscreen_msg" ]]; then
-			sudo defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText "$lockscreen_msg"
-			echo -e "${dim}Lock screen message set${reset}"
-		else
-			echo -e "${dim}Skipped lock screen message${reset}"
-		fi
-	fi
-
-	# macOS updates (sub-prompt since it can take a while)
-	echo -n "Install macOS system updates now? [y/N]: "
-	read -r -n 1 install_updates </dev/tty
-	echo ""
-	if [[ "$install_updates" =~ ^[Yy]$ ]]; then
-		echo -e "${dim}Installing updates...${reset}"
-		sudo softwareupdate -i -a || echo -e "${yellow}Warning: Some updates failed${reset}"
-	else
-		echo -e "${dim}Skipped macOS updates${reset}"
-	fi
-else
-	echo -e "${dim}Skipped privileged operations${reset}"
-fi
-echo ""
-echo -e "${bold}${green}=== Setup complete! ===${reset}"
-
-# Remind about post-setup steps
-echo ""
-echo -e "${bold}Next steps:${reset} See ${cyan}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
-if [[ "${FIREFOX_NEEDS_SETUP:-}" == "1" ]]; then
-	echo -e "${yellow}Note:${reset} Firefox settings were skipped. Launch Firefox and sign in, then run:"
-	echo -e "  ${cyan}$SETUP/configure/after_signin.sh${reset}"
-fi
+# Sudo grouped last so user only enters password once — CURRENT_STEP cleared
+# inside 12_privileged.sh so interrupts during sudo don't look like errors
+run_step "Privileged operations" steps/12_privileged.sh
