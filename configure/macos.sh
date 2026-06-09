@@ -171,23 +171,20 @@ done
 
 # Warn about login items not in the desired list
 if [[ -n "$current_login_items" ]]; then
-	while IFS=', ' read -ra items; do
-		for item_path in "${items[@]}"; do
-			item_path=$(echo "$item_path" | xargs)
-			[[ -z "$item_path" ]] && continue
-			found=false
-			for desired in "${login_items[@]}"; do
-				if [[ "$item_path" == "$desired" ]]; then
-					found=true
-					break
-				fi
-			done
-			if [[ "$found" == "false" ]]; then
-				app_name=$(basename "$item_path" .app)
-				echo -e "${yellow}Warning: '$app_name' is a login item but not managed by setup — remove manually if unwanted${reset}"
+	while IFS= read -r item_path; do
+		[[ -z "$item_path" ]] && continue
+		found=false
+		for desired in "${login_items[@]}"; do
+			if [[ "$item_path" == "$desired" ]]; then
+				found=true
+				break
 			fi
 		done
-	done <<<"$current_login_items"
+		if [[ "$found" == "false" ]]; then
+			app_name=$(basename "$item_path" .app)
+			echo -e "${yellow}Warning: '$app_name' is a login item but not managed by setup — remove manually if unwanted${reset}"
+		fi
+	done < <(echo "$current_login_items" | sed 's/, /\n/g')
 fi
 
 echo -e "${dim}macOS preferences configured${reset}"

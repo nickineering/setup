@@ -9,10 +9,6 @@ export NVM_DIR="$HOME/.nvm"
 NVM_SCRIPT="$(brew --prefix)/opt/nvm/nvm.sh"
 
 # nvm.sh has unset variables, so temporarily disable strict mode
-# Use trap to ensure we always re-enable it
-_restore_strict_mode() { set -u; }
-trap _restore_strict_mode RETURN
-
 set +u
 # shellcheck disable=SC1090 # Can't follow dynamic source path
 \. "$NVM_SCRIPT"
@@ -20,6 +16,7 @@ set +u
 PREVIOUS_NODE_VERSION=$(nvm current)
 # shellcheck disable=SC1090 # nvm is a shell function, not a file
 output=$(nvm install --lts 2>&1) || {
+	set -u
 	echo -e "${yellow}Warning: Failed to install Node LTS${reset}" >&2
 	return 0
 }
@@ -39,6 +36,7 @@ if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ] && [ "$PREVIOUS_NODE_VERS
 		echo -e "${dim}Kept ${PREVIOUS_NODE_VERSION}${reset}"
 	fi
 fi
+set -u
 
 # Update npm silently (warnings will still show on failure)
 npm install -g --fund=false --audit=false npm >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to upgrade npm${reset}"

@@ -63,7 +63,7 @@ sync_repos() {
 	sync_errors=$(mktemp)
 	stale_branches_file=$(mktemp)
 	active_branches_file=$(mktemp)
-	trap 'rm -rf "$tmpdir" "$stale_branches_dir" "$active_branches_dir" "$clone_errors" "$sync_errors" "$stale_branches_file" "$active_branches_file"' RETURN
+	trap 'rm -rf "${tmpdir:-}" "${stale_branches_dir:-}" "${active_branches_dir:-}" "${clone_errors:-}" "${sync_errors:-}" "${stale_branches_file:-}" "${active_branches_file:-}"' RETURN
 
 	# Fetch repo list from GitLab
 	echo -e "${bold}${cyan}=== Fetching repo list from GitLab ===${reset}"
