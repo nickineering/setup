@@ -19,7 +19,7 @@ add_to_dock() {
 
 	local app_path="$location$1.app"
 	if [ ! -d "$app_path" ]; then
-		echo "Warning: App not found at $app_path, skipping dock addition" >&2
+		echo "⚠ App not found at $app_path, skipping dock addition" >&2
 		return 1
 	fi
 

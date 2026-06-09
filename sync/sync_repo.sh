@@ -14,6 +14,7 @@ stale_dir="${3:-}"
 active_branches_dir="${4:-}"
 repo_name="${repo_dir#"$base_dir"/}"
 
+# shellcheck source=SCRIPTDIR/../lib/colors.sh
 source "$SETUP/lib/colors.sh"
 
 _retry() {
@@ -145,11 +146,11 @@ elif [[ "$has_main" == "yes" ]]; then
 elif [[ -n "${preferred_default:-}" ]]; then
 	output="$repo_name: $(printf '%b' "$branch_status")"
 else
-	output="$repo_name: $(printf "${yellow}no default branch${reset}")"
+	output="$repo_name: $(printf '%b' "${yellow}no default branch${reset}")"
 fi
 
 if [[ -n "${final_branch:-}" && "$final_branch" != "${preferred_default:-}" ]]; then
-	output+=" $(printf "${green}(staying on %s)${reset}" "$final_branch")"
+	output+=" $(printf "${dim}(staying on ${sky}%s${dim})${reset}" "$final_branch")"
 elif [[ -n "$original_branch" && "$original_branch" != "${final_branch:-}" && "$original_branch" != "develop" && "$original_branch" != "main" ]]; then
 	output+=" $(printf "${yellow}(left %s)${reset}" "$original_branch")"
 fi

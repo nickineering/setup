@@ -27,24 +27,38 @@ cleanup_on_interrupt() {
 }
 trap cleanup_on_interrupt INT TERM
 
-# Colors for output
-green='\033[32m'
+# Colors — must match lib/colors.sh values
+green='\033[92m'
 yellow='\033[33m'
-cyan='\033[36m'
 bold='\033[1m'
-dim='\033[2m'
+dim='\033[38;5;245m'
 reset='\033[0m'
+sky='\033[38;5;117m'
+coral='\033[38;5;209m'
 
-echo -e "${bold}${cyan}=== AUTOMATICALLY CONFIGURING MAC ===${reset}"
-echo -e "${green}Please leave everything closed and wait for your Mac to be configured. This will take a while.${reset}"
+info() { echo -e "${dim}· $1${reset}"; }
+warn() { echo -e "${yellow}⚠ $1${reset}"; }
+
+STEP_CURRENT=0
+STEP_TOTAL=4
+run_step() {
+	((STEP_CURRENT++)) || true
+	CURRENT_STEP="$1"
+	echo ""
+	echo -e "${bold}${sky}▶ [${STEP_CURRENT}/${STEP_TOTAL}] $1${reset}"
+}
+
+echo ""
+echo -e "${bold}${coral}┌─────────────────────────────────┐${reset}"
+echo -e "${bold}${coral}│           Bootstrap             │${reset}"
+echo -e "${bold}${coral}└─────────────────────────────────┘${reset}"
 echo ""
 
 # ── 1. Homebrew ──────────────────────────────────────────────────────────────
-CURRENT_STEP="installing Homebrew"
+run_step "Installing Homebrew"
 if command -v brew >/dev/null 2>&1; then
-	echo -e "${dim}Homebrew already installed${reset}"
+	info "Already installed"
 else
-	echo "Installing Homebrew..."
 	HOMEBREW_INSTALL_SCRIPT=$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)
 	if [ "$HOMEBREW_INSTALL_SCRIPT" = "" ]; then
 		echo "Error: Failed to download Homebrew installer" >&2
@@ -55,36 +69,39 @@ else
 		exit 1
 	fi
 	eval "$(/opt/homebrew/bin/brew shellenv)"
-	echo -e "${green}Homebrew installed${reset}"
+	echo -e "${green}✓ Installed${reset}"
 fi
 
-# ── 2. git (needed to clone this repo; kept up to date via state/brew_packages.txt) ──
-CURRENT_STEP="installing git"
+# ── 2. git (kept up to date via state/brew_packages.txt) ─────────────────────
+run_step "Installing git"
 if brew list git &>/dev/null; then
-	echo -e "${dim}git already installed${reset}"
+	info "Already installed"
 else
 	brew install git
 fi
 
 # ── 3. Clone or update repo ─────────────────────────────────────────────────
-CURRENT_STEP="cloning setup repository"
+run_step "Cloning setup repository"
 mkdir -p ~/projects
 export SETUP=~/projects/setup
 if [ -d "$SETUP" ]; then
-	git -C "$SETUP" pull || echo -e "${yellow}Warning: git pull failed${reset}"
-	echo -e "${dim}Repo up to date${reset}"
+	pull_output=$(git -C "$SETUP" pull 2>&1) || warn "git pull failed"
+	if [[ "$pull_output" != "Already up to date." ]]; then
+		echo "$pull_output"
+	fi
+	info "Repo up to date"
 else
 	if ! git clone https://github.com/nickineering/setup.git "$SETUP"; then
 		echo "Error: Failed to clone setup repo" >&2
 		exit 1
 	fi
-	echo -e "${green}Cloned setup repo${reset}"
+	echo -e "${green}✓ Cloned${reset}"
 fi
 
 # ── 4. Modern bash (run.sh shebang requires it; kept up to date via state/brew_packages.txt) ──
-CURRENT_STEP="installing modern bash"
+run_step "Installing modern bash"
 if brew list bash &>/dev/null; then
-	echo -e "${dim}Modern bash already installed${reset}"
+	info "Already installed"
 else
 	if ! brew install bash; then
 		echo "Error: Failed to install bash" >&2
@@ -93,7 +110,5 @@ else
 fi
 
 # ── Hand off to run.sh ───────────────────────────────────────────────────────
-echo ""
-echo -e "${bold}${cyan}=== Running setup ===${reset}"
 echo ""
 exec "$SETUP"/run.sh

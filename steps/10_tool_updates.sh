@@ -11,30 +11,30 @@ tool_update_dir=$(mktemp -d)
 
 if command -v uv &>/dev/null; then
 	(
-		uv_output=$(uv tool upgrade --all 2>&1) || echo -e "${yellow}Warning: uv tool upgrade failed${reset}"
+		uv_output=$(uv tool upgrade --all 2>&1) || echo "⚠ uv tool upgrade failed"
 		if [[ "$uv_output" == "Nothing to upgrade" ]]; then
-			echo -e "${dim}uv tools: up to date${reset}"
+			echo "· uv tools: up to date"
 		else
-			echo -e "${dim}uv tools: $uv_output${reset}"
+			echo "✓ uv tools: $uv_output"
 		fi
 	) >"$tool_update_dir/uv" 2>&1 &
 fi
 
 if command -v tldr &>/dev/null; then
 	(
-		tldr --update >/dev/null 2>&1 || echo -e "${yellow}Warning: tldr update failed${reset}"
-		echo -e "${dim}tldr: pages updated${reset}"
+		tldr --update >/dev/null 2>&1 || echo "⚠ tldr update failed"
+		echo "✓ tldr: pages updated"
 	) >"$tool_update_dir/tldr" 2>&1 &
 fi
 
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 	(
-		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo -e "${yellow}Warning: Oh My Zsh update failed${reset}"
+		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo "⚠ Oh My Zsh update failed"
 		if [[ "$omz_output" == *"already at the latest"* ]]; then
-			echo -e "${dim}Oh My Zsh: up to date${reset}"
+			echo "· Oh My Zsh: up to date"
 		else
-			echo -e "${dim}Oh My Zsh: updated${reset}"
+			echo "✓ Oh My Zsh: updated"
 		fi
 	) >"$tool_update_dir/omz" 2>&1 &
 fi
@@ -44,17 +44,17 @@ if command -v go &>/dev/null; then
 		gopls_before=$(gopls version 2>/dev/null | head -1 || echo "none")
 		staticcheck_before=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
 
-		go install golang.org/x/tools/gopls@latest 2>/dev/null || echo -e "${yellow}Warning: gopls update failed${reset}"
-		go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${yellow}Warning: staticcheck update failed${reset}"
+		go install golang.org/x/tools/gopls@latest 2>/dev/null || echo "⚠ gopls update failed"
+		go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo "⚠ staticcheck update failed"
 
 		gopls_after=$(gopls version 2>/dev/null | head -1 || echo "none")
 		staticcheck_after=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
 
 		if [[ "$gopls_before" != "$gopls_after" || "$staticcheck_before" != "$staticcheck_after" ]]; then
-			[[ "$gopls_before" != "$gopls_after" ]] && echo "Updated: gopls"
-			[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo "Updated: staticcheck"
+			[[ "$gopls_before" != "$gopls_after" ]] && echo "✓ Updated: gopls"
+			[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo "✓ Updated: staticcheck"
 		else
-			echo -e "${dim}Go tools: up to date${reset}"
+			echo "· Go tools: up to date"
 		fi
 	) >"$tool_update_dir/go" 2>&1 &
 fi

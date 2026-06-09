@@ -37,7 +37,7 @@ sudo_tasks+=("Install macOS system updates (optional)")
 
 echo "The following operations require sudo:"
 for task in "${sudo_tasks[@]}"; do
-	echo "  - $task"
+	echo "  · $task"
 done
 echo ""
 echo -n "Continue with privileged operations? [y/N]: "
@@ -47,19 +47,19 @@ echo ""
 if [[ "$run_sudo" =~ ^[Yy]$ ]]; then
 	# Execute privileged operations
 	if [[ "$needs_zoom" == "true" ]]; then
-		sudo launchctl load -w "$ZOOM_DAEMON" 2>/dev/null || echo -e "${yellow}Warning: Failed to load Zoom daemon${reset}"
+		sudo launchctl load -w "$ZOOM_DAEMON" 2>/dev/null || warn "Failed to load Zoom daemon"
 	fi
 	if [[ "$needs_womp" == "true" ]]; then
-		sudo pmset -a womp 1 || echo -e "${yellow}Warning: Failed to set wake on LAN${reset}"
+		sudo pmset -a womp 1 || warn "Failed to set wake on LAN"
 	fi
 	if [[ "$needs_lockscreen" == "true" ]]; then
 		echo -n "Enter lock screen message (e.g. your email for if laptop is found): "
 		read -r lockscreen_msg </dev/tty
 		if [[ -n "$lockscreen_msg" ]]; then
 			sudo defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText "$lockscreen_msg"
-			echo -e "${dim}Lock screen message set${reset}"
+			info "Lock screen message set"
 		else
-			echo -e "${dim}Skipped lock screen message${reset}"
+			info "Skipped lock screen message"
 		fi
 	fi
 
@@ -68,21 +68,21 @@ if [[ "$run_sudo" =~ ^[Yy]$ ]]; then
 	read -r -n 1 install_updates </dev/tty
 	echo ""
 	if [[ "$install_updates" =~ ^[Yy]$ ]]; then
-		echo -e "${dim}Installing updates...${reset}"
-		sudo softwareupdate -i -a || echo -e "${yellow}Warning: Some updates failed${reset}"
+		info "Installing updates..."
+		sudo softwareupdate -i -a || warn "Some updates failed"
 	else
-		echo -e "${dim}Skipped macOS updates${reset}"
+		info "Skipped macOS updates"
 	fi
 else
-	echo -e "${dim}Skipped privileged operations${reset}"
+	info "Skipped privileged operations"
 fi
 echo ""
-echo -e "${bold}${green}=== Setup complete! ===${reset}"
-
-# Remind about post-setup steps
+echo -e "${bold}${coral}┌─────────────────────────────────┐${reset}"
+echo -e "${bold}${coral}│         Setup complete!         │${reset}"
+echo -e "${bold}${coral}└─────────────────────────────────┘${reset}"
 echo ""
-echo -e "${bold}Next steps:${reset} See ${cyan}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
+echo -e "See ${coral}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
 if [[ "${FIREFOX_NEEDS_SETUP:-}" == "1" ]]; then
-	echo -e "${yellow}Note:${reset} Firefox settings were skipped. Launch Firefox and sign in, then run:"
-	echo -e "  ${cyan}$SETUP/configure/after_signin.sh${reset}"
+	warn "Firefox settings were skipped. Launch Firefox, sign in, then run:"
+	echo -e "  ${coral}$SETUP/configure/after_signin.sh${reset}"
 fi

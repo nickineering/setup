@@ -101,7 +101,7 @@ rename_branch() {
 	# Check if remote tracking exists
 	local has_remote=true
 	if ! git show-ref --quiet refs/remotes/origin/"$old_name"; then
-		echo "Warning: No remote tracking branch for $old_name, renaming locally only"
+		echo "⚠ No remote tracking branch for $old_name, renaming locally only"
 		has_remote=false
 	fi
 

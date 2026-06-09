@@ -14,13 +14,13 @@ cd "$SETUP"
 source lib/colors.sh
 source lib/backup.sh
 
-echo -e "${bold}${cyan}=== Post-setup configuration ===${reset}"
+echo -e "${bold}${coral}=== Post-setup configuration ===${reset}"
 echo ""
 
 # Firefox settings (requires Firefox to have been launched once)
 source configure/firefox.sh
 if [[ "${FIREFOX_NEEDS_SETUP:-}" != "1" ]]; then
-	echo -e "${green}Configured Firefox${reset}"
+	echo -e "${green}✓ Configured Firefox${reset}"
 fi
 
 # GitHub CLI authentication
@@ -28,9 +28,9 @@ if ! gh auth status &>/dev/null; then
 	echo ""
 	echo -e "${bold}GitHub CLI authentication${reset}"
 	gh auth login
-	echo -e "${green}Configured GitHub CLI${reset}"
+	echo -e "${green}✓ Configured GitHub CLI${reset}"
 else
-	echo -e "${dim}GitHub CLI already authenticated${reset}"
+	echo -e "${dim}· GitHub CLI already authenticated${reset}"
 fi
 
 # GPG key generation and git signing setup
@@ -38,4 +38,4 @@ echo ""
 source configure/gpg.sh
 
 echo ""
-echo -e "${green}Done!${reset}"
+echo -e "${green}✓ Done!${reset}"

@@ -24,12 +24,12 @@ create_link() {
 	backup_or_delete "$target" || true
 	if ln -sfn "$source" "$target"; then
 		if [[ -n "$label" ]]; then
-			echo "Linked: ${label}"
+			echo "✓ Linked: ${label}"
 		else
-			echo "Linked: $(basename "$target")"
+			echo "✓ Linked: $(basename "$target")"
 		fi
 		((links_created++)) || true
 	else
-		echo -e "${yellow}Warning: Failed to link $(basename "$target")${reset}" >&2
+		warn "Failed to link $(basename "$target")" >&2
 	fi
 }

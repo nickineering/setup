@@ -75,13 +75,13 @@ install_missing() {
 
 	# Extension-specific: check for VSCode CLI
 	if [[ "$type" == "extension" ]] && ! command -v code &>/dev/null; then
-		echo "Warning: VSCode CLI not found. Skipping extension installation." >&2
+		echo "⚠ VSCode CLI not found. Skipping extension installation." >&2
 		return 0
 	fi
 
 	while IFS= read -r item; do
 		[[ -z "$item" ]] && continue
-		echo "Installing ${type}: ${item}"
+		echo "› Installing ${type}: ${item}"
 		local install_cmd
 		case "$type" in
 		package) install_cmd=(brew install) ;;
@@ -90,7 +90,7 @@ install_missing() {
 		npm) install_cmd=(npm install -g --fund=false --audit=false) ;;
 		esac
 		if ! "${install_cmd[@]}" "$item"; then
-			echo "Warning: Failed to install $type: $item" >&2
+			echo "⚠ Failed to install $type: $item" >&2
 		fi
 	done <<<"$list"
 }
@@ -139,15 +139,15 @@ prompt_uninstall() {
 	count=$(echo "$safe_to_remove" | wc -l | tr -d ' ')
 
 	echo "The following ${type}s were removed from state file:"
-	echo "$safe_to_remove" | sed 's/^/  /'
+	echo "$safe_to_remove" | while IFS= read -r item; do echo "  $item"; done
 
 	# Guard: require explicit confirmation for mass uninstalls
 	if [[ "$count" -gt "$MAX_SAFE_UNINSTALLS" ]]; then
-		echo -e "${yellow}Warning: About to uninstall ${bold}${count}${reset}${yellow} ${type}s - this seems high!${reset}"
+		echo -e "${yellow}⚠ About to uninstall ${bold}${count}${reset}${yellow} ${type}s - this seems high!${reset}"
 		echo -n "Type 'yes' to confirm mass uninstall: "
 		read -r confirm </dev/tty
 		[[ "$confirm" == "yes" ]] || {
-			echo "Aborted."
+			echo "– Aborted."
 			return 0
 		}
 	else
@@ -155,7 +155,7 @@ prompt_uninstall() {
 		read -r -n 1 confirm </dev/tty
 		echo ""
 		[[ "$confirm" =~ ^[Yy]$ ]] || {
-			echo "Skipped uninstallation."
+			echo "– Skipped uninstallation."
 			return 0
 		}
 	fi
@@ -170,7 +170,7 @@ prompt_uninstall() {
 		npm) uninstall_cmd=(npm uninstall -g) ;;
 		esac
 		if ! "${uninstall_cmd[@]}" "$item"; then
-			echo "Warning: Failed to uninstall $type: $item" >&2
+			echo "⚠ Failed to uninstall $type: $item" >&2
 		fi
 	done <<<"$safe_to_remove"
 }

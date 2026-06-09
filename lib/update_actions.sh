@@ -22,7 +22,7 @@ update_action() {
 	local latest
 	latest=$(latest_tag "$repo")
 	if [[ -z "$latest" ]]; then
-		echo "Warning: Failed to fetch tag for $repo" >&2
+		echo "⚠ Failed to fetch tag for $repo" >&2
 		return
 	fi
 

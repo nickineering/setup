@@ -140,7 +140,7 @@ while IFS= read -r dock_app; do
 		fi
 	done
 	if [[ "$found" == "false" ]]; then
-		echo -e "${yellow}Warning: '$dock_app' is in Dock but not managed by setup — remove manually if unwanted${reset}"
+		warn "'$dock_app' is in Dock but not managed by setup — remove manually if unwanted"
 	fi
 done < <(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -o '"file-label" = [^;]*' | sed 's/"file-label" = //' | sed 's/"//g')
 
@@ -182,9 +182,9 @@ if [[ -n "$current_login_items" ]]; then
 		done
 		if [[ "$found" == "false" ]]; then
 			app_name=$(basename "$item_path" .app)
-			echo -e "${yellow}Warning: '$app_name' is a login item but not managed by setup — remove manually if unwanted${reset}"
+			warn "'$app_name' is a login item but not managed by setup — remove manually if unwanted"
 		fi
-	done < <(echo "$current_login_items" | sed 's/, /\n/g')
+	done <<< "${current_login_items//, /$'\n'}"
 fi
 
-echo -e "${dim}macOS preferences configured${reset}"
+info "macOS preferences configured"

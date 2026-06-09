@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC2016 # Single quotes in xargs sh -c are intentional
 # shellcheck disable=SC2154 # Variables like $bold are defined in lib/colors.sh
 # Sourced by run.sh
 
@@ -42,11 +43,11 @@ sync_repos() {
 
 	# Check prerequisites
 	if [[ -z "${GITLAB_GROUP:-}" ]]; then
-		echo -e "${dim}GITLAB_GROUP not set - skipping GitLab sync${reset}"
+		echo -e "${dim}· GITLAB_GROUP not set - skipping GitLab sync${reset}"
 		return 0
 	fi
 	if ! command -v glab &>/dev/null; then
-		echo -e "${yellow}Warning: glab not installed - skipping GitLab sync${reset}"
+		echo -e "${yellow}⚠ glab not installed - skipping GitLab sync${reset}"
 		return 0
 	fi
 	if [[ ! -d "$repos_dir" ]]; then
@@ -66,33 +67,33 @@ sync_repos() {
 	trap 'rm -rf "${tmpdir:-}" "${stale_branches_dir:-}" "${active_branches_dir:-}" "${clone_errors:-}" "${sync_errors:-}" "${stale_branches_file:-}" "${active_branches_file:-}"' RETURN
 
 	# Fetch repo list from GitLab
-	echo -e "${bold}${cyan}=== Fetching repo list from GitLab ===${reset}"
+	echo -e "${bold}› Fetching repo list from GitLab${reset}"
 	local total_pages remote_repos glab_response
 
 	# Test glab authentication, offer login if needed
 	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 		if [[ "$glab_response" == *"auth"* || "$glab_response" == *"401"* || "$glab_response" == *"login"* ]]; then
-			echo -e "${yellow}GitLab authentication required${reset}"
+			echo -e "${yellow}⚠ GitLab authentication required${reset}"
 			echo -n "Run glab auth login? [Y/n]: "
 			read -r -n 1 do_login </dev/tty
 			echo ""
 			if [[ ! "$do_login" =~ ^[Nn]$ ]]; then
 				glab auth login </dev/tty || {
-					echo -e "${yellow}Login failed - skipping GitLab sync${reset}"
+					echo -e "${yellow}⚠ Login failed - skipping GitLab sync${reset}"
 					return 0
 				}
 				# Retry after login
 				if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
-					echo -e "${yellow}Warning: Still unable to fetch repos after login${reset}"
+					echo -e "${yellow}⚠ Still unable to fetch repos after login${reset}"
 					echo -e "${dim}$glab_response${reset}"
 					return 0
 				fi
 			else
-				echo -e "${dim}Skipping GitLab sync${reset}"
+				echo -e "${dim}· Skipping GitLab sync${reset}"
 				return 0
 			fi
 		else
-			echo -e "${yellow}Warning: Failed to fetch repos from GitLab${reset}"
+			echo -e "${yellow}⚠ Failed to fetch repos from GitLab${reset}"
 			echo -e "${dim}$glab_response${reset}"
 			return 0
 		fi
@@ -107,15 +108,19 @@ sync_repos() {
 
 	# Validate we got data before parsing
 	if ! ls "$tmpdir"/page_*.json &>/dev/null; then
-		echo -e "${yellow}Warning: Failed to fetch repos from GitLab${reset}"
+		echo -e "${yellow}⚠ Failed to fetch repos from GitLab${reset}"
 		return 0
 	fi
-	remote_repos=$(jq -s 'add | .[] | select(.empty_repo == false) | .path_with_namespace' -r "$tmpdir"/page_*.json 2>/dev/null | sed "s|^$GITLAB_GROUP/||" | sort -u)
+	remote_repos=$(jq -s 'add | .[] | select(.empty_repo == false) | .path_with_namespace' -r "$tmpdir"/page_*.json 2>/dev/null | sed "s|^$GITLAB_GROUP/||" | sort -u || true)
+	if [[ -z "$remote_repos" ]]; then
+		echo -e "${yellow}⚠ Failed to parse repo list from GitLab${reset}"
+		return 0
+	fi
 	echo -e "Found ${bold}$(_count_lines "$remote_repos")${reset} repos on GitLab"
 
 	# Filter remote repos with the same exclusions used for local scanning
 	if [[ -n "${GITLAB_EXCLUDE_DIRS:-}" ]]; then
-		remote_repos=$(echo "$remote_repos" | grep -Ev "^($GITLAB_EXCLUDE_DIRS)/")
+		remote_repos=$(echo "$remote_repos" | grep -Ev "^($GITLAB_EXCLUDE_DIRS)/" || true)
 	fi
 	echo ""
 
@@ -124,7 +129,7 @@ sync_repos() {
 	local_repos=$(echo "$repo_list" | sed "s|^$repos_dir/||" | sort)
 
 	# Clone new repos
-	echo -e "${bold}${cyan}=== Cloning new repos ===${reset}"
+	echo -e "${bold}› Cloning new repos${reset}"
 	local new_repos
 	new_repos=$(comm -13 <(echo "$local_repos") <(echo "$remote_repos"))
 
@@ -136,7 +141,7 @@ sync_repos() {
 		if [[ -s "$clone_errors" ]]; then
 			local fail_count
 			fail_count=$(wc -l <"$clone_errors" | tr -d ' ')
-			echo -e "${yellow}Warning: Failed to clone ${fail_count} repo(s):${reset}"
+			echo -e "${yellow}⚠ Failed to clone ${fail_count} repo(s):${reset}"
 			# Group by reason (text after first ": ")
 			sort -t: -k2 "$clone_errors" | while IFS= read -r line; do
 				printf "  %s\n" "$line"
@@ -144,12 +149,12 @@ sync_repos() {
 		fi
 		repo_list=$(_find_repos)
 	else
-		echo -e "${dim}None${reset}"
+		echo -e "${dim}· None${reset}"
 	fi
 	echo ""
 
 	# Detect deleted repos
-	echo -e "${bold}${cyan}=== Checking for deleted repos ===${reset}"
+	echo -e "${bold}› Checking for deleted repos${reset}"
 	local deleted_repos deleted_count
 	deleted_repos=$(comm -23 <(echo "$local_repos") <(echo "$remote_repos"))
 
@@ -157,13 +162,13 @@ sync_repos() {
 		deleted_count=$(_count_lines "$deleted_repos")
 		# Safety: if deleting more than 10 repos, require extra confirmation
 		if [[ "$deleted_count" -gt 10 ]]; then
-			echo -e "${yellow}Warning: About to delete ${bold}${deleted_count}${reset}${yellow} repos - this seems high!${reset}"
+			echo -e "${yellow}⚠ About to delete ${bold}${deleted_count}${reset}${yellow} repos - this seems high!${reset}"
 			echo -e "${dim}$deleted_repos${reset}"
 			echo ""
 			echo -n "Type 'yes' to confirm mass deletion: "
 			read -r confirm </dev/tty
 			[[ "$confirm" == "yes" ]] || {
-				echo "Aborted."
+				echo "– Aborted."
 				deleted_repos=""
 			}
 		else
@@ -185,17 +190,17 @@ sync_repos() {
 			repo_list=$(_find_repos)
 		fi
 	else
-		echo -e "${dim}None${reset}"
+		echo -e "${dim}· None${reset}"
 	fi
 	echo ""
 
 	# Sync all repos
-	echo -e "${bold}${cyan}=== Syncing repos ===${reset}"
+	echo -e "${bold}› Syncing repos${reset}"
 	echo "$repo_list" | xargs -P "$parallel_jobs" -I{} sh -c \
 		'"$1/sync/sync_repo.sh" "$2" "$3" "$4" "$5" || echo "$2" >> "$6"' _ \
 		"$SETUP" {} "$repos_dir" "$stale_branches_dir" "$active_branches_dir" "$sync_errors"
 	if [[ -s "$sync_errors" ]]; then
-		echo -e "${yellow}Warning: Failed to sync some repos:${reset}"
+		echo -e "${yellow}⚠ Failed to sync some repos:${reset}"
 		sed 's|^'"$repos_dir"'/||; s/^/  /' "$sync_errors"
 	fi
 	echo ""
@@ -206,21 +211,21 @@ sync_repos() {
 
 	# Prompt to delete stale branches
 	if [[ -s "$stale_branches_file" ]]; then
-		echo -e "${bold}${cyan}=== Stale branches (merged/deleted upstream) ===${reset}"
+		echo -e "${bold}› Stale branches (merged/deleted upstream)${reset}"
 		local stale_count
 		stale_count=$(wc -l <"$stale_branches_file" | tr -d ' ')
 		echo -e "Found ${bold}${yellow}${stale_count}${reset} stale branch(es)"
 		echo ""
 		while IFS=: read -r repo branch; do
-			printf "Delete ${yellow}%s${reset} from ${cyan}%s${reset}? [y/N]: " "$branch" "$repo"
+			printf "Delete ${yellow}%s${reset} from ${coral}%s${reset}? [y/N]: " "$branch" "$repo"
 			read -r -n 1 confirm </dev/tty
 			echo ""
 			if [[ "$confirm" =~ ^[Yy]$ ]]; then
 				git -C "$repos_dir/$repo" branch -D "$branch" 2>/dev/null &&
-					echo -e "  ${green}Deleted${reset}" ||
-					echo -e "  ${yellow}Failed to delete${reset}"
+					echo -e "  ${green}✓ Deleted${reset}" ||
+					echo -e "  ${yellow}⚠ Failed to delete${reset}"
 			else
-				echo -e "  ${dim}Skipped${reset}"
+				echo -e "  ${dim}– Skipped${reset}"
 			fi
 		done <"$stale_branches_file"
 		echo ""
@@ -228,9 +233,9 @@ sync_repos() {
 
 	# Show repos with active feature branches (unmerged work)
 	if [[ -s "$active_branches_file" ]]; then
-		echo -e "${bold}${cyan}=== Active feature branches (unmerged) ===${reset}"
+		echo -e "${bold}› Active feature branches (unmerged)${reset}"
 		while IFS=: read -r repo branch; do
-			printf "  ${cyan}%s${reset} → ${green}%s${reset}\n" "$repo" "$branch"
+			printf "  ${coral}%s${reset} → ${coral}%s${reset}\n" "$repo" "$branch"
 		done <"$active_branches_file"
 		echo ""
 	fi

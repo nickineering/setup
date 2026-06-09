@@ -18,24 +18,24 @@ if command -v code &>/dev/null; then
 	if [[ -n "$missing_extensions" ]]; then
 		install_missing extension "$missing_extensions"
 	else
-		echo -e "${dim}All extensions installed${reset}"
+		info "All extensions installed"
 	fi
 	# Handle removals from state file changes
 	[[ -n "$removed_extensions" ]] && prompt_uninstall extension "$removed_extensions"
 	echo ""
 
-	echo -e "${bold}${cyan}=== Updating VSCode extensions ===${reset}"
+	echo "› Updating extensions..."
 	update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	if echo "$update_output" | grep -q "ENOTEMPTY"; then
 		sleep 2
 		update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	fi
 	if [[ "$update_output" == "No extension to update" ]]; then
-		echo -e "${dim}All extensions up to date${reset}"
+		info "All extensions up to date"
 	else
 		echo "$update_output"
 	fi
 else
-	echo -e "${dim}VSCode CLI not found - skipping (install VSCode cask first)${reset}"
+	info "VSCode CLI not found - skipping"
 fi
 echo ""

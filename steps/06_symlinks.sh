@@ -20,7 +20,7 @@ while IFS= read -r file; do
 	target=~/"$file"
 	if [[ -L "$target" ]]; then
 		trash "$target"
-		echo "Unlinked: $file"
+		echo "✓ Unlinked: $file"
 		((links_removed++)) || true
 	fi
 done <<<"$removed_links"
@@ -29,7 +29,7 @@ done <<<"$removed_links"
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -f "$DOTFILES/$file" ]]; then
-		echo -e "${yellow}Warning: Dotfile not found: $DOTFILES/$file${reset}" >&2
+		warn "Dotfile not found: $DOTFILES/$file" >&2
 		continue
 	fi
 	create_link "$DOTFILES/$file" ~/"$file"
@@ -53,7 +53,7 @@ while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -e ~/"$file" ]]; then
 		cp "$SETUP/copied/$file" ~/
-		echo "Created: ~/$file (from template)"
+		echo "✓ Created: ~/$file (from template)"
 		((files_copied++)) || true
 	fi
 done <"$SETUP"/state/copied_files.txt
@@ -62,6 +62,6 @@ done <"$SETUP"/state/copied_files.txt
 mkdir -p ~/.vim/swaps/ ~/.vim/backups/ ~/.vim/undo/
 
 if [[ $links_created -eq 0 && $links_removed -eq 0 && $files_copied -eq 0 ]]; then
-	echo -e "${dim}All symlinks up to date${reset}"
+	info "All symlinks up to date"
 fi
 echo ""

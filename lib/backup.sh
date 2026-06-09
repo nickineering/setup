@@ -4,6 +4,7 @@
 
 # Source colors if not already loaded
 if [[ -z "${reset:-}" ]]; then
+	# shellcheck source=SCRIPTDIR/colors.sh
 	source "$(dirname "${BASH_SOURCE[0]}")/colors.sh"
 fi
 
@@ -47,7 +48,7 @@ backup_or_delete() {
 				echo "Error: Failed to backup $1" >&2
 				return 1
 			fi
-			echo -e "${dim}Backed up $1 at $BACKUP_PATH${reset}"
+			info "Backed up $1 at $BACKUP_PATH"
 		else
 			# Don't backup links. We will just update them if they have changed.
 			trash "$1"
