@@ -3,13 +3,27 @@
 #
 # ── Symlinks ─────────────────────────────────────────────────────────────────
 # Links dotfiles from linked/ into $HOME, VSCode settings into its User dir,
-# and dprint config to ~/. Copies template files (copied/) only when the target
-# doesn't already exist, so user edits are preserved. Creates Vim directories.
+# and dprint config to ~/. Removes symlinks for files deleted from state.
+# Copies template files (copied/) only when the target doesn't already exist,
+# so user edits are preserved. Creates Vim directories.
 # Requires: lib/links.sh (create_link), lib/backup.sh (backup_or_delete)
+# Requires: steps/01 (removed_links)
 # ─────────────────────────────────────────────────────────────────────────────
-: "${SETUP:?}" "${DOTFILES:?}"
+: "${SETUP:?}" "${DOTFILES:?}" "${removed_links?}"
 
 links_created=0
+links_removed=0
+
+# Remove symlinks for files deleted from state
+while IFS= read -r file; do
+	[[ -z "$file" ]] && continue
+	target=~/"$file"
+	if [[ -L "$target" ]]; then
+		trash "$target"
+		echo "Unlinked: $file"
+		((links_removed++)) || true
+	fi
+done <<<"$removed_links"
 
 # Create symlinks for dotfiles
 while IFS= read -r file; do
@@ -47,7 +61,7 @@ done <"$SETUP"/state/copied_files.txt
 # Vim directories
 mkdir -p ~/.vim/swaps/ ~/.vim/backups/ ~/.vim/undo/
 
-if [[ $links_created -eq 0 && $files_copied -eq 0 ]]; then
+if [[ $links_created -eq 0 && $links_removed -eq 0 && $files_copied -eq 0 ]]; then
 	echo -e "${dim}All symlinks up to date${reset}"
 fi
 echo ""

@@ -50,7 +50,7 @@ backup_or_delete() {
 			echo -e "${dim}Backed up $1 at $BACKUP_PATH${reset}"
 		else
 			# Don't backup links. We will just update them if they have changed.
-			rm -f "$1"
+			trash "$1"
 		fi
 	fi
 }
