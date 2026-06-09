@@ -9,7 +9,7 @@ if ! git config --global user.name &>/dev/null; then
 	read -r git_email </dev/tty
 	git config --global user.name "$git_name"
 	git config --global user.email "$git_email"
-	echo -e "${dim}Git identity configured${reset}"
+	info "Git identity configured"
 else
-	echo -e "${dim}Git identity already configured${reset}"
+	info "Git identity already configured"
 fi

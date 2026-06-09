@@ -11,29 +11,29 @@
 
 if [[ "$CLEAN_CACHES" == "true" ]]; then
 	CURRENT_STEP="cleaning caches"
-	echo -e "${bold}${cyan}=== Cleaning caches ===${reset}"
+	echo -e "${bold}Cleaning caches${reset}"
 	disk_before=$(df -k / | awk 'NR==2 {print $4}')
 	cleanup_output=$(brew cleanup --prune=7 2>&1)
 	if [[ -z "$cleanup_output" ]]; then
-		echo -e "${dim}Homebrew: cache already clean${reset}"
+		info "Homebrew: cache already clean"
 	else
 		echo "$cleanup_output"
 	fi
-	npm cache clean --force >/dev/null 2>&1 && echo -e "${dim}npm: cache cleared${reset}"
-	command -v uv &>/dev/null && uv cache prune >/dev/null 2>&1 && echo -e "${dim}uv: cache pruned${reset}"
-	command -v go &>/dev/null && go clean -cache >/dev/null 2>&1 && echo -e "${dim}Go: build cache cleared${reset}"
-	[[ -d ~/.nvm/.cache ]] && rm -rf ~/.nvm/.cache && echo -e "${dim}nvm: cache cleared${reset}"
-	pip cache purge >/dev/null 2>&1 && echo -e "${dim}pip: cache cleared${reset}"
+	npm cache clean --force >/dev/null 2>&1 && info "npm: cache cleared"
+	command -v uv &>/dev/null && uv cache prune >/dev/null 2>&1 && info "uv: cache pruned"
+	command -v go &>/dev/null && go clean -cache >/dev/null 2>&1 && info "Go: build cache cleared"
+	[[ -d ~/.nvm/.cache ]] && rm -rf ~/.nvm/.cache && info "nvm: cache cleared"
+	pip cache purge >/dev/null 2>&1 && info "pip: cache cleared"
 	disk_after=$(df -k / | awk 'NR==2 {print $4}')
 	freed_mb=$(((disk_after - disk_before) / 1024))
 	if [[ $freed_mb -gt 0 ]]; then
 		if [[ $freed_mb -ge 1024 ]]; then
-			echo -e "${green}Freed $(awk "BEGIN {printf \"%.1f\", $freed_mb/1024}") GB${reset}"
+			success "Freed $(awk "BEGIN {printf \"%.1f\", $freed_mb/1024}") GB"
 		else
-			echo -e "${green}Freed ${freed_mb} MB${reset}"
+			success "Freed ${freed_mb} MB"
 		fi
 	else
-		echo -e "${dim}Caches already clean${reset}"
+		info "Caches already clean"
 	fi
 	echo ""
 fi

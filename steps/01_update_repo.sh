@@ -18,10 +18,10 @@ old_links=$(parse_state_file "$SETUP/state/linked_files.txt")
 old_taps=$(parse_state_file "$SETUP/state/brew_taps.txt")
 
 pull_output=$(git -C "$SETUP" pull 2>&1) || {
-	echo -e "${yellow}Warning: git pull failed (local changes?) - state file changes won't be detected${reset}"
+	warn "git pull failed (local changes?) - state file changes won't be detected"
 }
 if [[ "$pull_output" == "Already up to date." ]]; then
-	echo -e "${dim}Up to date${reset}"
+	info "Up to date"
 else
 	echo "$pull_output"
 fi

@@ -17,7 +17,7 @@ PREVIOUS_NODE_VERSION=$(nvm current)
 # shellcheck disable=SC1090 # nvm is a shell function, not a file
 output=$(nvm install --lts 2>&1) || {
 	set -u
-	echo -e "${yellow}Warning: Failed to install Node LTS${reset}" >&2
+	warn "Failed to install Node LTS" >&2
 	return 0
 }
 # Only show output if a new version was installed
@@ -31,15 +31,15 @@ if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ] && [ "$PREVIOUS_NODE_VERS
 	read -r -n 1 confirm </dev/tty
 	echo ""
 	if [[ "$confirm" =~ ^[Yy]$ ]]; then
-		nvm uninstall "$PREVIOUS_NODE_VERSION" || echo -e "${yellow}Warning: Failed to uninstall previous Node version${reset}"
+		nvm uninstall "$PREVIOUS_NODE_VERSION" || warn "Failed to uninstall previous Node version"
 	else
-		echo -e "${dim}Kept ${PREVIOUS_NODE_VERSION}${reset}"
+		info "Kept ${PREVIOUS_NODE_VERSION}"
 	fi
 fi
 set -u
 
 # Update npm silently (warnings will still show on failure)
-npm install -g --fund=false --audit=false npm >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to upgrade npm${reset}"
+npm install -g --fund=false --audit=false npm >/dev/null 2>&1 || warn "Failed to upgrade npm"
 
 # Install missing global npm packages
 NPM_STATE_FILE="$SETUP/state/npm_packages.txt"
@@ -54,6 +54,6 @@ if [[ -f "$NPM_STATE_FILE" ]]; then
 	# Update all managed npm packages
 	while IFS= read -r pkg; do
 		[[ -z "$pkg" ]] && continue
-		npm update -g --fund=false --audit=false "$pkg" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to update $pkg${reset}"
+		npm update -g --fund=false --audit=false "$pkg" >/dev/null 2>&1 || warn "Failed to update $pkg"
 	done <<<"$desired_npm"
 fi

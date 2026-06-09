@@ -19,5 +19,5 @@ create_link "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills" "claude/skills"
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
 	cp "$CLAUDE_COPIED/CLAUDE.local.md" "$CLAUDE_DIR/CLAUDE.local.md"
-	echo -e "${dim}Claude Code: created local instructions template${reset}"
+	info "Claude Code: created local instructions template"
 fi

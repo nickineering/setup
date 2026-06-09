@@ -18,7 +18,7 @@ if [[ -n "$missing_taps" ]]; then
 	while IFS= read -r tap; do
 		[[ -z "$tap" ]] && continue
 		echo "Adding tap: ${tap}"
-		brew tap "$tap" >/dev/null 2>&1 || echo -e "${yellow}Warning: Failed to tap ${tap}${reset}"
+		brew tap "$tap" >/dev/null 2>&1 || warn "Failed to tap ${tap}"
 		((taps_added++)) || true
 	done <<<"$missing_taps"
 fi
@@ -34,11 +34,11 @@ if [[ -n "$removed_taps" ]]; then
 	while IFS= read -r tap; do
 		[[ -z "$tap" ]] && continue
 		echo "Removing tap: ${tap}"
-		brew untap "$tap" 2>/dev/null || echo -e "${yellow}Warning: Failed to untap ${tap}${reset}"
+		brew untap "$tap" 2>/dev/null || warn "Failed to untap ${tap}"
 	done <<<"$removed_taps"
 fi
 
 if [[ $taps_added -eq 0 && -z "$removed_taps" ]]; then
-	echo -e "${dim}All taps already configured${reset}"
+	info "All taps already configured"
 fi
 echo ""

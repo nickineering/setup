@@ -8,9 +8,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 outdated=$(brew outdated --greedy 2>/dev/null || true)
 if [[ -n "$outdated" ]]; then
-	echo -e "${dim}Upgrading: $(echo "$outdated" | tr '\n' ' ')${reset}"
-	brew upgrade --greedy || echo -e "${yellow}Warning: Some packages failed to upgrade${reset}"
+	info "Upgrading: $(echo "$outdated" | tr '\n' ' ')"
+	brew upgrade --greedy || warn "Some packages failed to upgrade"
 else
-	echo -e "${dim}All packages up to date${reset}"
+	info "All packages up to date"
 fi
 echo ""

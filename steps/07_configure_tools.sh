@@ -21,7 +21,7 @@ source configure/claude.sh
 if command -v uv &>/dev/null; then
 	source configure/python.sh
 else
-	echo -e "${yellow}Warning: uv not found, skipping Python configuration${reset}"
+	warn "uv not found, skipping Python configuration"
 fi
 
 # Node config (guard: nvm must be installed)
@@ -30,8 +30,8 @@ if [[ -s "$(brew --prefix)/opt/nvm/nvm.sh" ]]; then
 	# Handle npm package removals from state file changes
 	[[ -n "$removed_npm" ]] && prompt_uninstall npm "$removed_npm"
 else
-	echo -e "${yellow}Warning: nvm not found, skipping Node configuration${reset}"
+	warn "nvm not found, skipping Node configuration"
 fi
 
-echo -e "${dim}Checked: Git, Zsh, Firefox, Ruff, Claude, Python, Node${reset}"
+info "Checked: Git, Zsh, Firefox, Ruff, Claude, Python, Node"
 echo ""

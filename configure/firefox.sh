@@ -10,12 +10,12 @@ if [ ! -d "$FIREFOX_FOLDER" ]; then
 else
 	FIREFOX_PROFILE=$(find "$FIREFOX_FOLDER" -maxdepth 1 -name '*.dev-edition-default' 2>/dev/null | head -n1)
 	if [ "$FIREFOX_PROFILE" = "" ]; then
-		echo -e "${dim}Could not find Firefox profile folder. Skipping Firefox settings...${reset}"
+		info "Could not find Firefox profile folder. Skipping Firefox settings..."
 	else
 
 		backup_or_delete "$FIREFOX_PROFILE/user.js"
 		if ! ln -sf "$DOTFILES/user.js" "$FIREFOX_PROFILE/user.js"; then
-			echo -e "${yellow}Warning: Failed to link Firefox user.js${reset}"
+			warn "Failed to link Firefox user.js"
 		fi
 	fi
 fi
