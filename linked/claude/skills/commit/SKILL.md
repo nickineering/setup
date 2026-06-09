@@ -2,7 +2,7 @@
 description: Stage Claude's changes, commit with a generated message, and push
 ---
 
-Commit and push changes from the current Claude session.
+Commit and push changes.
 
 ## Model
 
@@ -11,56 +11,33 @@ the full workflow and rules below in the agent's prompt.
 
 ## Workflow
 
-### 1. Determine files to stage
+### 1. Stage files
 
-**Only stage files that Claude has modified in this session.** Do not stage
-unrelated changes. If this skill is invoked outside a Claude session (no files
-modified by Claude), skip staging entirely and commit only what is already
-staged.
+Stage files Claude modified in this session, but do not stage other files.
+Always preserve anything already staged — never unstage files.
 
 ### 2. Review changes
 
-```bash
-git status
-git diff --staged
-git diff <files-claude-modified>
-```
-
-Understand what has changed to write an accurate commit message.
+Run `git status` and `git diff --staged` to understand what will be committed.
+The commit message should cover all staged changes, not just Claude's.
 
 ### 3. Write the commit message
 
-**Title (first line):**
+Conventional commit format: `type(scope): description`
 
-- Use conventional commit format: `type(scope): description`
-- Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`
-- Append `!` after type for breaking changes: `feat!`, `fix!`, `refactor!`, etc.
-- Keep under 72 characters
-- Be specific about what changed
+Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`.
+Append `!` for breaking changes. Keep the title under 72 characters. Add a body
+only when the "why" isn't obvious from the title. Wrap at 72 characters.
 
-**Body (if needed):**
+### 4. Commit and push
 
-- Add for complex changes that need explanation
-- Explain the "why" when not obvious
-- Wrap at 72 characters
-
-### 4. Stage, commit, and push in one command
-
-Combine all operations to minimize approval prompts.
-
-**With Claude-modified files:**
+Combine into one command to minimize approval prompts:
 
 ```bash
-git add <file1> <file2> ... && git commit -m "<title>" -m "<body>" && git push
+git add <claude-modified-files> && git commit -m "<title>" -m "<body>" && git push
 ```
 
-**Without body:**
-
-```bash
-git add <file1> <file2> ... && git commit -m "<title>" && git push
-```
-
-**No Claude-modified files (commit already-staged changes only):**
+If Claude did not modify any files, just commit what is already staged:
 
 ```bash
 git commit -m "<title>" && git push
@@ -68,7 +45,8 @@ git commit -m "<title>" && git push
 
 ## Rules
 
-- Do NOT add Co-Authored-By trailers for Claude
-- Do NOT stage files that Claude did not modify in this session
-- Do NOT wait for permission between add, commit, and push
-- Push immediately after committing
+- Always stage files Claude modified in this session before committing
+- Never add Co-Authored-By trailers for Claude
+- Never unstage files that were already staged
+- Never wait for permission between add, commit, and push
+- Always push immediately after committing
