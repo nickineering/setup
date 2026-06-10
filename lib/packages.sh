@@ -55,6 +55,23 @@ set_difference() {
 	echo "$full" | grep -vxF -f <(echo "$exclude") || true
 }
 
+# Keeps sudo credential cached until the calling function finishes.
+# Call once before a loop that needs repeated sudo; kill via the trap or
+# stop_sudo_keepalive when done.
+start_sudo_keepalive() {
+	sudo -v
+	(while sudo -vn 2>/dev/null; do sleep 30; done) &
+	SUDO_KEEPALIVE_PID=$!
+}
+
+stop_sudo_keepalive() {
+	if [[ -n "${SUDO_KEEPALIVE_PID:-}" ]]; then
+		kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+		wait "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+		unset SUDO_KEEPALIVE_PID
+	fi
+}
+
 # Types: package, cask, extension, npm
 install_missing() {
 	local type="$1" list="$2"
@@ -63,6 +80,10 @@ install_missing() {
 	if [[ "$type" == "extension" ]] && ! command -v code &>/dev/null; then
 		echo "⚠ VSCode CLI not found. Skipping extension installation." >&2
 		return 0
+	fi
+
+	if [[ "$type" == "cask" ]]; then
+		start_sudo_keepalive
 	fi
 
 	while IFS= read -r item <&3; do
@@ -79,6 +100,8 @@ install_missing() {
 			echo "⚠ Failed to install $type: $item" >&2
 		fi
 	done 3<<<"$list"
+
+	stop_sudo_keepalive
 }
 
 # Used unconditionally by these scripts (no command -v guard, no macOS fallback)

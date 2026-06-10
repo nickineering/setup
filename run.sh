@@ -48,6 +48,7 @@ source lib/packages.sh
 # Trap handler for cleanup on interruption
 CURRENT_STEP=""
 cleanup_on_interrupt() {
+	stop_sudo_keepalive 2>/dev/null || true
 	echo "" >&2
 	echo -e "${yellow}⚠ Setup interrupted!${reset}" >&2
 	if [[ -n "$CURRENT_STEP" ]]; then
@@ -56,7 +57,7 @@ cleanup_on_interrupt() {
 	echo -e "To resume, run: ${coral}$SETUP/run.sh${reset}" >&2
 	exit 130
 }
-trap cleanup_on_interrupt INT TERM
+trap cleanup_on_interrupt INT TERM EXIT
 
 # Step runner with counter and section grouping
 STEP_CURRENT=0
