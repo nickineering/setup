@@ -244,10 +244,10 @@ teardown() {
 # ============================================
 
 @test "PROTECTED_PACKAGES includes critical packages" {
-    # Verify the protected list contains expected critical packages
+    # Verify the protected list contains packages the script needs to run
     [[ "$PROTECTED_PACKAGES" == *"bash"* ]]
     [[ "$PROTECTED_PACKAGES" == *"git"* ]]
-    [[ "$PROTECTED_PACKAGES" == *"openssl"* ]]
     [[ "$PROTECTED_PACKAGES" == *"curl"* ]]
-    [[ "$PROTECTED_PACKAGES" == *"coreutils"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"jq"* ]]
+    [[ "$PROTECTED_PACKAGES" == *"trash"* ]]
 }
