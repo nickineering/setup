@@ -59,6 +59,9 @@ run_step "Installing Homebrew"
 if command -v brew >/dev/null 2>&1; then
 	info "Already installed"
 else
+	# Homebrew's installer needs sudo. Cache the credential now so
+	# NONINTERACTIVE mode doesn't fail with a misleading "not an admin" error.
+	sudo -v
 	HOMEBREW_INSTALL_SCRIPT=$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)
 	if [ "$HOMEBREW_INSTALL_SCRIPT" = "" ]; then
 		echo "Error: Failed to download Homebrew installer" >&2
