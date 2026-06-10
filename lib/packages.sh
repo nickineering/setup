@@ -65,7 +65,7 @@ install_missing() {
 		return 0
 	fi
 
-	while IFS= read -r item; do
+	while IFS= read -r item <&3; do
 		[[ -z "$item" ]] && continue
 		echo "› Installing ${type}: ${item}"
 		local install_cmd
@@ -78,7 +78,7 @@ install_missing() {
 		if ! "${install_cmd[@]}" "$item"; then
 			echo "⚠ Failed to install $type: $item" >&2
 		fi
-	done <<<"$list"
+	done 3<<<"$list"
 }
 
 # Used unconditionally by these scripts (no command -v guard, no macOS fallback)
@@ -144,7 +144,7 @@ prompt_uninstall() {
 		}
 	fi
 
-	while IFS= read -r item; do
+	while IFS= read -r item <&3; do
 		[[ -z "$item" ]] && continue
 		local uninstall_cmd
 		case "$type" in
@@ -156,5 +156,5 @@ prompt_uninstall() {
 		if ! "${uninstall_cmd[@]}" "$item"; then
 			echo "⚠ Failed to uninstall $type: $item" >&2
 		fi
-	done <<<"$safe_to_remove"
+	done 3<<<"$safe_to_remove"
 }
