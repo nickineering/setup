@@ -1,12 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Homebrew Taps ────────────────────────────────────────────────────────────
 # Registers third-party taps from state file, removes taps deleted from state.
 # Must run before install/upgrade so packages from these taps are resolvable.
-# Requires: lib/packages.sh (parse_state_file, set_difference)
-# Requires: steps/01 (removed_taps)
-# ─────────────────────────────────────────────────────────────────────────────
+
 : "${SETUP:?}" "${removed_taps?}"
 
 desired_taps=$(parse_state_file "$SETUP/state/brew_taps.txt")
@@ -23,7 +20,7 @@ if [[ -n "$missing_taps" ]]; then
 	done <<<"$missing_taps"
 fi
 
-# Trust all desired taps
+# Trust all desired taps (allows installing from them without prompts)
 while IFS= read -r tap; do
 	[[ -z "$tap" ]] && continue
 	brew trust "$tap" &>/dev/null || true

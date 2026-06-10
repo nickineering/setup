@@ -1,15 +1,12 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Update Repo ──────────────────────────────────────────────────────────────
-# Snapshots state files before and after pulling, then diffs them to find what
-# was added or removed upstream. The removed_* variables are consumed by steps
-# 4 (packages/casks), 6 (symlinks), 7 (npm), and 9 (extensions).
-# Requires: lib/packages.sh (parse_state_file, set_difference)
-# ─────────────────────────────────────────────────────────────────────────────
+# Snapshots state files before/after git pull to detect what was added or removed.
+# The removed_* variables are consumed by steps 4, 6, 7, and 9.
+
 : "${SETUP:?}"
 
-# Capture state before pull (for detecting changes after pull)
+# Capture state before pull
 old_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
 old_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
 old_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
@@ -26,7 +23,7 @@ else
 	echo "$pull_output"
 fi
 
-# Compare after pull to find what changed
+# Capture state after pull
 new_packages=$(parse_state_file "$SETUP/state/brew_packages.txt")
 new_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
 new_extensions=$(parse_state_file "$SETUP/state/vscode_extensions.txt" | tr '[:upper:]' '[:lower:]')
@@ -34,7 +31,7 @@ new_npm=$(parse_state_file "$SETUP/state/npm_packages.txt")
 new_links=$(parse_state_file "$SETUP/state/linked_files.txt")
 new_taps=$(parse_state_file "$SETUP/state/brew_taps.txt")
 
-# Calculate removals from state file changes (will prompt user in later steps)
+# Items present in old state but absent from new = removed upstream
 removed_packages=$(set_difference "$new_packages" "$old_packages")
 removed_casks=$(set_difference "$new_casks" "$old_casks")
 removed_extensions=$(set_difference "$new_extensions" "$old_extensions")

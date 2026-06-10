@@ -50,7 +50,8 @@ backup_or_delete() {
 			fi
 			info "Backed up $1 at $BACKUP_PATH"
 		else
-			# Don't backup links. We will just update them if they have changed.
+			# Links don't need backup — just remove and recreate.
+			# `trash` is from Homebrew (macos-trash), moves to Finder trash instead of rm.
 			trash "$1"
 		fi
 	fi

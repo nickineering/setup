@@ -1,20 +1,15 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2154 # Variables like $yellow defined in lib/colors.sh
-# Shared package management utilities - sourced by run.sh
-# Provides diff-based package installation and user-prompted removal.
 
-# Remove any text after the first space in string $1 (strips comments)
-# Returns empty string for comment-only lines (starting with #)
+# Extract the first word from a line, ignoring comments (lines starting with #)
 strip_comments() {
 	local first_word
 	first_word=$(echo "$1" | head -n1 | awk '{print $1;}')
-	# Skip lines that are comments (start with #)
 	[[ "$first_word" == \#* ]] && return
 	echo "$first_word"
 }
 
-# Parse a state file: strip comments and empty lines
-# Usage: parse_state_file "/path/to/file.txt"
+# Parse a state file into a newline-separated list, stripping comments and blanks
 parse_state_file() {
 	local file="$1"
 	[[ -f "$file" ]] || return 1
@@ -25,24 +20,21 @@ parse_state_file() {
 	done <"$file"
 }
 
-# Get installed Homebrew formula packages
 get_installed_packages() {
 	brew list --formula -1 2>/dev/null
 }
 
-# Get installed Homebrew casks
 get_installed_casks() {
 	brew list --cask -1 2>/dev/null
 }
 
-# Get installed VSCode extensions (lowercase for comparison)
 get_installed_extensions() {
 	if command -v code &>/dev/null; then
 		code --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]'
 	fi
 }
 
-# Get installed global npm packages (excludes npm itself and corepack)
+# Excludes npm and corepack which are bundled with Node and shouldn't be managed
 get_installed_npm_packages() {
 	if command -v npm &>/dev/null; then
 		npm list -g --depth=0 --json 2>/dev/null |
@@ -51,11 +43,8 @@ get_installed_npm_packages() {
 	fi
 }
 
-# Set difference: returns items in $2 that are NOT in $1
-# Usage: set_difference <exclude_list> <full_list>
-# Examples:
-#   set_difference "$installed" "$desired"  -> packages to install
-#   set_difference "$new_state" "$old_state" -> packages removed from state
+# Returns items in $2 that are NOT in $1
+# Note: arg order is (exclude, full) not (full, exclude)
 set_difference() {
 	local exclude="$1" full="$2"
 	[[ -z "$full" ]] && return
@@ -66,14 +55,11 @@ set_difference() {
 	echo "$full" | grep -vxF -f <(echo "$exclude") || true
 }
 
-# Install missing items of a given type
-# Usage: install_missing <type> <list>
-# Types: package, cask, extension
+# Types: package, cask, extension, npm
 install_missing() {
 	local type="$1" list="$2"
 	[[ -z "$list" ]] && return 0
 
-	# Extension-specific: check for VSCode CLI
 	if [[ "$type" == "extension" ]] && ! command -v code &>/dev/null; then
 		echo "⚠ VSCode CLI not found. Skipping extension installation." >&2
 		return 0
@@ -85,7 +71,7 @@ install_missing() {
 		local install_cmd
 		case "$type" in
 		package) install_cmd=(brew install) ;;
-		cask) install_cmd=(brew install --cask --adopt) ;; # --adopt: claim existing apps
+		cask) install_cmd=(brew install --cask --adopt) ;; # --adopt: claim apps already in /Applications
 		extension) install_cmd=(code --install-extension) ;;
 		npm) install_cmd=(npm install -g --fund=false --audit=false) ;;
 		esac
@@ -95,25 +81,24 @@ install_missing() {
 	done <<<"$list"
 }
 
-# Packages that should never be auto-uninstalled (critical dependencies)
-PROTECTED_PACKAGES="bash|git|openssl|curl|coreutils"
+# Used unconditionally by these scripts (no command -v guard, no macOS fallback)
+PROTECTED_PACKAGES="bash|git|curl|jq|trash"
 
-# Threshold for mass uninstall warning
+# If more than this many are queued for removal, the state file was probably
+# truncated or corrupted — require explicit "yes" instead of y/N
 MAX_SAFE_UNINSTALLS=10
 
-# Prompt user before uninstalling items (destructive action)
-# Usage: prompt_uninstall <type> <list>
-# Types: package, cask, extension
+# Show items removed from state and ask the user whether to uninstall them.
+# Types: package, cask, extension, npm
 prompt_uninstall() {
 	local type="$1" list="$2"
 	[[ -z "$list" ]] && return 0
 
-	# Extension-specific: check for VSCode CLI
 	if [[ "$type" == "extension" ]] && ! command -v code &>/dev/null; then
 		return 0
 	fi
 
-	# Package-specific: filter out protected packages
+	# Filter out protected packages from the removal list
 	local safe_to_remove="$list"
 	if [[ "$type" == "package" ]]; then
 		safe_to_remove=""
@@ -141,7 +126,6 @@ prompt_uninstall() {
 	echo "The following ${type}s were removed from state file:"
 	echo "$safe_to_remove" | while IFS= read -r item; do echo "  $item"; done
 
-	# Guard: require explicit confirmation for mass uninstalls
 	if [[ "$count" -gt "$MAX_SAFE_UNINSTALLS" ]]; then
 		echo -e "${yellow}⚠ About to uninstall ${bold}${count}${reset}${yellow} ${type}s - this seems high!${reset}"
 		echo -n "Type 'yes' to confirm mass uninstall: "

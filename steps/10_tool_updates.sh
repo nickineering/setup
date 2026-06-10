@@ -1,11 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Tool Updates ─────────────────────────────────────────────────────────────
-# Updates uv, tldr, Oh My Zsh, and Go tools (gopls, staticcheck) concurrently.
-# Each runs in a background subshell writing to a temp file; results are printed
-# in a fixed order after all complete so output stays deterministic.
-# ─────────────────────────────────────────────────────────────────────────────
+# Updates uv, tldr, Oh My Zsh, and Go tools concurrently. Each runs in a
+# background subshell writing to a temp file; results print in fixed order
+# after all complete so output stays deterministic.
 
 tool_update_dir=$(mktemp -d)
 

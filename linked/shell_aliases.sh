@@ -8,54 +8,47 @@
 # ------------------------------------------------------------------------------------ #
 
 alias please=sudo
-# Count files in current directory and subdirectories
+# Count files recursively
 alias count='fd --type f | wc -l'
-# Count lines in current directory and subdirectories (text files only)
+# Count lines in all text files recursively
 alias count_lines='fd --type f | xargs file | grep text | cut -d: -f1 | xargs cat 2>/dev/null | wc -l'
 alias profile.sh="vim ~/.profile.sh"
 alias env.sh="vim ~/.env.sh"
-
-# Find the following directory if nested within the current directory
+# Find a directory by name within the current tree
 alias finddir='fd --type d --glob'
 
-# Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias -- -="cd -"
 
-# Google Chrome
 alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
 
-# IP addresses
+# Public/local IP address
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias localip="ipconfig getifaddr en0"
 
-# Recursively delete `.DS_Store` files
+# Recursively delete .DS_Store files
 alias cleanup="fd --type f --no-ignore '\.DS_Store$' --exec rm -v {}"
 
 # ⚠️  DANGEROUS: Delete EVERYTHING in current directory except .git (moves to trash)
 # Useful for resetting a repo to empty state while preserving git history
 alias nuke-keep-git='fd --max-depth 1 --hidden --exclude .git . -x trash'
 
-# URL-encode strings
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print(ul.quote_plus(sys.argv[1]))"'
 
-# Merge PDF files, preserving hyperlinks
-# Usage: `mergepdf input{1,2,3}.pdf`
+# Usage: mergepdf input{1,2,3}.pdf — preserves hyperlinks
 alias mergepdf='gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=_merged.pdf'
 
-# Remove metadata from photos. Pass path to photo after alias.
+# Strips all EXIF metadata except ICC color profiles
 alias unmeta='exiftool -all= --icc_profile:all'
 
-# Lock the screen (when going AFK)
+# Lock the screen
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
-
-# Reload the shell (i.e. invoke as a login shell)
+# Reload shell as a login shell
 alias reload='exec ${SHELL} -l'
-
-# Print each PATH entry on a separate line
+# Print each PATH entry on its own line
 alias path='echo -e ${PATH//:/\\n}'
 
 alias git-aliases='less $DOTFILES/git_aliases.ini'

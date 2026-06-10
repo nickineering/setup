@@ -1,12 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Cache Cleanup ────────────────────────────────────────────────────────────
 # Purges caches across all package managers (Homebrew, npm, uv, Go, nvm, pip).
-# Gated on --clean flag — skipped entirely on normal runs to keep things fast.
-# Reports total disk freed at the end.
-# Requires: run.sh (CLEAN_CACHES)
-# ─────────────────────────────────────────────────────────────────────────────
+# Gated on --clean flag — skipped on normal runs to keep things fast.
 : "${CLEAN_CACHES?}"
 
 if [[ "$CLEAN_CACHES" == "true" ]]; then

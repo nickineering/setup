@@ -1,11 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Privileged Operations ────────────────────────────────────────────────────
 # Everything requiring sudo, grouped at the end so the user only enters their
-# password once. Lists what needs doing and asks before proceeding. Covers:
-# Zoom auto-update daemon, wake-on-LAN, lock screen message, macOS updates.
-# ─────────────────────────────────────────────────────────────────────────────
+# password once. Lists what needs doing and asks before proceeding.
 : "${SETUP:?}"
 
 CURRENT_STEP=""

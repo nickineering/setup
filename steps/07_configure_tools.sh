@@ -1,14 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Configure Tools ──────────────────────────────────────────────────────────
 # Sources per-tool scripts from configure/ that enforce idempotent config (shell
 # completions, default versions, global configs). Python and Node are guarded on
-# their package managers being available. Also handles npm removal prompts from
-# state file changes detected in step 01.
-# Requires: lib/packages.sh (prompt_uninstall)
-# Requires: steps/01 (removed_npm)
-# ─────────────────────────────────────────────────────────────────────────────
+# their package managers being available.
 : "${removed_npm?}"
 
 source configure/git.sh

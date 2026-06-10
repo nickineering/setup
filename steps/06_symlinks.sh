@@ -1,14 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── Symlinks ─────────────────────────────────────────────────────────────────
 # Links dotfiles from linked/ into $HOME, VSCode settings into its User dir,
 # and dprint config to ~/. Removes symlinks for files deleted from state.
-# Copies template files (copied/) only when the target doesn't already exist,
-# so user edits are preserved. Creates Vim directories.
-# Requires: lib/links.sh (create_link), lib/backup.sh (backup_or_delete)
-# Requires: steps/01 (removed_links)
-# ─────────────────────────────────────────────────────────────────────────────
+# Copies templates (copied/) only when target doesn't exist so user edits are preserved.
 : "${SETUP:?}" "${DOTFILES:?}" "${removed_links?}"
 
 links_created=0
@@ -25,7 +20,7 @@ while IFS= read -r file; do
 	fi
 done <<<"$removed_links"
 
-# Create symlinks for dotfiles
+# Create symlinks for dotfiles listed in state
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -f "$DOTFILES/$file" ]]; then
@@ -35,7 +30,7 @@ while IFS= read -r file; do
 	create_link "$DOTFILES/$file" ~/"$file"
 done <"$SETUP"/state/linked_files.txt
 
-# VSCode settings (create User dir if VSCode is installed but dir doesn't exist)
+# VSCode settings
 VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
 if command -v code &>/dev/null && [[ ! -d "$VSCODE_USER_DIR" ]]; then
 	mkdir -p "$VSCODE_USER_DIR"
@@ -44,10 +39,9 @@ if [[ -d "$VSCODE_USER_DIR" ]]; then
 	create_link "$DOTFILES/settings.json" "$VSCODE_USER_DIR/settings.json" "settings.json -> VSCode"
 fi
 
-# dprint config
 create_link "$SETUP/dprint.jsonc" ~/dprint.jsonc
 
-# Copy templates (only if not exists)
+# Copy template files (only if target doesn't already exist)
 files_copied=0
 while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
@@ -58,7 +52,6 @@ while IFS= read -r file; do
 	fi
 done <"$SETUP"/state/copied_files.txt
 
-# Vim directories
 mkdir -p ~/.vim/swaps/ ~/.vim/backups/ ~/.vim/undo/
 
 if [[ $links_created -eq 0 && $links_removed -eq 0 && $files_copied -eq 0 ]]; then

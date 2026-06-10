@@ -28,7 +28,7 @@ _retry() {
 	return 1
 }
 
-# Sync a branch: checkout, pull, return status string
+# Sync a branch to match its remote. Sets $branch_status with colored output.
 # Usage: sync_branch <branch_name>
 # Output: Sets $branch_status variable
 sync_branch() {
@@ -38,10 +38,10 @@ sync_branch() {
 	current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
 	if [[ "$current_branch" == "$branch" ]]; then
-		# Branch is checked out — can't update ref directly, merge instead
+		# Can't update the ref of a checked-out branch — merge instead
 		git merge --ff-only "origin/$branch" --quiet 2>/dev/null || true
 	elif ! git fetch origin "$branch:$branch" --quiet 2>/dev/null; then
-		# fetch branch:branch fails on non-fast-forward or if branch doesn't exist locally yet
+		# fetch branch:branch fails on non-fast-forward or missing local branch
 		git branch -f "$branch" "origin/$branch" 2>/dev/null || true
 	fi
 	after=$(git rev-parse "$branch" 2>/dev/null || echo "none")
@@ -59,12 +59,13 @@ original_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
 _retry git fetch --all --prune --prune-tags --force --quiet
 
-# Detect stale branches (local branches whose upstream is gone after prune)
+# Detect stale branches (local branches whose upstream was deleted)
 if [[ -n "$stale_dir" ]]; then
-	# git branch -vv shows "[origin/branch: gone]" for branches with deleted upstreams
+	# ": gone]" appears in `git branch -vv` when the tracked remote branch no longer exists.
+	# sed strips the leading "* " (current branch marker) or spaces.
 	stale_branches=$(git branch -vv 2>/dev/null | grep ': gone]' | sed 's/^[* ]*//' | awk '{print $1}' || true)
 	if [[ -n "$stale_branches" ]]; then
-		# Write to a unique file per repo (avoids race condition with parallel syncs)
+		# One file per repo avoids race conditions from parallel xargs execution
 		stale_file="$stale_dir/$(echo "$repo_name" | tr '/' '_')"
 		while IFS= read -r branch; do
 			printf '%s:%s\n' "$repo_name" "$branch" >>"$stale_file"
@@ -135,7 +136,7 @@ elif [[ -n "${preferred_default:-}" ]]; then
 	final_branch="$preferred_default"
 fi
 
-# Build output line, then print atomically to avoid interleaving with parallel jobs
+# Single printf at the end avoids interleaving with other parallel xargs jobs
 output=""
 if [[ "$has_develop" == "yes" ]] && [[ "$has_main" == "yes" ]]; then
 	output="$repo_name: $(printf '%b, %b' "$develop_status" "$main_status")"

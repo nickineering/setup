@@ -1,14 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# ── VSCode Extensions ────────────────────────────────────────────────────────
 # Installs missing extensions, prompts for removals from state file changes
-# (detected in step 01), then updates all installed extensions. Retries the
-# update once on ENOTEMPTY (a transient race in the VSCode CLI).
-# Requires: lib/packages.sh (parse_state_file, set_difference, install_missing,
-#           get_installed_extensions, prompt_uninstall)
-# Requires: steps/01 (removed_extensions)
-# ─────────────────────────────────────────────────────────────────────────────
+# (detected in step 01), then updates all installed extensions.
 : "${SETUP:?}" "${removed_extensions?}"
 
 if command -v code &>/dev/null; then
@@ -27,6 +21,7 @@ if command -v code &>/dev/null; then
 	echo "› Updating extensions..."
 	update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	if echo "$update_output" | grep -q "ENOTEMPTY"; then
+		# Transient race condition in VSCode CLI — retry once
 		sleep 2
 		update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	fi
