@@ -34,15 +34,21 @@ git config --global tag.gpgsign true
 
 # Add to GitHub if gh is authenticated
 if gh auth status &>/dev/null; then
+	# Ensure write:gpg_key scope is present
+	if ! gh gpg-key list &>/dev/null; then
+		info "Requesting write:gpg_key scope..."
+		gh auth refresh -s write:gpg_key
+	fi
 	info "Adding GPG key to GitHub..."
 	if gpg --armor --export "$GPG_KEY_ID" | gh gpg-key add - 2>/dev/null; then
 		success "GPG key added to GitHub"
 	else
-		warn "Failed to add GPG key to GitHub (add manually)"
+		warn "Failed to add GPG key to GitHub. Add manually:"
+		echo -e "  ${dim}1. Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
 	fi
 else
-	warn "GitHub CLI not authenticated. Add GPG key manually:"
-	echo "  gpg --armor --export $GPG_KEY_ID | gh gpg-key add -"
+	warn "GitHub CLI not authenticated. After authenticating, add your GPG key:"
+	echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
 fi
 
 success "GPG signing configured (key: $GPG_KEY_ID)"
