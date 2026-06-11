@@ -38,11 +38,16 @@ if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 fi
 
 (
-	claude_output=$(curl -fsSL https://claude.ai/install.sh | bash 2>&1) || echo "⚠ Claude Code install failed"
-	if [[ "$claude_output" == *"already installed"* || "$claude_output" == *"up to date"* ]]; then
-		echo "· Claude Code: up to date"
+	install_script=$(curl -fsSL https://claude.ai/install.sh 2>&1)
+	if [[ $? -ne 0 ]]; then
+		echo "⚠ Claude Code install failed: $install_script"
 	else
-		echo "✓ Claude Code: installed/updated"
+		claude_output=$(echo "$install_script" | bash 2>&1)
+		if [[ "$claude_output" == *"already installed"* || "$claude_output" == *"up to date"* ]]; then
+			echo "· Claude Code: up to date"
+		else
+			echo "✓ Claude Code: installed/updated"
+		fi
 	fi
 ) >"$tool_update_dir/claude" 2>&1 &
 
