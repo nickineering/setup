@@ -10,18 +10,25 @@ tool_update_dir=$(mktemp -d)
 if command -v uv &>/dev/null; then
 	(
 		uv_output=$(uv tool upgrade --all 2>/dev/null) || echo "⚠ uv tool upgrade failed"
-		if [[ "$uv_output" == "Nothing to upgrade" ]]; then
+		if [[ -z "$uv_output" || "$uv_output" == "Nothing to upgrade" ]]; then
 			echo "· uv tools: up to date"
 		else
-			echo "✓ uv tools: $uv_output"
+			echo "✓ uv tools: updated"
 		fi
 	) >"$tool_update_dir/uv" 2>&1 &
 fi
 
 if command -v tldr &>/dev/null; then
 	(
+		cache_dir="${HOME}/Library/Caches/tealdeer"
+		before=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
 		tldr --update >/dev/null 2>&1 || echo "⚠ tldr update failed"
-		echo "✓ tldr: pages updated"
+		after=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
+		if [[ "$before" != "$after" && "$before" != "0" ]]; then
+			echo "✓ tldr: pages updated"
+		else
+			echo "· tldr: up to date"
+		fi
 	) >"$tool_update_dir/tldr" 2>&1 &
 fi
 
@@ -38,15 +45,19 @@ if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 fi
 
 (
+	before=$(claude --version 2>/dev/null || echo "none")
 	install_script=$(curl -fsSL https://claude.ai/install.sh 2>&1)
 	if [[ $? -ne 0 ]]; then
 		echo "⚠ Claude Code install failed: $install_script"
 	else
-		claude_output=$(echo "$install_script" | bash 2>&1)
-		if [[ "$claude_output" == *"already installed"* || "$claude_output" == *"up to date"* ]]; then
-			echo "· Claude Code: up to date"
+		echo "$install_script" | bash >/dev/null 2>&1
+		after=$(claude --version 2>/dev/null || echo "none")
+		if [[ "$before" == "none" ]]; then
+			echo "✓ Claude Code: installed"
+		elif [[ "$before" != "$after" ]]; then
+			echo "✓ Claude Code: updated"
 		else
-			echo "✓ Claude Code: installed/updated"
+			echo "· Claude Code: up to date"
 		fi
 	fi
 ) >"$tool_update_dir/claude" 2>&1 &
