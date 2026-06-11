@@ -73,7 +73,7 @@ fi
 # ── 3. GitLab CLI ────────────────────────────────────────────────────────────
 run_step "Authenticating GitLab CLI"
 if ! glab auth status &>/dev/null 2>&1; then
-	glab auth login
+	glab auth login --git-protocol ssh
 	success "Configured GitLab CLI"
 else
 	info "GitLab CLI already authenticated"
