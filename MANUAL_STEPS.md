@@ -8,8 +8,10 @@ following manual steps to finish setting up your Mac:
 
 1. Add system languages and keyboard layouts to the OS
 1. Pair your Bluetooth devices
-1. Search for "extensions" in System Settings. Click "Finder extensions" ->
-   "Added extensions" -> Enable "OpenInTerminal"
+1. Open "Finder" -> "Settings" -> "Advanced" -> Enable "Remove items from Trash
+   after 30 days"
+1. Open the "OpenInTerminal" app and then search for "extensions" in System
+   Settings. Click "File Providers" -> -> Enable "OpenInTerminal"
 1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
 1. Remove Apple News and Apple Stocks widgets from the Notification Center and
    replace them with weather, connected devices, Github, and Google Translate.
