@@ -11,6 +11,8 @@
 	eol = lf
 	excludesFile = ~/projects/setup/linked/.gitignore
 	quotePath = true
+[credential "https://gitlab.com"]
+	helper = /opt/homebrew/bin/glab auth git-credential
 [diff]
 	colorMoved = default
 [fetch]
