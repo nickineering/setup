@@ -3,7 +3,7 @@
 #
 # Updates the formulae index and upgrades all outdated packages and casks.
 # Runs before install so newly-added packages aren't installed at stale versions.
-brew update --quiet </dev/null || warn "brew update failed"
+brew update --quiet >/dev/null </dev/null || warn "brew update failed"
 outdated=$(brew outdated --greedy 2>/dev/null || true)
 if [[ -n "$outdated" ]]; then
 	info "Upgrading: $(echo "$outdated" | tr '\n' ' ')"
