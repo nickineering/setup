@@ -16,7 +16,8 @@ the full workflow and rules below in the agent's prompt.
 Run `git status` to see the working tree. Every file falls into one of:
 
 1. **Already staged** — files in the index before this skill runs. Leave as-is.
-2. **Claude-modified unstaged** — files Claude touched this session. Stage these.
+2. **Claude-modified unstaged** — files Claude touched this session. Stage
+   these.
 3. **Other unstaged/untracked** — files Claude did not touch. Never stage these.
 
 Only `git add` files from category 2. Never use `git add .` or `git add -A`.

@@ -19,6 +19,7 @@ Run the helper script and display its output:
 ```
 
 Map natural language periods to script arguments:
+
 - "today" → `today`
 - "yesterday" → `yesterday`
 - "this week" → `this-week`
@@ -34,9 +35,9 @@ via `! claude-aws dev`).
 ## Rules
 
 - After running the script, your ONLY response must be a single markdown fenced
-  code block containing the complete unmodified script output. Nothing else.
-  No text before it. No text after it. No summary. No explanation.
-  Example of correct response format:
+  code block containing the complete unmodified script output. Nothing else. No
+  text before it. No text after it. No summary. No explanation. Example of
+  correct response format:
 
   ```
   <full script output here, every single line>
