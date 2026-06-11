@@ -13,4 +13,4 @@
 # Dock apps to ignore on this machine (pipe-separated).
 # Suppresses "not found" warnings for apps not installed, and
 # "not managed by setup" warnings for apps present but not in the managed list.
-# export DOCK_IGNORE_APPS="NordVPN|Spotify|EonNext Self Service"
+# export DOCK_IGNORE_APPS="NordVPN|Spotify"

@@ -23,21 +23,19 @@ following manual steps to finish setting up your Mac:
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.
 
-## GitLab repo sync setup
+## Machine-specific configuration
 
-To enable GitLab repo syncing:
+Configure machine-specific options in `~/.env.sh`:
 
-1. Configure your GitLab group in `~/.env.sh`:
-   ```bash
-   export GITLAB_GROUP="your-group"
-   # Optional: exclude specific subdirectories (pipe-separated)
-   export GITLAB_EXCLUDE_DIRS="archived|sandbox"
-   ```
+```bash
+# GitLab repo syncing (auth is handled automatically on first sync)
+export GITLAB_GROUP="your-group"
+# Optional: exclude specific subdirectories (pipe-separated)
+export GITLAB_EXCLUDE_DIRS="archived|sandbox"
 
-2. Authenticate with GitLab:
-   ```bash
-   glab auth login
-   ```
+# Hide Dock icons not installed or not wanted on this machine (pipe-separated)
+export DOCK_IGNORE_APPS="NordVPN|Spotify"
+```
 
 Next, you will need to sign in or otherwise activate the following apps, being
 sure to complete any steps noted:
