@@ -9,7 +9,7 @@ tool_update_dir=$(mktemp -d)
 
 if command -v uv &>/dev/null; then
 	(
-		uv_output=$(uv tool upgrade --all 2>&1) || echo "⚠ uv tool upgrade failed"
+		uv_output=$(uv tool upgrade --all 2>/dev/null) || echo "⚠ uv tool upgrade failed"
 		if [[ "$uv_output" == "Nothing to upgrade" ]]; then
 			echo "· uv tools: up to date"
 		else
