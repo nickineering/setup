@@ -11,6 +11,7 @@ findutils                # Mac default outdated
 gawk                    # Mac default outdated
 dprint                  # Fast Rust based formatter for web languages
 gh                      # Github CLI
+glab                    # GitLab CLI
 git                     # Latest Git (macOS ships an older Xcode version)
 git-lfs                 # Better handling of large files by Git
 gnu-indent              # Mac default outdated
