@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# Updates uv, tldr, Oh My Zsh, and Go tools concurrently. Each runs in a
-# background subshell writing to a temp file; results print in fixed order
-# after all complete so output stays deterministic.
+# Updates uv, tldr, Oh My Zsh, Claude Code, and Go tools concurrently. Each
+# runs in a background subshell writing to a temp file; results print in fixed
+# order after all complete so output stays deterministic.
 
 tool_update_dir=$(mktemp -d)
 
@@ -37,6 +37,15 @@ if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 	) >"$tool_update_dir/omz" 2>&1 &
 fi
 
+(
+	claude_output=$(curl -fsSL https://claude.ai/install.sh | bash 2>&1) || echo "⚠ Claude Code install failed"
+	if [[ "$claude_output" == *"already installed"* || "$claude_output" == *"up to date"* ]]; then
+		echo "· Claude Code: up to date"
+	else
+		echo "✓ Claude Code: installed/updated"
+	fi
+) >"$tool_update_dir/claude" 2>&1 &
+
 if command -v go &>/dev/null; then
 	(
 		gopls_before=$(gopls version 2>/dev/null | head -1 || echo "none")
@@ -59,7 +68,7 @@ fi
 
 wait
 
-for tool in uv tldr omz go; do
+for tool in uv tldr omz claude go; do
 	[[ -f "$tool_update_dir/$tool" ]] && cat "$tool_update_dir/$tool"
 done
 rm -rf "$tool_update_dir"
