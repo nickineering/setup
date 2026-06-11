@@ -92,6 +92,7 @@ source "$SETUP/lib/add_to_dock.sh"
 # add_to_dock returns 0 if added, 2 if already present
 dock_changed=false
 add_to_dock "1Password" && dock_changed=true
+add_to_dock "Apps" "System" && dock_changed=true
 add_to_dock "Boop" && dock_changed=true
 add_to_dock "Calculator" "System" && dock_changed=true
 add_to_dock "Firefox Developer Edition" && dock_changed=true
@@ -113,9 +114,9 @@ fi
 
 # Detect apps in Dock that aren't managed here (leftover from previous config)
 desired_dock_apps=(
-	"1Password" "Boop" "Calculator" "Firefox Developer Edition" "Google Chrome"
-	"iPhone Mirroring" "iTerm" "NordVPN" "Notes" "Photo Booth" "Reminders"
-	"Spotify" "Activity Monitor" "Visual Studio Code" "Weather"
+	"1Password" "Apps" "Boop" "Calculator" "Firefox Developer Edition"
+	"Google Chrome" "iPhone Mirroring" "iTerm" "NordVPN" "Notes" "Photo Booth"
+	"Reminders" "Spotify" "Activity Monitor" "Visual Studio Code" "Weather"
 )
 while IFS= read -r dock_app; do
 	[[ -z "$dock_app" ]] && continue
