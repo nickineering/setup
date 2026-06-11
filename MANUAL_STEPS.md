@@ -17,6 +17,8 @@ following manual steps to finish setting up your Mac:
    replace them with weather, connected devices, Github, and Google Translate.
 1. Go to System settings -> Menu Bar -> Add: Bluetooth, Weather
 1. Go to System settings -> Menu Bar -> Battery Options -> Show Percentage
+1. Go to System Settings -> Notifications -> Weather -> Disable "Play sound for
+   notifications"
 1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.
