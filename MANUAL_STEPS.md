@@ -12,9 +12,10 @@ following manual steps to finish setting up your Mac:
    after 30 days"
 1. Open the "OpenInTerminal" app and then search for "extensions" in System
    Settings. Click "File Providers" -> -> Enable "OpenInTerminal"
-1. Add the "Open in Terminal" and "New Folder" buttons to the Finder toolbar
+1. Add the "New Folder" button to the Finder toolbar
 1. Remove Apple News and Apple Stocks widgets from the Notification Center and
    replace them with weather, connected devices, Github, and Google Translate.
+1. Go to System settings -> Menu Bar -> Add: Bluetooth, Weather
 1. Go to System settings -> Menu Bar -> Battery Options -> Show Percentage
 1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer
    and grant it permissions in System Settings as instructed during
@@ -48,7 +49,6 @@ sure to complete any steps noted:
 1. VSCode
 1. Github Actions VSCode extension
 1. Github Pull Requests VSCode extension
-1. Gitlens VSCode extension
 1. iTerm2
    1. Make default terminal
 1. NordVPN
@@ -74,9 +74,10 @@ sure to complete any steps noted:
 1. Shottr
    1. Activate license
    2. Grant permissions
-   3. Increase scrolling screenshot speed to max
-   4. Assign hotkeys for all commands
-   5. Default window to larger size
+   3. Window Screenshot Background: Wallpaper
+   4. Increase scrolling screenshot speed to max
+   5. Assign hotkeys for all commands
+   6. Default window to larger size
 1. Signal
 1. Skype
 1. Spotify
