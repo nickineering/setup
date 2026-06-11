@@ -49,6 +49,11 @@ if [[ -f "$NPM_STATE_FILE" ]]; then
 	missing_npm=$(set_difference "$installed_npm" "$desired_npm")
 	if [[ -n "$missing_npm" ]]; then
 		install_missing npm "$missing_npm"
+		# Puppeteer's postinstall is blocked by npm allow-scripts;
+		# explicitly download Chromium so mermaid-cli can render
+		if echo "$missing_npm" | grep -q "@mermaid-js/mermaid-cli"; then
+			npx --yes puppeteer browsers install chrome >/dev/null 2>&1 || warn "Failed to install Puppeteer browser"
+		fi
 	fi
 
 	# Update all managed npm packages
