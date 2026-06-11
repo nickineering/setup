@@ -7,6 +7,7 @@
 # Configuration (set in ~/.env.sh):
 #   GITLAB_GROUP        - GitLab group/namespace to sync (optional)
 #   GITLAB_EXCLUDE_DIRS - Pipe-separated dirs to exclude (optional)
+#   DOCK_IGNORE_APPS    - Pipe-separated apps to skip in Dock management (optional)
 
 set -euo pipefail
 

@@ -36,16 +36,6 @@ defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 # "scale" is faster than the default "genie" minimize animation
 defaults write com.apple.dock mineffect -string "scale"
 
-# Only clear default Dock on first run — presence of Safari means untouched.
-# "file-label" is how plist encodes each Dock entry's display name.
-current_dock=$(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -c "file-label") || current_dock=0
-if [[ "$current_dock" -gt 0 ]]; then
-	has_safari=$(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -c "Safari") || has_safari=0
-	if [[ "$has_safari" -gt 0 ]]; then
-		defaults write com.apple.dock persistent-apps -array
-	fi
-fi
-
 # Don't show recent apps in the Dock
 defaults write com.apple.dock show-recents -bool FALSE
 # Gray out hidden apps so their state is visible
@@ -87,50 +77,73 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 # Disable the blue cursor indicator when moving between text fields
 defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled 0
 
-source "$SETUP/lib/add_to_dock.sh"
-
-# add_to_dock returns 0 if added, 2 if already present
-dock_changed=false
-add_to_dock "1Password" && dock_changed=true
-add_to_dock "Apps" "System" && dock_changed=true
-add_to_dock "Boop" && dock_changed=true
-add_to_dock "Calculator" "System" && dock_changed=true
-add_to_dock "Firefox Developer Edition" && dock_changed=true
-add_to_dock "Google Chrome" && dock_changed=true
-add_to_dock "iPhone Mirroring" "System" && dock_changed=true
-add_to_dock "iTerm" && dock_changed=true
-add_to_dock "NordVPN" && dock_changed=true
-add_to_dock "Notes" "System" && dock_changed=true
-add_to_dock "Photo Booth" "System" && dock_changed=true
-add_to_dock "Reminders" "System" && dock_changed=true
-add_to_dock "Spotify" && dock_changed=true
-add_to_dock "Utilities/Activity Monitor" "System" && dock_changed=true
-add_to_dock "Visual Studio Code" && dock_changed=true
-add_to_dock "Weather" "System" && dock_changed=true
-
-if [[ "$dock_changed" == "true" ]]; then
-	killall Dock
+# Build ignore lookup from DOCK_IGNORE_APPS (pipe-separated, set in ~/.env.sh)
+declare -A _dock_ignored=()
+if [[ -n "${DOCK_IGNORE_APPS:-}" ]]; then
+	while IFS= read -r _app; do
+		_dock_ignored["$_app"]=1
+	done < <(echo "$DOCK_IGNORE_APPS" | tr '|' '\n')
 fi
 
-# Detect apps in Dock that aren't managed here (leftover from previous config)
+# Desired dock order: "path|label" — label is used for comparison with current dock
 desired_dock_apps=(
-	"1Password" "Apps" "Boop" "Calculator" "Firefox Developer Edition"
-	"Google Chrome" "iPhone Mirroring" "iTerm" "NordVPN" "Notes" "Photo Booth"
-	"Reminders" "Spotify" "Activity Monitor" "Visual Studio Code" "Weather"
+	"/Applications/1Password.app|1Password"
+	"/System/Applications/Apps.app|Apps"
+	"/Applications/Boop.app|Boop"
+	"/System/Applications/Calculator.app|Calculator"
+	"/Applications/Firefox Developer Edition.app|Firefox Developer Edition"
+	"/Applications/Google Chrome.app|Google Chrome"
+	"/System/Applications/iPhone Mirroring.app|iPhone Mirroring"
+	"/Applications/iTerm.app|iTerm"
+	"/Applications/NordVPN.app|NordVPN"
+	"/System/Applications/Notes.app|Notes"
+	"/System/Applications/Photo Booth.app|Photo Booth"
+	"/System/Applications/Reminders.app|Reminders"
+	"/Applications/Spotify.app|Spotify"
+	"/System/Applications/Utilities/Activity Monitor.app|Activity Monitor"
+	"/Applications/Visual Studio Code.app|Visual Studio Code"
+	"/System/Applications/Weather.app|Weather"
 )
+
+# Build the desired label list (only apps that exist and aren't ignored)
+desired_labels=()
+desired_paths=()
+for entry in "${desired_dock_apps[@]}"; do
+	app_path="${entry%%|*}" label="${entry##*|}"
+	[[ -n "${_dock_ignored[$label]+x}" ]] && continue
+	if [[ ! -d "$app_path" ]]; then
+		warn "App not found at $app_path, skipping dock addition"
+		continue
+	fi
+	desired_labels+=("$label")
+	desired_paths+=("$app_path")
+done
+
+# Read current dock labels in order
+current_labels=()
 while IFS= read -r dock_app; do
 	[[ -z "$dock_app" ]] && continue
-	found=false
-	for desired in "${desired_dock_apps[@]}"; do
-		if [[ "$dock_app" == "$desired" ]]; then
-			found=true
-			break
-		fi
-	done
-	if [[ "$found" == "false" ]]; then
+	current_labels+=("$dock_app")
+done < <(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -o '"file-label" = [^;]*' | sed 's/"file-label" = //' | sed 's/"//g')
+
+# Detect unmanaged apps (in current dock but not desired and not ignored)
+declare -A _desired_set=()
+for label in "${desired_labels[@]}"; do _desired_set["$label"]=1; done
+for dock_app in "${current_labels[@]}"; do
+	if [[ -z "${_desired_set[$dock_app]+x}" && -z "${_dock_ignored[$dock_app]+x}" ]]; then
 		warn "'$dock_app' is in Dock but not managed by setup — remove manually if unwanted"
 	fi
-done < <(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -o '"file-label" = [^;]*' | sed 's/"file-label" = //' | sed 's/"//g')
+done
+
+# Rebuild dock if order or contents differ
+if [[ "${desired_labels[*]}" != "${current_labels[*]}" ]]; then
+	defaults write com.apple.dock persistent-apps -array
+	for app_path in "${desired_paths[@]}"; do
+		defaults write com.apple.dock persistent-apps -array-add \
+			'<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'"$app_path"'</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+	done
+	killall Dock
+fi
 
 # Only add missing login items (wiping + re-adding triggers macOS permission popups)
 login_items=(
