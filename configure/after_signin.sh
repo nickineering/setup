@@ -3,8 +3,8 @@
 #
 # Post-setup configuration for things that need apps to be launched first:
 # - Firefox: needs profile folder to exist (created on first launch)
-# - GitHub CLI: interactive authentication
-# - GPG: key generation and git signing setup
+# - GitHub CLI: authentication and GPG signing
+# - GitLab CLI: authentication and GPG signing (~/work/.gitconfig)
 
 set -euo pipefail
 
@@ -39,7 +39,7 @@ cleanup_on_interrupt() {
 trap cleanup_on_interrupt INT TERM
 
 STEP_CURRENT=0
-STEP_TOTAL=3
+STEP_TOTAL=5
 run_step() {
 	((STEP_CURRENT++)) || true
 	CURRENT_STEP="$1"
@@ -70,9 +70,22 @@ else
 	info "GitHub CLI already authenticated"
 fi
 
-# ── 3. GPG ───────────────────────────────────────────────────────────────────
-run_step "Configuring GPG signing"
-source configure/gpg.sh
+# ── 3. GitLab CLI ────────────────────────────────────────────────────────────
+run_step "Authenticating GitLab CLI"
+if ! glab auth status &>/dev/null 2>&1; then
+	glab auth login
+	success "Configured GitLab CLI"
+else
+	info "GitLab CLI already authenticated"
+fi
+
+# ── 4. GitHub signing ────────────────────────────────────────────────────────
+run_step "Configuring GPG signing (GitHub)"
+source configure/gh_signing.sh
+
+# ── 5. GitLab signing ────────────────────────────────────────────────────────
+run_step "Configuring GPG signing (GitLab)"
+source configure/glab_signing.sh
 
 echo ""
 success "Done!"

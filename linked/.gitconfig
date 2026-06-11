@@ -29,6 +29,8 @@
 	protocol = https
 [include]
 	path = ~/projects/setup/linked/git_aliases.ini  # <--- Save aliases here!
+[includeIf "gitdir:~/work/"]
+	path = ~/work/.gitconfig
 [log]
 	date = relative
 [merge]
