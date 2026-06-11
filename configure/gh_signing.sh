@@ -29,8 +29,6 @@ if [[ -z "$GPG_KEY_ID" ]]; then
 fi
 
 git config --global user.signingkey "$GPG_KEY_ID"
-git config --global commit.gpgsign true
-git config --global tag.gpgsign true
 
 # Add to GitHub if gh is authenticated
 if gh auth status &>/dev/null; then
@@ -39,16 +37,22 @@ if gh auth status &>/dev/null; then
 		info "Requesting write:gpg_key scope..."
 		gh auth refresh -s write:gpg_key
 	fi
-	info "Adding GPG key to GitHub..."
-	if gpg --armor --export "$GPG_KEY_ID" | gh gpg-key add - 2>/dev/null; then
-		success "GPG key added to GitHub"
+	if gh gpg-key list 2>/dev/null | grep -q "$GPG_KEY_ID"; then
+		info "GPG key already on GitHub"
 	else
-		warn "Failed to add GPG key to GitHub. Add manually:"
-		echo -e "  ${dim}1. Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
+		info "Adding GPG key to GitHub..."
+		if gpg --armor --export "$GPG_KEY_ID" | gh gpg-key add - 2>/dev/null; then
+			success "GPG key added to GitHub"
+		else
+			warn "Failed to add GPG key to GitHub. Add manually:"
+			echo -e "  ${dim}1. Run: gh auth refresh -s write:gpg_key${reset}"
+			echo -e "  ${dim}2. Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
+		fi
 	fi
 else
 	warn "GitHub CLI not authenticated. After authenticating, add your GPG key:"
-	echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
+	echo -e "  ${dim}1. Run: gh auth refresh -s write:gpg_key${reset}"
+	echo -e "  ${dim}2. Run: gpg --armor --export $GPG_KEY_ID | gh gpg-key add -${reset}"
 fi
 
 success "GPG signing configured (key: $GPG_KEY_ID)"

@@ -52,3 +52,5 @@
 	enabled = true
 [submodule]
 	recurse = true
+[tag]
+	gpgSign = true

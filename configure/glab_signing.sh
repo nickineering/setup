@@ -44,19 +44,23 @@ git config --file "$local_gitconfig" user.email "$work_email"
 git config --file "$local_gitconfig" user.signingkey "$GPG_KEY_ID"
 
 # Add to GitLab if glab is authenticated
-if glab auth status &>/dev/null 2>&1; then
-	info "Adding GPG key to GitLab..."
-	if gpg --armor --export "$GPG_KEY_ID" | glab api --method POST "user/gpg_keys" -F "key=@-" &>/dev/null; then
-		success "GPG key added to GitLab"
+if glab auth status &>/dev/null; then
+	gpg_pubkey=$(gpg --armor --export "$GPG_KEY_ID")
+	key_fingerprint=$(echo "$gpg_pubkey" | sed -n '3p')
+	if glab api "user/gpg_keys" 2>/dev/null | grep -q "$key_fingerprint"; then
+		info "GPG key already on GitLab"
 	else
-		warn "Failed to add GPG key to GitLab. Add manually:"
-		echo -e "  ${dim}1. Run: gpg --armor --export $GPG_KEY_ID${reset}"
-		echo -e "  ${dim}2. Paste at: https://gitlab.com/-/user_settings/gpg_keys${reset}"
+		info "Adding GPG key to GitLab..."
+		if echo "$gpg_pubkey" | glab api --method POST "user/gpg_keys" -F "key=@-" &>/dev/null; then
+			success "GPG key added to GitLab"
+		else
+			warn "Failed to add GPG key to GitLab. Add manually:"
+			echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | glab api --method POST user/gpg_keys -F key=@-${reset}"
+		fi
 	fi
 else
 	warn "glab not authenticated. After authenticating, add your GPG key:"
-	echo -e "  ${dim}1. Run: gpg --armor --export $GPG_KEY_ID${reset}"
-	echo -e "  ${dim}2. Paste at: https://gitlab.com/-/user_settings/gpg_keys${reset}"
+	echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | glab api --method POST user/gpg_keys -F key=@-${reset}"
 fi
 
 success "Work git identity configured (key: $GPG_KEY_ID)"
