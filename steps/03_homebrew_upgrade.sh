@@ -7,7 +7,7 @@ brew update --quiet </dev/null || warn "brew update failed"
 outdated=$(brew outdated --greedy 2>/dev/null || true)
 if [[ -n "$outdated" ]]; then
 	info "Upgrading: $(echo "$outdated" | tr '\n' ' ')"
-	brew upgrade --greedy || warn "Some packages failed to upgrade"
+	brew upgrade --greedy -y || warn "Some packages failed to upgrade"
 else
 	info "All packages up to date"
 fi
