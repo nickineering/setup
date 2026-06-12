@@ -5,9 +5,9 @@
 # Gated on --clean flag — skipped on normal runs to keep things fast.
 : "${CLEAN_CACHES?}"
 
-if [[ "$CLEAN_CACHES" == "true" ]]; then
-	CURRENT_STEP="cleaning caches"
-	echo -e "${bold}Cleaning caches${reset}"
+if [[ "$CLEAN_CACHES" != "true" ]]; then
+	info "Skipped (use --clean to purge caches)"
+else
 	disk_before=$(df -k / | awk 'NR==2 {print $4}')
 	cleanup_output=$(brew cleanup --prune=7 2>&1)
 	if [[ -z "$cleanup_output" ]]; then
@@ -31,5 +31,5 @@ if [[ "$CLEAN_CACHES" == "true" ]]; then
 	else
 		info "Caches already clean"
 	fi
-	echo ""
 fi
+echo ""

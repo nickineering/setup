@@ -82,10 +82,6 @@ install_missing() {
 		return 0
 	fi
 
-	if [[ "$type" == "cask" ]]; then
-		start_sudo_keepalive
-	fi
-
 	while IFS= read -r item <&3; do
 		[[ -z "$item" ]] && continue
 		echo "› Installing ${type}: ${item}"
@@ -100,8 +96,6 @@ install_missing() {
 			echo "⚠ Failed to install $type: $item" >&2
 		fi
 	done 3<<<"$list"
-
-	stop_sudo_keepalive
 }
 
 # Used unconditionally by these scripts (no command -v guard, no macOS fallback)

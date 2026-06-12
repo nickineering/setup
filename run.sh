@@ -66,7 +66,7 @@ trap cleanup_on_interrupt INT TERM
 
 # Step runner with counter and section grouping
 STEP_CURRENT=0
-STEP_TOTAL=12
+STEP_TOTAL=13
 run_step() {
 	local title="$1" file="$2"
 	((STEP_CURRENT++)) || true
@@ -94,11 +94,11 @@ section "Install"
 
 run_step "Updating setup repo" steps/01_update_repo.sh
 run_step "Configuring Homebrew taps" steps/02_homebrew_taps.sh
-run_step "Upgrading Homebrew packages" steps/03_homebrew_upgrade.sh
-run_step "Installing Homebrew packages" steps/04_homebrew_install.sh
+run_step "Upgrading Homebrew formulae" steps/03_homebrew_upgrade.sh
+run_step "Installing Homebrew formulae" steps/04_homebrew_install.sh
+run_step "Cleaning caches" steps/05_cache_cleanup.sh
 run_step "Updating development tools" steps/10_tool_updates.sh
 run_step "Installing VSCode extensions" steps/09_vscode_extensions.sh
-source steps/05_cache_cleanup.sh
 
 section "Configure"
 
@@ -110,6 +110,19 @@ section "Sync"
 
 run_step "Syncing GitLab repos" steps/11_gitlab_sync.sh
 
-section "System"
+section "Sudo"
 
 run_step "Privileged operations" steps/12_privileged.sh
+run_step "macOS software updates" steps/13_software_update.sh
+
+# ── Done ────────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${bold}${coral}┌─────────────────────────────────┐${reset}"
+echo -e "${bold}${coral}│         Setup complete!         │${reset}"
+echo -e "${bold}${coral}└─────────────────────────────────┘${reset}"
+echo ""
+echo -e "See ${coral}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
+if [[ "${FIREFOX_NEEDS_SETUP:-}" == "1" ]]; then
+	warn "Firefox settings were skipped. Launch Firefox, sign in, then run:"
+	echo -e "  ${coral}$SETUP/configure/after_signin.sh${reset}"
+fi

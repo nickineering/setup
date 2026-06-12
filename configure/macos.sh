@@ -126,6 +126,15 @@ while IFS= read -r dock_app; do
 	current_labels+=("$dock_app")
 done < <(defaults read com.apple.dock persistent-apps 2>/dev/null | grep -o '"file-label" = [^;]*' | sed 's/"file-label" = //' | sed 's/"//g')
 
+# Detect fresh install: Safari is always in the macOS default dock but not in our desired list
+_is_fresh_dock=false
+for dock_app in "${current_labels[@]}"; do
+	if [[ "$dock_app" == "Safari" ]]; then
+		_is_fresh_dock=true
+		break
+	fi
+done
+
 # Detect unmanaged apps (in current dock but not desired and not ignored)
 declare -A _desired_set=()
 for label in "${desired_labels[@]}"; do _desired_set["$label"]=1; done
@@ -135,14 +144,31 @@ for dock_app in "${current_labels[@]}"; do
 	fi
 done
 
-# Rebuild dock if order or contents differ
-if [[ "${desired_labels[*]}" != "${current_labels[*]}" ]]; then
-	defaults write com.apple.dock persistent-apps -array
-	for app_path in "${desired_paths[@]}"; do
-		defaults write com.apple.dock persistent-apps -array-add \
-			'<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'"$app_path"'</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+if $_is_fresh_dock; then
+	# Fresh install: rebuild dock from scratch with only desired apps
+	if [[ "${desired_labels[*]}" != "${current_labels[*]}" ]]; then
+		defaults write com.apple.dock persistent-apps -array
+		for app_path in "${desired_paths[@]}"; do
+			defaults write com.apple.dock persistent-apps -array-add \
+				'<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'"$app_path"'</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+		done
+		killall Dock
+	fi
+else
+	# Existing install: only add missing desired apps, don't remove unmanaged ones
+	declare -A _current_set=()
+	for label in "${current_labels[@]}"; do _current_set["$label"]=1; done
+	_dock_changed=false
+	for i in "${!desired_labels[@]}"; do
+		if [[ -z "${_current_set[${desired_labels[$i]}]+x}" ]]; then
+			defaults write com.apple.dock persistent-apps -array-add \
+				'<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>'"${desired_paths[$i]}"'</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
+			_dock_changed=true
+		fi
 	done
-	killall Dock
+	if $_dock_changed; then
+		killall Dock
+	fi
 fi
 
 # Only add missing login items (wiping + re-adding triggers macOS permission popups)
