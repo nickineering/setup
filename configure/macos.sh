@@ -135,15 +135,6 @@ for dock_app in "${current_labels[@]}"; do
 	fi
 done
 
-# Detect unmanaged apps (in current dock but not desired and not ignored)
-declare -A _desired_set=()
-for label in "${desired_labels[@]}"; do _desired_set["$label"]=1; done
-for dock_app in "${current_labels[@]}"; do
-	if [[ -z "${_desired_set[$dock_app]+x}" && -z "${_dock_ignored[$dock_app]+x}" ]]; then
-		warn "'$dock_app' is in Dock but not managed by setup — remove manually if unwanted"
-	fi
-done
-
 if $_is_fresh_dock; then
 	# Fresh install: rebuild dock from scratch with only desired apps
 	if [[ "${desired_labels[*]}" != "${current_labels[*]}" ]]; then
@@ -156,6 +147,13 @@ if $_is_fresh_dock; then
 	fi
 else
 	# Existing install: only add missing desired apps, don't remove unmanaged ones
+	declare -A _desired_set=()
+	for label in "${desired_labels[@]}"; do _desired_set["$label"]=1; done
+	for dock_app in "${current_labels[@]}"; do
+		if [[ -z "${_desired_set[$dock_app]+x}" && -z "${_dock_ignored[$dock_app]+x}" ]]; then
+			warn "'$dock_app' is in Dock but not managed by setup — remove manually if unwanted"
+		fi
+	done
 	declare -A _current_set=()
 	for label in "${current_labels[@]}"; do _current_set["$label"]=1; done
 	_dock_changed=false
