@@ -18,7 +18,7 @@ if command -v code &>/dev/null; then
 	[[ -n "$removed_extensions" ]] && prompt_uninstall extension "$removed_extensions"
 	echo ""
 
-	echo "› Updating extensions..."
+	action "Updating extensions..."
 	update_output=$(NODE_NO_WARNINGS=1 code --update-extensions 2>&1)
 	if echo "$update_output" | grep -q "ENOTEMPTY"; then
 		# Transient race condition in VSCode CLI — retry once

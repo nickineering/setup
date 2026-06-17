@@ -37,6 +37,7 @@ sky='\033[38;5;117m'
 coral='\033[38;5;209m'
 
 info() { echo -e "${dim}· $1${reset}"; }
+action() { echo -e "${sky}› $1${reset}"; }
 warn() { echo -e "${yellow}⚠ $1${reset}"; }
 
 STEP_CURRENT=0

@@ -20,7 +20,7 @@ if [[ -f "$local_gitconfig" ]]; then
 	work_email=$(git config --file "$local_gitconfig" user.email 2>/dev/null || echo "")
 fi
 if [[ -z "$work_email" ]]; then
-	echo -n "Enter your work email for git commits in ~/work: "
+	prompt "Enter your work email for git commits in ~/work:"
 	read -r work_email </dev/tty
 	if [[ -z "$work_email" ]]; then
 		warn "No email provided, skipping work git identity"

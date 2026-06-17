@@ -121,8 +121,8 @@ echo -e "${bold}${coral}┌─────────────────�
 echo -e "${bold}${coral}│         Setup complete!         │${reset}"
 echo -e "${bold}${coral}└─────────────────────────────────┘${reset}"
 echo ""
-echo -e "See ${coral}$SETUP/MANUAL_STEPS.md${reset} for remaining manual configuration."
+info "See ${coral}$SETUP/MANUAL_STEPS.md${reset}${dim} for remaining manual configuration."
 if [[ "${FIREFOX_NEEDS_SETUP:-}" == "1" ]]; then
 	warn "Firefox settings were skipped. Launch Firefox, sign in, then run:"
-	echo -e "  ${coral}$SETUP/configure/after_signin.sh${reset}"
+	info "  ${coral}$SETUP/configure/after_signin.sh${reset}"
 fi

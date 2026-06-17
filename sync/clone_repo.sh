@@ -42,7 +42,7 @@ _error_reason() {
 
 mkdir -p "$dir/$(dirname "$repo")"
 if output=$(_retry glab repo clone "$group/$repo" "$dir/$repo"); then
-	printf "Cloned: %s\n" "$repo"
+	printf '\033[92m✓ Cloned: %s\033[0m\n' "$repo"
 else
 	reason=$(_error_reason "$output")
 	printf "%s: %s\n" "$repo" "$reason" >&2

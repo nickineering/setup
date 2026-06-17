@@ -74,7 +74,7 @@ sync_repos() {
 	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 		if [[ "$glab_response" == *"auth"* || "$glab_response" == *"401"* || "$glab_response" == *"login"* ]]; then
 			echo -e "${yellow}⚠ GitLab authentication required${reset}"
-			echo -n "Run glab auth login? [Y/n]: "
+			prompt "Run glab auth login? [Y/n]:"
 			read -r -n 1 do_login </dev/tty
 			echo ""
 			if [[ ! "$do_login" =~ ^[Nn]$ ]]; then
@@ -116,7 +116,7 @@ sync_repos() {
 		echo -e "${yellow}⚠ Failed to parse repo list from GitLab${reset}"
 		return 0
 	fi
-	echo -e "Found ${bold}$(_count_lines "$remote_repos")${reset} repos on GitLab"
+	info "Found ${bold}$(_count_lines "$remote_repos")${reset}${dim} repos on GitLab"
 
 	# Filter remote repos with the same exclusions used for local scanning
 	if [[ -n "${GITLAB_EXCLUDE_DIRS:-}" ]]; then
@@ -134,7 +134,7 @@ sync_repos() {
 	new_repos=$(comm -13 <(echo "$local_repos") <(echo "$remote_repos"))
 
 	if [[ -n "$new_repos" ]]; then
-		echo -e "Cloning ${bold}${green}$(_count_lines "$new_repos")${reset} new repos..."
+		action "Cloning ${bold}${green}$(_count_lines "$new_repos")${reset}${sky} new repos..."
 		echo "$new_repos" | xargs -P "$parallel_jobs" -I{} sh -c \
 			'"$1/sync/clone_repo.sh" "$2" "$3" "$4" 2>>"$5"' _ \
 			"$SETUP" {} "$repos_dir" "$GITLAB_GROUP" "$clone_errors"
@@ -144,7 +144,7 @@ sync_repos() {
 			echo -e "${yellow}⚠ Failed to clone ${fail_count} repo(s):${reset}"
 			# Group by reason (text after first ": ")
 			sort -t: -k2 "$clone_errors" | while IFS= read -r line; do
-				printf "  %s\n" "$line"
+				echo -e "  ${dim}$line${reset}"
 			done
 		fi
 		repo_list=$(_find_repos)
@@ -165,17 +165,17 @@ sync_repos() {
 			echo -e "${yellow}⚠ About to delete ${bold}${deleted_count}${reset}${yellow} repos - this seems high!${reset}"
 			echo -e "${dim}$deleted_repos${reset}"
 			echo ""
-			echo -n "Type 'yes' to confirm mass deletion: "
+			prompt "Type 'yes' to confirm mass deletion:"
 			read -r confirm </dev/tty
 			[[ "$confirm" == "yes" ]] || {
-				echo "– Aborted."
+				info "Aborted."
 				deleted_repos=""
 			}
 		else
 			echo -e "${yellow}Repos no longer on GitLab:${reset}"
 			echo -e "${dim}$deleted_repos${reset}"
 			echo ""
-			echo -n "Delete these? [y/N]: "
+			prompt "Delete these? [y/N]:"
 			read -r -n 1 confirm </dev/tty
 			echo ""
 			[[ "$confirm" =~ ^[Yy]$ ]] || deleted_repos=""
@@ -214,10 +214,10 @@ sync_repos() {
 		echo -e "${bold}› Stale branches (merged/deleted upstream)${reset}"
 		local stale_count
 		stale_count=$(wc -l <"$stale_branches_file" | tr -d ' ')
-		echo -e "Found ${bold}${yellow}${stale_count}${reset} stale branch(es)"
+		info "Found ${bold}${yellow}${stale_count}${reset}${dim} stale branch(es)"
 		echo ""
 		while IFS=: read -r repo branch; do
-			printf "Delete ${yellow}%s${reset} from ${coral}%s${reset}? [y/N]: " "$branch" "$repo"
+			printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
 			read -r -n 1 confirm </dev/tty
 			echo ""
 			if [[ "$confirm" =~ ^[Yy]$ ]]; then

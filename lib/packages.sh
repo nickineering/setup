@@ -84,7 +84,7 @@ install_missing() {
 
 	while IFS= read -r item <&3; do
 		[[ -z "$item" ]] && continue
-		echo "› Installing ${type}: ${item}"
+		action "Installing ${type}: ${item}"
 		local install_cmd
 		case "$type" in
 		package) install_cmd=(brew install) ;;
@@ -131,7 +131,10 @@ prompt_uninstall() {
 		safe_to_remove="${safe_to_remove%$'\n'}"
 
 		if [[ -n "$protected_found" ]]; then
-			echo -e "Skipping protected packages:\n$(echo -e "$protected_found" | sed 's/^/  /')"
+			info "Skipping protected packages:"
+			echo -e "$protected_found" | while IFS= read -r line; do
+				[[ -n "$line" ]] && info "  $line"
+			done
 		fi
 	fi
 
@@ -140,23 +143,23 @@ prompt_uninstall() {
 	local count
 	count=$(echo "$safe_to_remove" | wc -l | tr -d ' ')
 
-	echo "The following ${type}s were removed from state file:"
-	echo "$safe_to_remove" | while IFS= read -r item; do echo "  $item"; done
+	echo -e "${bold}The following ${type}s were removed from state file:${reset}"
+	echo "$safe_to_remove" | while IFS= read -r item; do info "$item"; done
 
 	if [[ "$count" -gt "$MAX_SAFE_UNINSTALLS" ]]; then
 		echo -e "${yellow}⚠ About to uninstall ${bold}${count}${reset}${yellow} ${type}s - this seems high!${reset}"
-		echo -n "Type 'yes' to confirm mass uninstall: "
+		prompt "Type 'yes' to confirm mass uninstall:"
 		read -r confirm </dev/tty
 		[[ "$confirm" == "yes" ]] || {
-			echo "– Aborted."
+			info "Aborted."
 			return 0
 		}
 	else
-		echo -n "Uninstall these ${type}s? [y/N]: "
+		prompt "Uninstall these ${type}s? [y/N]:"
 		read -r -n 1 confirm </dev/tty
 		echo ""
 		[[ "$confirm" =~ ^[Yy]$ ]] || {
-			echo "– Skipped uninstallation."
+			info "Skipped uninstallation."
 			return 0
 		}
 	fi

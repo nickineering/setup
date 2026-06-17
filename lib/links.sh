@@ -24,9 +24,9 @@ create_link() {
 	backup_or_delete "$target" || true # may fail if target is in a read-only dir; proceed anyway
 	if ln -sfn "$source" "$target"; then
 		if [[ -n "$label" ]]; then
-			echo "✓ Linked: ${label}"
+			success "Linked: ${label}"
 		else
-			echo "✓ Linked: $(basename "$target")"
+			success "Linked: $(basename "$target")"
 		fi
 		((links_created++)) || true
 	else

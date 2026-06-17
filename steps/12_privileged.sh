@@ -49,12 +49,12 @@ fi
 # ── Prompt once (only if there's something to do) ───────────────────────────
 
 if [[ ${#sudo_tasks[@]} -gt 0 ]]; then
-	echo "The following operations require sudo:"
+	echo -e "${bold}The following operations require sudo:${reset}"
 	for task in "${sudo_tasks[@]}"; do
-		echo "  · $task"
+		info "$task"
 	done
 	echo ""
-	echo -n "Continue? [y/N]: "
+	prompt "Continue? [y/N]:"
 	read -r -n 1 run_sudo </dev/tty
 	echo ""
 
@@ -98,7 +98,7 @@ if [[ "$needs_womp" == "true" ]]; then
 	sudo pmset -a womp 1 || warn "Failed to set wake on LAN"
 fi
 if [[ "$needs_lockscreen" == "true" ]]; then
-	echo -n "Enter lock screen message (e.g. your email for if laptop is found): "
+	prompt "Enter lock screen message (e.g. your email for if laptop is found):"
 	read -r lockscreen_msg </dev/tty
 	if [[ -n "$lockscreen_msg" ]]; then
 		sudo defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText "$lockscreen_msg"

@@ -5,15 +5,21 @@
 # runs in a background subshell writing to a temp file; results print in fixed
 # order after all complete so output stays deterministic.
 
+# Inline formatting for subshells (can't use helpers across process boundaries)
+_info="\033[38;5;245m·"
+_success="\033[92m✓"
+_warn="\033[33m⚠"
+_reset="\033[0m"
+
 tool_update_dir=$(mktemp -d)
 
 if command -v uv &>/dev/null; then
 	(
-		uv_output=$(uv tool upgrade --all 2>/dev/null) || echo "⚠ uv tool upgrade failed"
+		uv_output=$(uv tool upgrade --all 2>/dev/null) || echo -e "${_warn} uv tool upgrade failed${_reset}"
 		if [[ -z "$uv_output" || "$uv_output" == "Nothing to upgrade" ]]; then
-			echo "· uv tools: up to date"
+			echo -e "${_info} uv tools: up to date${_reset}"
 		else
-			echo "✓ uv tools: updated"
+			echo -e "${_success} uv tools: updated${_reset}"
 		fi
 	) >"$tool_update_dir/uv" 2>&1 &
 fi
@@ -22,12 +28,12 @@ if command -v tldr &>/dev/null; then
 	(
 		cache_dir="${HOME}/Library/Caches/tealdeer"
 		before=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
-		tldr --update >/dev/null 2>&1 || echo "⚠ tldr update failed"
+		tldr --update >/dev/null 2>&1 || echo -e "${_warn} tldr update failed${_reset}"
 		after=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
 		if [[ "$before" != "$after" && "$before" != "0" ]]; then
-			echo "✓ tldr: pages updated"
+			echo -e "${_success} tldr: pages updated${_reset}"
 		else
-			echo "· tldr: up to date"
+			echo -e "${_info} tldr: up to date${_reset}"
 		fi
 	) >"$tool_update_dir/tldr" 2>&1 &
 fi
@@ -35,11 +41,11 @@ fi
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 	(
-		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo "⚠ Oh My Zsh update failed"
+		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo -e "${_warn} Oh My Zsh update failed${_reset}"
 		if [[ "$omz_output" == *"already at the latest"* ]]; then
-			echo "· Oh My Zsh: up to date"
+			echo -e "${_info} Oh My Zsh: up to date${_reset}"
 		else
-			echo "✓ Oh My Zsh: updated"
+			echo -e "${_success} Oh My Zsh: updated${_reset}"
 		fi
 	) >"$tool_update_dir/omz" 2>&1 &
 fi
@@ -48,16 +54,16 @@ fi
 	before=$(claude --version 2>/dev/null || echo "none")
 	install_script=$(curl -fsSL https://claude.ai/install.sh 2>&1)
 	if [[ $? -ne 0 ]]; then
-		echo "⚠ Claude Code install failed: $install_script"
+		echo -e "${_warn} Claude Code install failed: $install_script${_reset}"
 	else
 		echo "$install_script" | bash >/dev/null 2>&1
 		after=$(claude --version 2>/dev/null || echo "none")
 		if [[ "$before" == "none" ]]; then
-			echo "✓ Claude Code: installed"
+			echo -e "${_success} Claude Code: installed${_reset}"
 		elif [[ "$before" != "$after" ]]; then
-			echo "✓ Claude Code: updated"
+			echo -e "${_success} Claude Code: updated${_reset}"
 		else
-			echo "· Claude Code: up to date"
+			echo -e "${_info} Claude Code: up to date${_reset}"
 		fi
 	fi
 ) >"$tool_update_dir/claude" 2>&1 &
@@ -67,17 +73,17 @@ if command -v go &>/dev/null; then
 		gopls_before=$(gopls version 2>/dev/null | head -1 || echo "none")
 		staticcheck_before=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
 
-		go install golang.org/x/tools/gopls@latest 2>/dev/null || echo "⚠ gopls update failed"
-		go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo "⚠ staticcheck update failed"
+		go install golang.org/x/tools/gopls@latest 2>/dev/null || echo -e "${_warn} gopls update failed${_reset}"
+		go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || echo -e "${_warn} staticcheck update failed${_reset}"
 
 		gopls_after=$(gopls version 2>/dev/null | head -1 || echo "none")
 		staticcheck_after=$(staticcheck -version 2>/dev/null | head -1 || echo "none")
 
 		if [[ "$gopls_before" != "$gopls_after" || "$staticcheck_before" != "$staticcheck_after" ]]; then
-			[[ "$gopls_before" != "$gopls_after" ]] && echo "✓ Updated: gopls"
-			[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo "✓ Updated: staticcheck"
+			[[ "$gopls_before" != "$gopls_after" ]] && echo -e "${_success} Updated: gopls${_reset}"
+			[[ "$staticcheck_before" != "$staticcheck_after" ]] && echo -e "${_success} Updated: staticcheck${_reset}"
 		else
-			echo "· Go tools: up to date"
+			echo -e "${_info} Go tools: up to date${_reset}"
 		fi
 	) >"$tool_update_dir/go" 2>&1 &
 fi

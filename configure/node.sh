@@ -27,7 +27,7 @@ fi
 
 NEW_NODE_VERSION=$(nvm current)
 if [ "$PREVIOUS_NODE_VERSION" != "$NEW_NODE_VERSION" ] && [ "$PREVIOUS_NODE_VERSION" != "none" ] && [ "$PREVIOUS_NODE_VERSION" != "system" ]; then
-	echo -n "Uninstall old Node version ${PREVIOUS_NODE_VERSION}? [y/N]: "
+	prompt "Uninstall old Node version ${PREVIOUS_NODE_VERSION}? [y/N]:"
 	read -r -n 1 confirm </dev/tty
 	echo ""
 	if [[ "$confirm" =~ ^[Yy]$ ]]; then

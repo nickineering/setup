@@ -3,9 +3,9 @@
 
 if ! git config --global user.name &>/dev/null; then
 	echo -e "${bold}Git identity not configured. Setting up...${reset}"
-	echo -n "Enter your full name for git commits: "
+	prompt "Enter your full name for git commits:"
 	read -r git_name </dev/tty
-	echo -n "Enter your email for git commits: "
+	prompt "Enter your email for git commits:"
 	read -r git_email </dev/tty
 	git config --global user.name "$git_name"
 	git config --global user.email "$git_email"

@@ -15,7 +15,7 @@ while IFS= read -r file; do
 	target=~/"$file"
 	if [[ -L "$target" ]]; then
 		trash "$target"
-		echo "✓ Unlinked: $file"
+		success "Unlinked: $file"
 		((links_removed++)) || true
 	fi
 done <<<"$removed_links"
@@ -47,7 +47,7 @@ while IFS= read -r file; do
 	[[ -z "$file" || "$file" == \#* ]] && continue
 	if [[ ! -e ~/"$file" ]]; then
 		cp "$SETUP/copied/$file" ~/
-		echo "✓ Created: ~/$file (from template)"
+		success "Created: ~/$file (from template)"
 		((files_copied++)) || true
 	fi
 done <"$SETUP"/state/copied_files.txt

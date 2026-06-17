@@ -4,13 +4,13 @@
 # Checks for macOS system updates and offers to install them.
 # Separated from other privileged ops since updates are large and slow.
 
-echo "Checking for macOS system updates..."
+action "Checking for macOS system updates..."
 available_updates=$(softwareupdate -l 2>&1 || true)
 
 if echo "$available_updates" | grep -q "^\*"; then
 	echo "$available_updates" | grep "^\*"
 	echo ""
-	echo -n "Install these updates? [y/N]: "
+	prompt "Install these updates? [y/N]:"
 	read -r -n 1 install_updates </dev/tty
 	echo ""
 	if [[ "$install_updates" =~ ^[Yy]$ ]]; then

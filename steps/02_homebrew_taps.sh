@@ -14,7 +14,7 @@ taps_added=0
 if [[ -n "$missing_taps" ]]; then
 	while IFS= read -r tap <&3; do
 		[[ -z "$tap" ]] && continue
-		echo "Adding tap: ${tap}"
+		action "Adding tap: ${tap}"
 		brew tap "$tap" >/dev/null 2>&1 || warn "Failed to tap ${tap}"
 		((taps_added++)) || true
 	done 3<<<"$missing_taps"
@@ -30,7 +30,7 @@ done 3<<<"$desired_taps"
 if [[ -n "$removed_taps" ]]; then
 	while IFS= read -r tap <&3; do
 		[[ -z "$tap" ]] && continue
-		echo "Removing tap: ${tap}"
+		action "Removing tap: ${tap}"
 		brew untap "$tap" 2>/dev/null || warn "Failed to untap ${tap}"
 	done 3<<<"$removed_taps"
 fi
