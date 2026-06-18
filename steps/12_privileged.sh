@@ -70,11 +70,12 @@ else
 	info "Nothing to do"
 fi
 
-# ── Cask operations (brew handles its own sudo prompt) ──────────────────────
+# ── Cask operations (SUDO_ASKPASS prevents brew's forked process from
+# prompting for a password it can't receive — failures are non-fatal) ───────
 
 if [[ -n "$outdated_casks" ]]; then
 	info "Upgrading casks: $(echo "$outdated_casks" | tr '\n' ' ')"
-	brew upgrade --cask --greedy --no-quit -y || warn "Some casks failed to upgrade"
+	SUDO_ASKPASS=/usr/bin/false brew upgrade --cask --greedy --no-quit -y || warn "Some casks failed to upgrade"
 fi
 
 if [[ -n "$missing_casks" ]]; then

@@ -55,12 +55,10 @@ set_difference() {
 	echo "$full" | grep -vxF -f <(echo "$exclude") || true
 }
 
-# Keeps sudo credential cached until the calling function finishes.
-# Call once before a loop that needs repeated sudo; kill via the trap or
-# stop_sudo_keepalive when done.
+# Keeps sudo credential cached until the parent process exits.
+# Call once after `sudo -v`; kill via the trap or stop_sudo_keepalive when done.
 start_sudo_keepalive() {
-	sudo -v
-	(while sudo -vn 2>/dev/null; do sleep 30; done) &
+	(while kill -0 $$ 2>/dev/null; do sudo -vn 2>/dev/null; sleep 10; done) &
 	SUDO_KEEPALIVE_PID=$!
 }
 
