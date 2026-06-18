@@ -54,6 +54,8 @@
     }
   ],
   "claudeCode.useTerminal": false,
+  "codesnap.boxShadow": "rgba(0, 0, 0, 0.55) 0px 10px 22px",
+  "codesnap.transparentBackground": true,
   "comment-divider.shouldLengthIncludeIndent": true,
   "css.lint.duplicateProperties": "warning",
   "diffEditor.ignoreTrimWhitespace": false,
