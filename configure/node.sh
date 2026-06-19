@@ -50,9 +50,14 @@ if [[ -f "$NPM_STATE_FILE" ]]; then
 	if [[ -n "$missing_npm" ]]; then
 		install_missing npm "$missing_npm"
 		# Puppeteer's postinstall is blocked by npm allow-scripts;
-		# explicitly download Chromium so mermaid-cli can render
+		# explicitly download browsers so mermaid-cli can render.
 		if echo "$missing_npm" | grep -q "@mermaid-js/mermaid-cli"; then
-			npx --yes puppeteer browsers install chrome >/dev/null 2>&1 || warn "Failed to install Puppeteer browser"
+			# Clear corrupted cache entries (folder exists but binary missing)
+			for browser_dir in "$HOME/.cache/puppeteer"/chrome-headless-shell/*/chrome-headless-shell-*/; do
+				[[ -d "$browser_dir" ]] || continue
+				[[ -x "${browser_dir}chrome-headless-shell" ]] || rm -rf "$(dirname "$browser_dir")"
+			done
+			npx --yes puppeteer browsers install chrome chrome-headless-shell >/dev/null 2>&1 || warn "Failed to install Puppeteer browsers"
 		fi
 	fi
 
