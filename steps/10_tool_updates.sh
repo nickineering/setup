@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# Updates uv, tldr, Oh My Zsh, Claude Code, and Go tools concurrently. Each
-# runs in a background subshell writing to a temp file; results print in fixed
-# order after all complete so output stays deterministic.
+# Updates uv, tldr, Oh My Zsh, Claude Code, and Go tools concurrently. Each runs
+# in a background subshell writing to a temp file; results print in fixed order
+# after all complete so output stays deterministic.
 
 # Inline formatting for subshells (can't use helpers across process boundaries)
 _info="\033[38;5;245m·"
@@ -51,19 +51,25 @@ if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 fi
 
 (
-	before=$(claude --version 2>/dev/null || echo "none")
-	install_script=$(curl -fsSL https://claude.ai/install.sh 2>&1)
-	if [[ $? -ne 0 ]]; then
-		echo -e "${_warn} Claude Code install failed: $install_script${_reset}"
-	else
-		echo "$install_script" | bash >/dev/null 2>&1
-		after=$(claude --version 2>/dev/null || echo "none")
-		if [[ "$before" == "none" ]]; then
-			echo -e "${_success} Claude Code: installed${_reset}"
-		elif [[ "$before" != "$after" ]]; then
-			echo -e "${_success} Claude Code: updated${_reset}"
+	if command -v claude &>/dev/null; then
+		before=$(claude --version 2>/dev/null)
+		update_output=$(claude update 2>&1)
+		if [[ $? -ne 0 ]]; then
+			echo -e "${_warn} Claude Code update failed: $update_output${_reset}"
 		else
-			echo -e "${_info} Claude Code: up to date${_reset}"
+			after=$(claude --version 2>/dev/null)
+			if [[ "$before" != "$after" ]]; then
+				echo -e "${_success} Claude Code: updated ($after)${_reset}"
+			else
+				echo -e "${_info} Claude Code: up to date${_reset}"
+			fi
+		fi
+	else
+		install_output=$(curl -fsSL https://claude.ai/install.sh 2>&1 | bash 2>&1)
+		if [[ $? -ne 0 ]]; then
+			echo -e "${_warn} Claude Code install failed: $install_output${_reset}"
+		else
+			echo -e "${_success} Claude Code: installed${_reset}"
 		fi
 	fi
 ) >"$tool_update_dir/claude" 2>&1 &
