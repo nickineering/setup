@@ -18,10 +18,13 @@ Run `git status` to see the working tree.
 **If this session has prior context** (you know which files you modified): stage
 only files Claude modified this session. Leave other unstaged files alone.
 
-**If this is a fresh session** (no prior context about what was modified): stage
-all unstaged and untracked files — they are yours to commit. The only exception
-is files that are obviously disposable (e.g., scratch files, `.DS_Store`). Ask
-before excluding anything non-obvious.
+**If this is a fresh session** (no prior context about what was modified):
+
+- If there are already-staged changes, commit only those — don't stage anything
+  else.
+- If there are no staged changes, stage all unstaged and untracked files — they
+  are yours to commit. The only exception is files that are obviously disposable
+  (e.g., scratch files, `.DS_Store`). Ask before excluding anything non-obvious.
 
 Already-staged files stay staged regardless of session context.
 
