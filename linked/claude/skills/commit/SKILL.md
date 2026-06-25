@@ -15,18 +15,21 @@ the full workflow and rules below in the agent's prompt.
 
 Run `git status` to see the working tree.
 
-**If this session has prior context** (you know which files you modified): stage
-only files Claude modified this session. Leave other unstaged files alone.
+**If there are already-staged changes**, commit only those — don't stage
+anything else. Staged files are the user's signal of what to commit. This
+applies even if Claude has other unstaged modifications from this session.
 
-**If this is a fresh session** (no prior context about what was modified):
+**Exception:** if Claude staged all of the currently-staged files itself during
+this session (e.g., a rename required `git mv` which stages both paths), then
+also stage any other Claude-modified files — the staging doesn't represent user
+intent in that case.
 
-- If there are already-staged changes, commit only those — don't stage anything
-  else.
-- If there are no staged changes, stage all unstaged and untracked files — they
-  are yours to commit. The only exception is files that are obviously disposable
-  (e.g., scratch files, `.DS_Store`). Ask before excluding anything non-obvious.
+**If nothing is staged:**
 
-Already-staged files stay staged regardless of session context.
+- With prior session context: stage all files Claude modified this session.
+- Fresh session (no context): stage all unstaged and untracked files. The only
+  exception is files that are obviously disposable (e.g., scratch files,
+  `.DS_Store`). Ask before excluding anything non-obvious.
 
 Never use `git add .`, `git add -A`, or wildcard patterns — name files
 explicitly.
@@ -91,9 +94,10 @@ git commit -m "<title>" && git push
 
 ## Rules
 
-- In a fresh session, commit all changes — don't silently skip files
-- Never use `git add .`, `git add -A`, or wildcard patterns
+- Staged changes are the user's selection — never add unstaged files alongside
+  them (unless Claude staged everything itself)
 - Never unstage files that were already staged
+- Never use `git add .`, `git add -A`, or wildcard patterns
 - Never add Co-Authored-By trailers for Claude
 - All adds, the commit, and the push must be a single `&&`-chained Bash command
   per commit
