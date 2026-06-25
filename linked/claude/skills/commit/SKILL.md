@@ -1,5 +1,5 @@
 ---
-description: Stage Claude's changes, commit with a generated message, and push
+description: Commit all work with a generated message and push
 ---
 
 Commit and push changes.
@@ -11,16 +11,22 @@ the full workflow and rules below in the agent's prompt.
 
 ## Workflow
 
-### 1. Identify the three categories of files
+### 1. Determine what to commit
 
-Run `git status` to see the working tree. Every file falls into one of:
+Run `git status` to see the working tree.
 
-1. **Already staged** — files in the index before this skill runs. Leave as-is.
-2. **Claude-modified unstaged** — files Claude touched this session. Stage
-   these.
-3. **Other unstaged/untracked** — files Claude did not touch. Never stage these.
+**If this session has prior context** (you know which files you modified): stage
+only files Claude modified this session. Leave other unstaged files alone.
 
-Only `git add` files from category 2. Never use `git add .` or `git add -A`.
+**If this is a fresh session** (no prior context about what was modified): stage
+all unstaged and untracked files — they are yours to commit. The only exception
+is files that are obviously disposable (e.g., scratch files, `.DS_Store`). Ask
+before excluding anything non-obvious.
+
+Already-staged files stay staged regardless of session context.
+
+Never use `git add .`, `git add -A`, or wildcard patterns — name files
+explicitly.
 
 ### 2. Review changes
 
@@ -82,12 +88,12 @@ git commit -m "<title>" && git push
 
 ## Rules
 
-- Only `git add` files Claude modified this session — never stage other files
+- In a fresh session, commit all changes — don't silently skip files
 - Never use `git add .`, `git add -A`, or wildcard patterns
 - Never unstage files that were already staged
 - Never add Co-Authored-By trailers for Claude
-- Never wait for permission between add, commit, and push
-- Always push immediately after committing
+- All adds, the commit, and the push must be a single `&&`-chained Bash command
+  per commit
 - When splitting, order commits so dependencies come first
 - When splitting, use explicit pathspecs in `git commit` to control which staged
   files go into each commit
