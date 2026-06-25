@@ -1,0 +1,50 @@
+{
+  "$schema": "https://ccusage.com/config-schema.json",
+  "defaults": {
+    "timezone": "Europe/London",
+    "breakdown": true,
+    "pricingOverrides": {
+      "claude-opus-4-6": {
+        "inputCostPerToken": 0.0000055,
+        "outputCostPerToken": 0.0000275,
+        "cacheCreationInputTokenCost": 0.000006875,
+        "cacheReadInputTokenCost": 0.00000055
+      },
+      "claude-opus-4-7": {
+        "inputCostPerToken": 0.0000055,
+        "outputCostPerToken": 0.0000275,
+        "cacheCreationInputTokenCost": 0.000006875,
+        "cacheReadInputTokenCost": 0.00000055
+      },
+      "claude-opus-4-8": {
+        "inputCostPerToken": 0.0000055,
+        "outputCostPerToken": 0.0000275,
+        "cacheCreationInputTokenCost": 0.000006875,
+        "cacheReadInputTokenCost": 0.00000055
+      },
+      "claude-sonnet-4-5-20250929": {
+        "inputCostPerToken": 0.0000033,
+        "outputCostPerToken": 0.0000165,
+        "cacheCreationInputTokenCost": 0.000004125,
+        "cacheReadInputTokenCost": 0.00000033
+      },
+      "claude-sonnet-4-6": {
+        "inputCostPerToken": 0.0000033,
+        "outputCostPerToken": 0.0000165,
+        "cacheCreationInputTokenCost": 0.000004125,
+        "cacheReadInputTokenCost": 0.00000033
+      },
+      "claude-haiku-4-5-20251001": {
+        "inputCostPerToken": 0.0000011,
+        "outputCostPerToken": 0.0000055,
+        "cacheCreationInputTokenCost": 0.000001375,
+        "cacheReadInputTokenCost": 0.00000011
+      }
+    }
+  },
+  "commands": {
+    "daily": {
+      "instances": true
+    }
+  }
+}

@@ -24,6 +24,13 @@ following manual steps to finish setting up your Mac:
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.
 
+## Post-install checks
+
+1. Run `ccusage claude daily` and verify costs appear. If a new model has
+   shipped since the last update to `linked/claude/ccusage.json`, add its entry
+   with standard Bedrock rates (10% over API pricing). Rates never change
+   mid-lifecycle — only new models need adding.
+
 ## Machine-specific configuration
 
 Configure machine-specific options in `~/.env.sh`:

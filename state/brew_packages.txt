@@ -2,6 +2,7 @@ autojump                # Quickly jump among directories
 bash                    # Modern Bash (macOS ships 3.2 from 2007)
 bash-completion         # Autocomplete for Git
 bats-core               # Bash Automated Testing System
+ccusage                 # Coding agent usage and cost tracking
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust

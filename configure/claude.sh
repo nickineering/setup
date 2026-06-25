@@ -14,6 +14,8 @@ mkdir -p "$CLAUDE_DIR"
 # Symlink settings, instructions, and skills
 create_link "$CLAUDE_DOTFILES/settings.json" "$CLAUDE_DIR/settings.json" "claude/settings.json"
 create_link "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md" "claude/CLAUDE.md"
+# Pricing overrides use standard Bedrock rates (10% over API). Add new models at launch; rates never change mid-lifecycle.
+create_link "$CLAUDE_DOTFILES/ccusage.json" "$CLAUDE_DIR/ccusage.json" "claude/ccusage.json"
 create_link "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills" "claude/skills"
 
 # Copy CLAUDE.local.md template if it doesn't exist
