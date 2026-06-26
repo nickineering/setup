@@ -3,7 +3,17 @@
   "permissions": {
     "ask": [
       "Edit(**/*settings*.json)",
-      "Write(**/*settings*.json)"
+      "Write(**/*settings*.json)",
+      "Edit(**/hooks/**)",
+      "Write(**/hooks/**)",
+      "Edit(**/policy.conf)",
+      "Write(**/policy.conf)",
+      "Edit(**/wrappers/**)",
+      "Write(**/wrappers/**)",
+      "Edit(**/CLAUDE.md)",
+      "Write(**/CLAUDE.md)",
+      "Edit(**/terminator.sh)",
+      "Write(**/terminator.sh)"
     ],
     "allow": [
       "Bash(~/.claude/skills/cost/cost.sh*)",
