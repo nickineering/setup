@@ -1,6 +1,10 @@
 {
   "env": {},
   "permissions": {
+    "ask": [
+      "Edit(**/*settings*.json)",
+      "Write(**/*settings*.json)"
+    ],
     "allow": [
       "Bash(~/.claude/skills/cost/cost.sh*)",
       "Bash(awk *)",
