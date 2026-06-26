@@ -23,6 +23,13 @@ mkdir -p "$HOME/.local/bin"
 create_link "$CLAUDE_DOTFILES/terminator.sh" "$HOME/.local/bin/terminator" "terminator"
 create_link "$CLAUDE_DOTFILES/claude-aws.sh" "$HOME/.local/bin/claude-aws" "claude-aws"
 
+# PATH wrappers (extensionless in bin/ — terminator prepends this to PATH)
+for wrapper in "$CLAUDE_DOTFILES"/bin/*.sh; do
+	[[ -f "$wrapper" ]] || continue
+	name="$(basename "${wrapper%.sh}")"
+	create_link "$wrapper" "$CLAUDE_DOTFILES/bin/$name" "bin/$name"
+done
+
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
 	cp "$CLAUDE_COPIED/CLAUDE.local.md" "$CLAUDE_DIR/CLAUDE.local.md"
