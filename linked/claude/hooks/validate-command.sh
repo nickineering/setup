@@ -11,6 +11,20 @@ if [[ "$TOOL" != "Bash" ]]; then
 	exit 0
 fi
 
+# --- Normalize command for pattern matching ---
+# Strip leading KEY=value env assignments and resolve command to basename.
+# Catches: NO_PROXY=github.com /usr/bin/git push → git push
+if [[ -n "$COMMAND" ]]; then
+	STRIPPED=$(echo "$COMMAND" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]]*[[:space:]]\)*//')
+	CMD_FIRST=$(echo "$STRIPPED" | awk '{print $1}')
+	CMD_BASE=$(basename "$CMD_FIRST")
+	if [[ "$STRIPPED" == *" "* ]]; then
+		COMMAND="$CMD_BASE ${STRIPPED#* }"
+	else
+		COMMAND="$CMD_BASE"
+	fi
+fi
+
 # =============================================================================
 # HIGH-PRIORITY BYPASS PREVENTION
 # =============================================================================
@@ -77,8 +91,7 @@ validate_chained_commands "$COMMAND"
 
 # git commit/tag -m content is just a message string, not a filesystem operation.
 # System paths or redirects mentioned in commit messages trigger false positives.
-# But still block --amend which rewrites history.
-if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]] && [[ ! "$COMMAND" =~ --amend ]]; then
+if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]]; then
 	exit 0
 fi
 
@@ -258,12 +271,6 @@ if [[ "$COMMAND" =~ ^rm[[:space:]] ]]; then
 	exit 2
 fi
 
-# Block git branch force deletion (-D), allow safe deletion (-d)
-if [[ "$COMMAND" =~ ^git[[:space:]]branch[[:space:]]+-[a-zA-Z]*D ]]; then
-	echo "BLOCKED: git branch -D (force delete) not allowed. Use -d for merged branches." >&2
-	exit 2
-fi
-
 # Block cp/mv without -n/--no-clobber flag to prevent accidental overwrites
 # Exception: allow without -n when destination is temp directory (/tmp or /var/folders)
 if [[ "$COMMAND" =~ ^cp[[:space:]] ]]; then
@@ -315,31 +322,6 @@ if [[ "$COMMAND" =~ '>>'[[:space:]]*([^[:space:]]+) ]]; then
 				exit 2
 			fi
 		fi
-	fi
-fi
-
-# CDK: only allow read-only commands (list, diff, synth, doctor, docs)
-if [[ "$COMMAND" =~ ^cdk[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ [[:space:]](deploy|destroy|bootstrap) ]]; then
-		echo "BLOCKED: Only read-only CDK commands allowed (list, diff, synth)" >&2
-		exit 2
-	fi
-fi
-
-# SAM: only allow read-only commands (validate, build, local, logs, list)
-if [[ "$COMMAND" =~ ^sam[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ [[:space:]](deploy|delete|sync) ]]; then
-		echo "BLOCKED: Only read-only SAM commands allowed (validate, build, local, logs)" >&2
-		exit 2
-	fi
-fi
-
-# Terraform: only allow read-only commands (handles -chdir flag before subcommand)
-if [[ "$COMMAND" =~ ^terraform[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ [[:space:]](apply|destroy|import|taint|untaint)([[:space:]]|$) ]] ||
-		[[ "$COMMAND" =~ [[:space:]]state[[:space:]]+(rm|mv|push) ]]; then
-		echo "BLOCKED: Only read-only terraform commands allowed (plan, init, validate, fmt, output, show, state list/show)" >&2
-		exit 2
 	fi
 fi
 
@@ -428,32 +410,6 @@ if [[ "$COMMAND" =~ ^install[[:space:]] ]]; then
 	exit 2
 fi
 
-# Block destructive git operations
-if [[ "$COMMAND" =~ ^git[[:space:]]reset[[:space:]].*--hard ]]; then
-	echo "BLOCKED: git reset --hard discards uncommitted changes" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]clean ]]; then
-	echo "BLOCKED: git clean deletes untracked files permanently" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]push ]] && [[ "$COMMAND" =~ --force|[[:space:]]-[a-zA-Z]*f ]]; then
-	echo "BLOCKED: git push --force can overwrite remote history" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]checkout[[:space:]].*--[[:space:]] ]]; then
-	echo "BLOCKED: git checkout -- discards working changes" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]restore[[:space:]] ]] && ! [[ "$COMMAND" =~ --staged ]]; then
-	echo "BLOCKED: git restore discards working changes. Use --staged to unstage only." >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]stash[[:space:]]+(drop|clear) ]]; then
-	echo "BLOCKED: git stash drop/clear can permanently lose stashed work" >&2
-	exit 2
-fi
-
 # Block destructive commands in docker exec
 if [[ "$COMMAND" =~ ^docker[[:space:]]exec[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](rm|dd)[[:space:]] ]]; then
 	echo "BLOCKED: Destructive command in docker exec" >&2
@@ -486,18 +442,6 @@ fi
 # Block rsync --delete (mass deletion)
 if [[ "$COMMAND" =~ ^rsync[[:space:]] ]] && [[ "$COMMAND" =~ --delete ]]; then
 	echo "BLOCKED: rsync --delete can cause mass deletion" >&2
-	exit 2
-fi
-
-# Block git commit --amend (rewrites history)
-if [[ "$COMMAND" =~ ^git[[:space:]]commit[[:space:]] ]] && [[ "$COMMAND" =~ --amend ]]; then
-	echo "BLOCKED: git commit --amend rewrites recent history" >&2
-	exit 2
-fi
-
-# Block git rebase (history rewriting)
-if [[ "$COMMAND" =~ ^git[[:space:]]rebase ]]; then
-	echo "BLOCKED: git rebase rewrites commit history" >&2
 	exit 2
 fi
 
