@@ -195,6 +195,18 @@
       "Write(**/.git/**)"
     ]
   },
+  "sandbox": {
+    "enabled": true,
+    "filesystem": {
+      "allowWrite": [
+        "~/projects",
+        "~/work",
+        "/tmp",
+        "~/.Trash",
+        "~/.cache"
+      ]
+    }
+  },
   "model": "eu.anthropic.claude-opus-4-6-v1",
   "hooks": {
     "PreToolUse": [
