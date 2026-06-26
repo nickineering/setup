@@ -18,6 +18,11 @@ create_link "$CLAUDE_DOTFILES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md" "claude/CLAUDE.
 create_link "$CLAUDE_DOTFILES/ccusage.json" "$CLAUDE_DIR/ccusage.json" "claude/ccusage.json"
 create_link "$CLAUDE_DOTFILES/skills" "$CLAUDE_DIR/skills" "claude/skills"
 
+# CLI tools (extensionless in ~/.local/bin for PATH access)
+mkdir -p "$HOME/.local/bin"
+create_link "$CLAUDE_DOTFILES/terminator.sh" "$HOME/.local/bin/terminator" "terminator"
+create_link "$CLAUDE_DOTFILES/claude-aws.sh" "$HOME/.local/bin/claude-aws" "claude-aws"
+
 # Copy CLAUDE.local.md template if it doesn't exist
 if [ ! -f "$CLAUDE_DIR/CLAUDE.local.md" ]; then
 	cp "$CLAUDE_COPIED/CLAUDE.local.md" "$CLAUDE_DIR/CLAUDE.local.md"
