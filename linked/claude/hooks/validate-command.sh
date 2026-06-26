@@ -26,6 +26,59 @@ if [[ -n "$COMMAND" ]]; then
 fi
 
 # =============================================================================
+# OPERATIONS REQUIRING EXPLICIT USER APPROVAL (prompt, not block)
+# These use the "ask" decision so they prompt even from subagents.
+# =============================================================================
+
+ask_approval() {
+	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "$1"
+	exit 0
+}
+
+# Git operations that modify history or shared state
+if [[ "$COMMAND" =~ ^git[[:space:]]push ]]; then
+	ask_approval "git push requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]commit ]]; then
+	ask_approval "git commit requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]reset[[:space:]].*--hard ]]; then
+	ask_approval "git reset --hard requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]clean ]]; then
+	ask_approval "git clean requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]rebase ]]; then
+	ask_approval "git rebase requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]checkout[[:space:]]--[[:space:]] ]]; then
+	ask_approval "git checkout -- requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]restore[[:space:]] ]] && [[ ! "$COMMAND" =~ --staged ]]; then
+	ask_approval "git restore requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]stash[[:space:]]+(drop|clear) ]]; then
+	ask_approval "git stash drop/clear requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]commit[[:space:]].*--amend ]]; then
+	ask_approval "git commit --amend requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^git[[:space:]]branch[[:space:]]+-[dD] ]]; then
+	ask_approval "git branch -d/-D requires explicit approval"
+fi
+
+# Infrastructure operations that mutate state
+if [[ "$COMMAND" =~ ^terraform[[:space:]]+(apply|destroy) ]]; then
+	ask_approval "terraform apply/destroy requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^cdk[[:space:]]+(deploy|destroy) ]]; then
+	ask_approval "cdk deploy/destroy requires explicit approval"
+fi
+if [[ "$COMMAND" =~ ^sam[[:space:]]+(deploy|delete) ]]; then
+	ask_approval "sam deploy/delete requires explicit approval"
+fi
+
+# =============================================================================
 # HIGH-PRIORITY BYPASS PREVENTION
 # =============================================================================
 
