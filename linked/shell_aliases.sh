@@ -57,3 +57,6 @@ alias shell-aliases='less $DOTFILES/shell_aliases.sh'
 alias shell-functions='less $DOTFILES/shell_functions.sh'
 
 alias drun='docker compose run --rm app'
+
+# Claude Code session cost (only works inside a Claude session)
+alias ccost='ccusage session -i "$CLAUDE_CODE_SESSION_ID" --json | jq -rf ~/projects/setup/linked/claude/ccost.jq'
