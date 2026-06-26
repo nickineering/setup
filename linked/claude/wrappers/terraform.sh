@@ -16,12 +16,12 @@ fi
 subcmd=""
 for arg in "$@"; do
 	case "$arg" in
-		-chdir=*|-chdir) ;;
-		-*)              ;;
-		*)
-			subcmd="$arg"
-			break
-			;;
+	-chdir=* | -chdir) ;;
+	-*) ;;
+	*)
+		subcmd="$arg"
+		break
+		;;
 	esac
 done
 
@@ -48,6 +48,30 @@ for blocked in "${TERRAFORM_BLOCKED[@]}"; do
 		done
 	fi
 done
+
+# --- Check allowed subcommands (default-deny) ---
+allowed=false
+for entry in "${TERRAFORM_ALLOWED[@]}"; do
+	words=($entry)
+	if [[ "$subcmd" == "${words[0]}" ]]; then
+		if [[ ${#words[@]} -eq 1 ]]; then
+			allowed=true
+			break
+		fi
+		# Multi-word: check if second word matches (e.g. "state list")
+		for arg in "$@"; do
+			if [[ "$arg" == "${words[1]}" ]]; then
+				allowed=true
+				break 2
+			fi
+		done
+	fi
+done
+
+if [[ "$allowed" != "true" ]]; then
+	echo "BLOCKED (wrapper): terraform $subcmd is not in the allowed list for Claude subprocesses" >&2
+	exit 1
+fi
 
 # --- Execute with profile ---
 target_profile="$(cat "$CLAUDE_AWS_STATE")"
