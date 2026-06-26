@@ -11,21 +11,21 @@ source "$POLICY_DIR/policy.conf"
 # Determine the git subcommand (skip global flags like -C, -c, --git-dir)
 subcmd=""
 subcmd_idx=0
-for ((i=1; i<=$#; i++)); do
+for ((i = 1; i <= $#; i++)); do
 	arg="${!i}"
 	case "$arg" in
-		-C|-c|--git-dir|--work-tree|--namespace)
-			((i++))  # skip next arg (value)
-			;;
-		--git-dir=*|--work-tree=*|-c\ *|--namespace=*)
-			;;  # skip combined flag=value
-		-*)
-			;;  # skip other flags
-		*)
-			subcmd="$arg"
-			subcmd_idx=$i
-			break
-			;;
+	-C | -c | --git-dir | --work-tree | --namespace)
+		((i++)) # skip next arg (value)
+		;;
+	--git-dir=* | --work-tree=* | -c\ * | --namespace=*)
+		;; # skip combined flag=value
+	-*)
+		;; # skip other flags
+	*)
+		subcmd="$arg"
+		subcmd_idx=$i
+		break
+		;;
 	esac
 done
 
@@ -37,7 +37,7 @@ fi
 # --- Check blocked subcommands ---
 for blocked in "${GIT_BLOCKED[@]}"; do
 	# Handle multi-word blocks like "reset --hard" or "checkout --"
-	words=($blocked)
+	read -ra words <<<"$blocked"
 	if [[ "$subcmd" == "${words[0]}" ]]; then
 		if [[ ${#words[@]} -eq 1 ]]; then
 			echo "BLOCKED (wrapper): git $subcmd is not allowed in Claude subprocesses" >&2
@@ -45,7 +45,7 @@ for blocked in "${GIT_BLOCKED[@]}"; do
 		fi
 		# Check if the blocking flag/arg appears in the remaining args
 		block_pattern="${words[1]}"
-		for ((j=subcmd_idx+1; j<=$#; j++)); do
+		for ((j = subcmd_idx + 1; j <= $#; j++)); do
 			if [[ "${!j}" == "$block_pattern" ]]; then
 				echo "BLOCKED (wrapper): git $blocked is not allowed in Claude subprocesses" >&2
 				exit 1
@@ -56,7 +56,7 @@ done
 
 # --- Check blocked flags on allowed write commands ---
 if [[ "$subcmd" == "commit" ]]; then
-	for ((j=subcmd_idx+1; j<=$#; j++)); do
+	for ((j = subcmd_idx + 1; j <= $#; j++)); do
 		for flag in "${GIT_BLOCKED_FLAGS_COMMIT[@]}"; do
 			if [[ "${!j}" == "$flag" ]]; then
 				echo "BLOCKED (wrapper): git commit $flag is not allowed in Claude subprocesses" >&2

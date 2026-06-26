@@ -33,7 +33,7 @@ fi
 
 # --- Check blocked subcommands ---
 for blocked in "${TERRAFORM_BLOCKED[@]}"; do
-	words=($blocked)
+	read -ra words <<<"$blocked"
 	if [[ "$subcmd" == "${words[0]}" ]]; then
 		if [[ ${#words[@]} -eq 1 ]]; then
 			echo "BLOCKED (wrapper): terraform $subcmd is not allowed in Claude subprocesses" >&2
@@ -52,7 +52,7 @@ done
 # --- Check allowed subcommands (default-deny) ---
 allowed=false
 for entry in "${TERRAFORM_ALLOWED[@]}"; do
-	words=($entry)
+	read -ra words <<<"$entry"
 	if [[ "$subcmd" == "${words[0]}" ]]; then
 		if [[ ${#words[@]} -eq 1 ]]; then
 			allowed=true

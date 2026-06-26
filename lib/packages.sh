@@ -58,7 +58,10 @@ set_difference() {
 # Keeps sudo credential cached until the parent process exits.
 # Call once after `sudo -v`; kill via the trap or stop_sudo_keepalive when done.
 start_sudo_keepalive() {
-	(while kill -0 $$ 2>/dev/null; do sudo -vn 2>/dev/null; sleep 10; done) &
+	(while kill -0 $$ 2>/dev/null; do
+		sudo -vn 2>/dev/null
+		sleep 10
+	done) &
 	SUDO_KEEPALIVE_PID=$!
 }
 

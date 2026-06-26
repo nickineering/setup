@@ -47,8 +47,8 @@ Pre-configured Claude Code environment:
   coding preferences
 - **Security** - Blocked access to secrets, credentials, SSH keys, and system
   directories
-- **Cost tracking** - `ccusage` with Bedrock pricing overrides
-  (see [manual steps](MANUAL_STEPS.md#post-install-checks))
+- **Cost tracking** - `ccusage` with Bedrock pricing overrides (see
+  [manual steps](MANUAL_STEPS.md#post-install-checks))
 
 ### Git Workflow
 

@@ -34,13 +34,13 @@ The argument is an AWS profile name exactly as it appears in `~/.aws/config`.
 
 All config comes from environment variables (set in `~/.env.sh`):
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `TERMINATOR_AWS_BEDROCK_PROFILE` | Yes | AWS profile used for Bedrock API access (Claude's connection) |
-| `TERMINATOR_BEDROCK_REGION` | No | AWS region for Bedrock (default: `eu-central-1`) |
-| `TERMINATOR_MODEL_OPUS` | No | Opus model ID (session default + `opus` alias) |
-| `TERMINATOR_MODEL_SONNET` | No | Sonnet model ID (`sonnet` alias) |
-| `TERMINATOR_MODEL_HAIKU` | No | Haiku model ID (background queries + `haiku` alias) |
+| Variable                         | Required | Description                                                   |
+| -------------------------------- | -------- | ------------------------------------------------------------- |
+| `TERMINATOR_AWS_BEDROCK_PROFILE` | Yes      | AWS profile used for Bedrock API access (Claude's connection) |
+| `TERMINATOR_BEDROCK_REGION`      | No       | AWS region for Bedrock (default: `eu-central-1`)              |
+| `TERMINATOR_MODEL_OPUS`          | No       | Opus model ID (session default + `opus` alias)                |
+| `TERMINATOR_MODEL_SONNET`        | No       | Sonnet model ID (`sonnet` alias)                              |
+| `TERMINATOR_MODEL_HAIKU`         | No       | Haiku model ID (background queries + `haiku` alias)           |
 
 ### Example `.env.sh`
 
