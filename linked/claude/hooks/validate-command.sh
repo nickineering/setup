@@ -153,6 +153,21 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 	done <<<"$PATHS_IN_CMD"
 fi
 
+# AWS: block --profile flag that doesn't match granted access
+if [[ "$COMMAND" =~ ^aws[[:space:]] ]]; then
+	if [[ "$COMMAND" =~ (--profile[[:space:]]+|--profile=)([^[:space:]]+) ]]; then
+		REQUESTED_PROFILE="${BASH_REMATCH[2]}"
+		GRANTED_PROFILE=""
+		if [[ -n "$CLAUDE_AWS_STATE" && -f "$CLAUDE_AWS_STATE" ]]; then
+			GRANTED_PROFILE=$(cat "$CLAUDE_AWS_STATE")
+		fi
+		if [[ "$REQUESTED_PROFILE" != "$GRANTED_PROFILE" ]]; then
+			echo "BLOCKED: AWS profile '$REQUESTED_PROFILE' not granted. Current access: ${GRANTED_PROFILE:-none}" >&2
+			exit 2
+		fi
+	fi
+fi
+
 # AWS: only allow read-only commands
 if [[ "$COMMAND" =~ ^aws[[:space:]] ]]; then
 	# S3 has different command structure - handle separately
