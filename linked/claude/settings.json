@@ -11,6 +11,7 @@
       "Bash(aws *)",
       "Bash(base64 *)",
       "Bash(cat *)",
+      "Bash(ccusage*)",
       "Bash(cdk *)",
       "Bash(cp *)",
       "Bash(curl *)",
