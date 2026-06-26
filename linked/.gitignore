@@ -4,6 +4,5 @@
 # Vim backups
 *.swp
 
-# Generated symlinks (created by configure/claude.sh from *.sh files)
-claude/bin/*
-!claude/bin/*.sh
+# Generated at setup time by configure/claude.sh
+claude/bin/

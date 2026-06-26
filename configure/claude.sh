@@ -24,7 +24,8 @@ create_link "$CLAUDE_DOTFILES/terminator.sh" "$HOME/.local/bin/terminator" "term
 create_link "$CLAUDE_DOTFILES/claude-aws.sh" "$HOME/.local/bin/claude-aws" "claude-aws"
 
 # PATH wrappers (extensionless in bin/ — terminator prepends this to PATH)
-for wrapper in "$CLAUDE_DOTFILES"/bin/*.sh; do
+mkdir -p "$CLAUDE_DOTFILES/bin"
+for wrapper in "$CLAUDE_DOTFILES"/wrappers/*.sh; do
 	[[ -f "$wrapper" ]] || continue
 	name="$(basename "${wrapper%.sh}")"
 	create_link "$wrapper" "$CLAUDE_DOTFILES/bin/$name" "bin/$name"
