@@ -206,7 +206,6 @@
       "Read(**/token*)",
       "Read(~/.aws/credentials)",
       "Read(~/.aws/sso/**)",
-      "Read(~/.gnupg/*)",
       "Read(~/.netrc)",
       "Read(~/.npmrc)",
       "Read(~/.ssh/*)",
@@ -221,7 +220,8 @@
         "~/work",
         "/tmp",
         "~/.Trash",
-        "~/.cache"
+        "~/.cache",
+        "~/.gnupg"
       ]
     }
   },
