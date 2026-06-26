@@ -328,9 +328,9 @@ model_comparison_table() {
 	echo "├──────────┬──────────┬─────────────────────────────────────────────────────────────┤"
 	printf "│ %-8s │ %8s │ %-60s│\n" "Model" "Cost" "vs Opus"
 	echo "├──────────┼──────────┼─────────────────────────────────────────────────────────────┤"
-	printf "│ %-8s │ %8s │ %-60s│\n" "Opus" "\$${opus}" "baseline${opus_marker}"
-	printf "│ %-8s │ %8s │ %-60s│\n" "Sonnet" "\$${sonnet}" "${sonnet_pct}% cheaper${sonnet_marker}"
-	printf "│ %-8s │ %8s │ %-60s│\n" "Haiku" "\$${haiku}" "${haiku_pct}% cheaper${haiku_marker}"
+	printf "│ %-8s │ %8s │ %-60s│\n" "Opus" "\$$opus" "baseline${opus_marker}"
+	printf "│ %-8s │ %8s │ %-60s│\n" "Sonnet" "\$$sonnet" "${sonnet_pct}% cheaper${sonnet_marker}"
+	printf "│ %-8s │ %8s │ %-60s│\n" "Haiku" "\$$haiku" "${haiku_pct}% cheaper${haiku_marker}"
 	echo "└──────────┴──────────┴─────────────────────────────────────────────────────────────┘"
 }
 
@@ -344,12 +344,12 @@ print_cost_breakdown() {
 	echo "├──────────────────┬────────────────┬───────────────────────────────────────────────┤"
 	printf "│ %-16s │ %14s │ %45s │\n" "Category" "Tokens" "Cost"
 	echo "├──────────────────┼────────────────┼───────────────────────────────────────────────┤"
-	printf "│ %-16s │ %'14d │ %45s │\n" "Input (uncached)" "$input" "\$${input_cost}"
-	printf "│ %-16s │ %'14d │ %45s │\n" "Cache write" "$cache_write" "\$${write_cost}"
-	printf "│ %-16s │ %'14d │ %45s │\n" "Cache read" "$cache_read" "\$${read_cost}"
-	printf "│ %-16s │ %'14d │ %45s │\n" "Output" "$output" "\$${output_cost}"
+	printf "│ %-16s │ %'14d │ %45s │\n" "Input (uncached)" "$input" "\$$input_cost"
+	printf "│ %-16s │ %'14d │ %45s │\n" "Cache write" "$cache_write" "\$$write_cost"
+	printf "│ %-16s │ %'14d │ %45s │\n" "Cache read" "$cache_read" "\$$read_cost"
+	printf "│ %-16s │ %'14d │ %45s │\n" "Output" "$output" "\$$output_cost"
 	echo "├──────────────────┼────────────────┼───────────────────────────────────────────────┤"
-	printf "│ %-16s │ %14s │ %45s │\n" "TOTAL" "" "\$${total_cost}"
+	printf "│ %-16s │ %14s │ %45s │\n" "TOTAL" "" "\$$total_cost"
 	echo "└──────────────────┴────────────────┴───────────────────────────────────────────────┘"
 }
 
@@ -374,9 +374,9 @@ print_rates_table() {
 	echo "├──────────┬──────────────┬──────────────┬──────────────┬───────────────────────────┤"
 	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Model" "Input" "Cache Write" "Cache Read" "Output"
 	echo "├──────────┼──────────────┼──────────────┼──────────────┼───────────────────────────┤"
-	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Opus" "\$${opus_in}" "\$${opus_cw}" "\$${opus_cr}" "\$${opus_out}"
-	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Sonnet" "\$${sonnet_in}" "\$${sonnet_cw}" "\$${sonnet_cr}" "\$${sonnet_out}"
-	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Haiku" "\$${haiku_in}" "\$${haiku_cw}" "\$${haiku_cr}" "\$${haiku_out}"
+	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Opus" "\$$opus_in" "\$$opus_cw" "\$$opus_cr" "\$$opus_out"
+	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Sonnet" "\$$sonnet_in" "\$$sonnet_cw" "\$$sonnet_cr" "\$$sonnet_out"
+	printf "│ %-8s │ %12s │ %12s │ %12s │ %25s │\n" "Haiku" "\$$haiku_in" "\$$haiku_cw" "\$$haiku_cr" "\$$haiku_out"
 	echo "└──────────┴──────────────┴──────────────┴──────────────┴───────────────────────────┘"
 }
 
@@ -488,16 +488,16 @@ for tier in ['opus', 'sonnet', 'haiku']:
 	} <<<"$all_rates"
 
 	local hr
-	hr=$(printf '━%.0s' $(seq 1 $BOX_WIDTH))
+	hr=$(printf '━%.0s' "$(seq 1 "$BOX_WIDTH")")
 
 	echo ""
 	echo "$hr"
 	echo "  SESSION COST"
 	echo "$hr"
 	echo ""
-	printf "  Model:     %s\n" "${model}"
-	printf "  Session:   %s\n" "${session_id}"
-	printf "  Duration:  %s\n" "${duration_str}"
+	printf "  Model:     %s\n" "$model"
+	printf "  Session:   %s\n" "$session_id"
+	printf "  Duration:  %s\n" "$duration_str"
 
 	print_cost_breakdown "$input" "$cache_write" "$cache_read" "$output" \
 		"$input_cost" "$write_cost" "$read_cost" "$output_cost" "$total_cost"
@@ -593,10 +593,10 @@ display_period() {
 					break
 				fi
 			done
-			$already_counted && continue
+			"$already_counted" && continue
 
 			local meta_ts
-			meta_ts=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${start_time%%.*}" +%s 2>/dev/null || date -d "${start_time}" +%s 2>/dev/null || echo "")
+			meta_ts=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${start_time%%.*}" +%s 2>/dev/null || date -d "$start_time" +%s 2>/dev/null || echo "")
 			[[ -z "$meta_ts" ]] && continue
 
 			if ((meta_ts >= start_ts && meta_ts <= end_ts)); then
@@ -687,7 +687,7 @@ for tier in ['opus', 'sonnet', 'haiku']:
 	} <<<"$all_rates"
 
 	local hr
-	hr=$(printf '━%.0s' $(seq 1 $BOX_WIDTH))
+	hr=$(printf '━%.0s' "$(seq 1 "$BOX_WIDTH")")
 
 	echo ""
 	echo "$hr"
@@ -704,7 +704,7 @@ for tier in ['opus', 'sonnet', 'haiku']:
 		box_line " SESSIONS"
 		echo "├───────────────────────────────────────────────────────────────────────────────────┤"
 		printf '%s\n' "${session_results[@]}" | sort -t'|' -k1 -rn | while IFS='|' read -r cost project sdate sid; do
-			printf "│  %-34s %8s  %-30s│\n" "$project" "\$${cost}" "$sdate"
+			printf "│  %-34s %8s  %-30s│\n" "$project" "\$$cost" "$sdate"
 		done
 		echo "└───────────────────────────────────────────────────────────────────────────────────┘"
 	fi
@@ -732,7 +732,7 @@ for arg in "$@"; do
 	esac
 done
 
-if $do_refresh; then
+if "$do_refresh"; then
 	refresh_rates
 fi
 

@@ -135,7 +135,7 @@ for dock_app in "${current_labels[@]}"; do
 	fi
 done
 
-if $_is_fresh_dock; then
+if "$_is_fresh_dock"; then
 	# Fresh install: rebuild dock from scratch with only desired apps
 	if [[ "${desired_labels[*]}" != "${current_labels[*]}" ]]; then
 		defaults write com.apple.dock persistent-apps -array
@@ -164,7 +164,7 @@ else
 			_dock_changed=true
 		fi
 	done
-	if $_dock_changed; then
+	if "$_dock_changed"; then
 		killall Dock
 	fi
 fi
