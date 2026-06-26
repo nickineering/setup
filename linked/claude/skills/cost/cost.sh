@@ -438,18 +438,18 @@ display_current_session() {
 	local costs
 	costs=$(calculate_cost "$input" "$cache_write" "$cache_read" "$output" "$tier")
 	local input_cost write_cost read_cost output_cost total_cost
-	local input_rate write_rate read_rate output_rate
 	local opus_total sonnet_total haiku_total cache_ratio
+	local _
 	{
 		read -r input_cost
 		read -r write_cost
 		read -r read_cost
 		read -r output_cost
 		read -r total_cost
-		read -r input_rate
-		read -r write_rate
-		read -r read_rate
-		read -r output_rate
+		read -r _
+		read -r _
+		read -r _
+		read -r _
 		read -r opus_total
 		read -r sonnet_total
 		read -r haiku_total
@@ -637,18 +637,18 @@ display_period() {
 	local costs
 	costs=$(calculate_cost "$total_input" "$total_write" "$total_read" "$total_output" "$tier")
 	local input_cost write_cost read_cost output_cost total_cost
-	local input_rate write_rate read_rate output_rate
 	local opus_total sonnet_total haiku_total cache_ratio
+	local _
 	{
 		read -r input_cost
 		read -r write_cost
 		read -r read_cost
 		read -r output_cost
 		read -r total_cost
-		read -r input_rate
-		read -r write_rate
-		read -r read_rate
-		read -r output_rate
+		read -r _
+		read -r _
+		read -r _
+		read -r _
 		read -r opus_total
 		read -r sonnet_total
 		read -r haiku_total

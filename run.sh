@@ -12,10 +12,10 @@
 set -euo pipefail
 
 # Parse flags
-CLEAN_CACHES=false
+export CLEAN_CACHES=false
 for arg in "$@"; do
 	case "$arg" in
-	--clean) CLEAN_CACHES=true ;;
+	--clean) export CLEAN_CACHES=true ;;
 	esac
 done
 
