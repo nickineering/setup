@@ -49,7 +49,7 @@ export TERMINATOR_AWS_BEDROCK_PROFILE="my-bedrock-profile"
 export TERMINATOR_BEDROCK_REGION="eu-central-1"
 export TERMINATOR_MODEL_OPUS="eu.anthropic.claude-opus-4-6-v1"
 export TERMINATOR_MODEL_SONNET="eu.anthropic.claude-sonnet-4-6-v1"
-export TERMINATOR_MODEL_HAIKU="eu.anthropic.claude-haiku-4-5"
+export TERMINATOR_MODEL_HAIKU="eu.anthropic.claude-haiku-4-5-20251001-v1:0"
 ```
 
 ## How It Works
