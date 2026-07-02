@@ -1,32 +1,5 @@
 {
   "env": {},
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh",
-            "type": "command"
-          },
-          {
-            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      },
-      {
-        "hooks": [
-          {
-            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Write"
-      }
-    ]
-  },
-  "model": "opus",
   "permissions": {
     "allow": [
       "Bash(awk *)",
@@ -204,20 +177,6 @@
       "WebSearch(*)",
       "Write(./**)"
     ],
-    "ask": [
-      "Edit(**/*settings*.json)",
-      "Edit(**/CLAUDE.md)",
-      "Edit(**/hooks/**)",
-      "Edit(**/policy.conf)",
-      "Edit(**/terminator.sh)",
-      "Edit(**/wrappers/**)",
-      "Write(**/*settings*.json)",
-      "Write(**/CLAUDE.md)",
-      "Write(**/hooks/**)",
-      "Write(**/policy.conf)",
-      "Write(**/terminator.sh)",
-      "Write(**/wrappers/**)"
-    ],
     "deny": [
       "Bash(* > /Library/*)",
       "Bash(* > /System/*)",
@@ -237,10 +196,56 @@
       "Read(~/.npmrc)",
       "Read(~/.ssh/*)",
       "Write(**/.git/**)"
+    ],
+    "ask": [
+      "Edit(**/*settings*.json)",
+      "Edit(**/CLAUDE.md)",
+      "Edit(**/hooks/**)",
+      "Edit(**/policy.conf)",
+      "Edit(**/terminator.sh)",
+      "Edit(**/wrappers/**)",
+      "Write(**/*settings*.json)",
+      "Write(**/CLAUDE.md)",
+      "Write(**/hooks/**)",
+      "Write(**/policy.conf)",
+      "Write(**/terminator.sh)",
+      "Write(**/wrappers/**)"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh"
+          }
+        ]
+      }
     ]
   },
   "sandbox": {
     "enabled": true,
+    "network": {
+      "allowUnixSockets": [
+        "~/.gnupg/S.gpg-agent"
+      ]
+    },
     "filesystem": {
       "allowWrite": [
         "/tmp",
@@ -249,11 +254,6 @@
         "~/.gnupg",
         "~/projects",
         "~/work"
-      ]
-    },
-    "network": {
-      "allowUnixSockets": [
-        "~/.gnupg/S.gpg-agent"
       ]
     }
   }
