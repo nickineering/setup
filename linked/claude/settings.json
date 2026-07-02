@@ -1,33 +1,45 @@
 {
   "env": {},
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh",
+            "type": "command"
+          },
+          {
+            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write"
+      }
+    ]
+  },
+  "model": "eu.anthropic.claude-opus-4-6-v1",
   "permissions": {
-    "ask": [
-      "Edit(**/*settings*.json)",
-      "Write(**/*settings*.json)",
-      "Edit(**/hooks/**)",
-      "Write(**/hooks/**)",
-      "Edit(**/policy.conf)",
-      "Write(**/policy.conf)",
-      "Edit(**/wrappers/**)",
-      "Write(**/wrappers/**)",
-      "Edit(**/CLAUDE.md)",
-      "Write(**/CLAUDE.md)",
-      "Edit(**/terminator.sh)",
-      "Write(**/terminator.sh)"
-    ],
     "allow": [
-      "Bash(~/.claude/skills/cost/cost.sh*)",
       "Bash(awk *)",
       "Bash(aws *)",
       "Bash(base64 *)",
       "Bash(cat *)",
       "Bash(ccusage*)",
+      "Bash(cdk context*)",
       "Bash(cdk diff*)",
+      "Bash(cdk docs*)",
+      "Bash(cdk doctor*)",
       "Bash(cdk list*)",
       "Bash(cdk synth*)",
-      "Bash(cdk doctor*)",
-      "Bash(cdk docs*)",
-      "Bash(cdk context*)",
       "Bash(cp *)",
       "Bash(curl *)",
       "Bash(date*)",
@@ -42,18 +54,17 @@
       "Bash(file *)",
       "Bash(find *)",
       "Bash(git blame*)",
-      "Bash(git branch)",
-      "Bash(git branch -a*)",
-      "Bash(git branch -r*)",
-      "Bash(git branch -v*)",
-      "Bash(git branch --list*)",
       "Bash(git branch --contains*)",
+      "Bash(git branch --list*)",
       "Bash(git branch --merged*)",
       "Bash(git branch --no-merged*)",
       "Bash(git branch --show-current*)",
-      "Bash(git checkout -b *)",
+      "Bash(git branch -a*)",
+      "Bash(git branch -r*)",
+      "Bash(git branch -v*)",
+      "Bash(git branch)",
       "Bash(git checkout -B *)",
-      "Bash(git switch *)",
+      "Bash(git checkout -b *)",
       "Bash(git config --get*)",
       "Bash(git config --list*)",
       "Bash(git describe*)",
@@ -69,6 +80,7 @@
       "Bash(git show*)",
       "Bash(git stash list*)",
       "Bash(git status*)",
+      "Bash(git switch *)",
       "Bash(git tag -l*)",
       "Bash(glab alias list*)",
       "Bash(glab auth status*)",
@@ -135,11 +147,11 @@
       "Bash(pytest*)",
       "Bash(python*)",
       "Bash(ruff *)",
-      "Bash(sam validate*)",
       "Bash(sam build*)",
+      "Bash(sam list*)",
       "Bash(sam local*)",
       "Bash(sam logs*)",
-      "Bash(sam list*)",
+      "Bash(sam validate*)",
       "Bash(sed *)",
       "Bash(shellcheck *)",
       "Bash(sort *)",
@@ -167,6 +179,7 @@
       "Bash(xargs *)",
       "Bash(yq *)",
       "Bash(zip *)",
+      "Bash(~/.claude/skills/cost/cost.sh*)",
       "Edit(./**)",
       "Glob(./**)",
       "Glob(~/projects/**)",
@@ -180,16 +193,30 @@
       "Read(~/.aws/config)",
       "Read(~/.bashrc)",
       "Read(~/.claude/**)",
+      "Read(~/.env.sh)",
       "Read(~/.gitconfig)",
       "Read(~/.gitignore)",
       "Read(~/.profile)",
-      "Read(~/.env.sh)",
       "Read(~/.zshrc)",
       "Read(~/projects/**)",
       "Read(~/work/**)",
       "WebFetch(*)",
       "WebSearch(*)",
       "Write(./**)"
+    ],
+    "ask": [
+      "Edit(**/*settings*.json)",
+      "Edit(**/CLAUDE.md)",
+      "Edit(**/hooks/**)",
+      "Edit(**/policy.conf)",
+      "Edit(**/terminator.sh)",
+      "Edit(**/wrappers/**)",
+      "Write(**/*settings*.json)",
+      "Write(**/CLAUDE.md)",
+      "Write(**/hooks/**)",
+      "Write(**/policy.conf)",
+      "Write(**/terminator.sh)",
+      "Write(**/wrappers/**)"
     ],
     "deny": [
       "Bash(* > /Library/*)",
@@ -216,40 +243,18 @@
     "enabled": true,
     "filesystem": {
       "allowWrite": [
-        "~/projects",
-        "~/work",
         "/tmp",
         "~/.Trash",
         "~/.cache",
-        "~/.gnupg"
+        "~/.gnupg",
+        "~/projects",
+        "~/work"
+      ]
+    },
+    "network": {
+      "allowUnixSockets": [
+        "~/.gnupg/S.gpg-agent"
       ]
     }
-  },
-  "model": "eu.anthropic.claude-opus-4-6-v1",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/pre-commit-format.sh"
-          },
-          {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/validate-command.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh"
-          }
-        ]
-      }
-    ]
   }
 }
