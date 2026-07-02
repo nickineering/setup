@@ -9,7 +9,7 @@
 [core]
 	autocrlf = false
 	eol = lf
-	excludesFile = ~/projects/setup/linked/.gitignore
+	excludesFile = ~/projects/setup/.gitignore
 	quotePath = true
 [credential "https://gitlab.com"]
 	helper = /opt/homebrew/bin/glab auth git-credential
