@@ -6,3 +6,10 @@
 
 # Generated at setup time by configure/claude.sh
 claude/bin/
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/
+.claude/agent-memory-local/
+.claude/.cc-writes/
+CLAUDE.local.md
