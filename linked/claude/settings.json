@@ -252,6 +252,8 @@
         "~/.Trash",
         "~/.cache",
         "~/.gnupg",
+        "~/Library/Application Support/glab-cli",
+        "~/Library/Caches",
         "~/projects",
         "~/work"
       ]

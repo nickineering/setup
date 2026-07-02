@@ -33,9 +33,14 @@ State any tradeoffs to approaches and if you think they are acceptable.
 # Sandbox
 
 **Write zones:** `~/projects/`, `~/work/`, `~/.Trash/`, `~/.cache/`,
-`~/Library/Caches/`, `/tmp/`, `/dev/null`
+`~/Library/Application Support/glab-cli/`, `~/Library/Caches/`, `/tmp/`,
+`/dev/null`
 
-**Blocked:** System dirs, `.git/` folders, `rm` command (use `trash` instead)
+**Blocked:** System dirs, `.git/` folders (platform-enforced, not overridable),
+`rm` command (use `trash` instead)
+
+**Git caveat:** `git push -u` silently fails to set tracking (`.git/config`
+write blocked). Always use `git push origin <branch>` explicitly.
 
 **Network:** GET/HEAD requests allowed anywhere. POST/PUT/DELETE require
 approval.
