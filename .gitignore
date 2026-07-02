@@ -8,8 +8,8 @@
 **/claude/bin/
 
 # Claude Code
+**/.claude/.cc-writes/
+**/.claude/agent-memory-local/
 **/.claude/settings.local.json
 **/.claude/worktrees/
-**/.claude/agent-memory-local/
-**/.claude/.cc-writes/
 CLAUDE.local.md
