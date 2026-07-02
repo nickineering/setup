@@ -178,6 +178,7 @@
   },
   "search.showLineNumbers": true,
   "search.smartCase": true,
+  "search.useGlobalIgnoreFiles": true,
   "sqltools.format": {
     "linesBetweenQueries": 2,
     "reservedWordCase": "upper"
