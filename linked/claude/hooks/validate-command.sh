@@ -28,6 +28,7 @@ fi
 # =============================================================================
 # OPERATIONS REQUIRING EXPLICIT USER APPROVAL (prompt, not block)
 # These use the "ask" decision so they prompt even from subagents.
+# Checks each segment of chained commands (&&, ||, ;) individually.
 # =============================================================================
 
 ask_approval() {
@@ -35,48 +36,71 @@ ask_approval() {
 	exit 0
 }
 
-# Git operations that modify history or shared state
-if [[ "$COMMAND" =~ ^git[[:space:]]push ]]; then
-	ask_approval "git push requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]commit ]]; then
-	ask_approval "git commit requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]reset[[:space:]].*--hard ]]; then
-	ask_approval "git reset --hard requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]clean ]]; then
-	ask_approval "git clean requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]rebase ]]; then
-	ask_approval "git rebase requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]checkout[[:space:]]--[[:space:]] ]]; then
-	ask_approval "git checkout -- requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]restore[[:space:]] ]] && [[ ! "$COMMAND" =~ --staged ]]; then
-	ask_approval "git restore requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]stash[[:space:]]+(drop|clear) ]]; then
-	ask_approval "git stash drop/clear requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]commit[[:space:]].*--amend ]]; then
-	ask_approval "git commit --amend requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^git[[:space:]]branch[[:space:]]+-[dD] ]]; then
-	ask_approval "git branch -d/-D requires explicit approval"
-fi
+check_segment_approval() {
+	local seg="$1"
+	# Strip leading whitespace
+	seg=$(echo "$seg" | sed 's/^[[:space:]]*//')
+	# Normalize: strip env vars, resolve basename (same logic as top-level)
+	local stripped cmd_first cmd_base normalized
+	stripped=$(echo "$seg" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]]*[[:space:]]\)*//')
+	cmd_first=$(echo "$stripped" | awk '{print $1}')
+	cmd_base=$(basename "$cmd_first")
+	if [[ "$stripped" == *" "* ]]; then
+		normalized="$cmd_base ${stripped#* }"
+	else
+		normalized="$cmd_base"
+	fi
 
-# Infrastructure operations that mutate state
-if [[ "$COMMAND" =~ ^terraform[[:space:]]+(apply|destroy) ]]; then
-	ask_approval "terraform apply/destroy requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^cdk[[:space:]]+(deploy|destroy) ]]; then
-	ask_approval "cdk deploy/destroy requires explicit approval"
-fi
-if [[ "$COMMAND" =~ ^sam[[:space:]]+(deploy|delete) ]]; then
-	ask_approval "sam deploy/delete requires explicit approval"
-fi
+	# Git operations that modify history or shared state
+	if [[ "$normalized" =~ ^git[[:space:]]push ]]; then
+		ask_approval "git push requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]commit ]]; then
+		ask_approval "git commit requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]reset[[:space:]].*--hard ]]; then
+		ask_approval "git reset --hard requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]clean ]]; then
+		ask_approval "git clean requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]rebase ]]; then
+		ask_approval "git rebase requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]checkout[[:space:]]--[[:space:]] ]]; then
+		ask_approval "git checkout -- requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]restore[[:space:]] ]] && [[ ! "$normalized" =~ --staged ]]; then
+		ask_approval "git restore requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]stash[[:space:]]+(drop|clear) ]]; then
+		ask_approval "git stash drop/clear requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]commit[[:space:]].*--amend ]]; then
+		ask_approval "git commit --amend requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^git[[:space:]]branch[[:space:]]+-[dD] ]]; then
+		ask_approval "git branch -d/-D requires explicit approval"
+	fi
+
+	# Infrastructure operations that mutate state
+	if [[ "$normalized" =~ ^terraform[[:space:]]+(apply|destroy) ]]; then
+		ask_approval "terraform apply/destroy requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^cdk[[:space:]]+(deploy|destroy) ]]; then
+		ask_approval "cdk deploy/destroy requires explicit approval"
+	fi
+	if [[ "$normalized" =~ ^sam[[:space:]]+(deploy|delete) ]]; then
+		ask_approval "sam deploy/delete requires explicit approval"
+	fi
+}
+
+# Split command on chain operators and check each segment
+APPROVAL_SEGMENTS=$(echo "$COMMAND" | sed 's/[[:space:]]&&[[:space:]]/\n/g; s/[[:space:]]||[[:space:]]/\n/g; s/;[[:space:]]*/\n/g')
+while IFS= read -r APPROVAL_SEG; do
+	[[ -z "$APPROVAL_SEG" ]] && continue
+	check_segment_approval "$APPROVAL_SEG"
+done <<<"$APPROVAL_SEGMENTS"
 
 # =============================================================================
 # HIGH-PRIORITY BYPASS PREVENTION
