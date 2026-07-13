@@ -212,6 +212,10 @@
       "Write(**/wrappers/**)"
     ]
   },
+  "attribution": {
+    "commit": false,
+    "pr": false
+  },
   "model": "opus",
   "hooks": {
     "PreToolUse": [

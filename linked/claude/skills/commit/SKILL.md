@@ -98,7 +98,6 @@ git commit -m "<title>" && git push
   them (unless Claude staged everything itself)
 - Never unstage files that were already staged
 - Never use `git add .`, `git add -A`, or wildcard patterns
-- Never add Co-Authored-By trailers for Claude
 - All adds, the commit, and the push must be a single `&&`-chained Bash command
   per commit
 - When splitting, order commits so dependencies come first

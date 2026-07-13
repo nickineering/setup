@@ -71,7 +71,3 @@ errors, test design flaws), STOP and consult the user rather than applying quick
 fixes. Prioritize clean maintainable code over suppressing issues to get CI
 green.
 
-## Rules
-
-- Do NOT add Co-Authored-By trailers for Claude
-- Do NOT add "Generated with Claude Code" or similar footers to PR descriptions

@@ -45,12 +45,6 @@ write blocked). Always use `git push origin <branch>` explicitly.
 **Network:** GET/HEAD requests allowed anywhere. POST/PUT/DELETE require
 approval.
 
-# Git Commits
-
-**EXTREMELY IMPORTANT: Do NOT add `Co-Authored-By` trailers crediting
-yourself.** Only add co-author trailers when crediting humans. Claude is **not**
-a human
-
 # Leave Things Working
 
 Never finish with anything broken. If you notice something is broken — tests,
