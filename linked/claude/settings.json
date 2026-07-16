@@ -173,6 +173,7 @@
       "Read(~/.zshrc)",
       "Read(~/projects/**)",
       "Read(~/work/**)",
+      "mcp__kraken-mcp__*",
       "WebFetch(*)",
       "WebSearch(*)",
       "Write(./**)"
@@ -213,8 +214,8 @@
     ]
   },
   "attribution": {
-    "commit": false,
-    "pr": false
+    "commit": "",
+    "pr": ""
   },
   "model": "opus",
   "hooks": {
