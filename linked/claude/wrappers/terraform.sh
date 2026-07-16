@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# PATH wrapper: enforces terraform policy + injects AWS profile from session state.
+# PATH wrapper for terraform in Claude sessions.
+#
+# Injects AWS profile from session state (claude-aws), cleans up env vars
+# that would override it, and gates write commands behind CLAUDE_APPROVED.
+# See git.sh header for the CLAUDE_APPROVED design rationale.
 
 set -euo pipefail
 

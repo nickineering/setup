@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# PATH wrapper: injects AWS profile from session state file.
-# Blocks if no access has been granted via terminator or claude-aws.
+# PATH wrapper for aws in Claude sessions.
+#
+# Injects --profile from the session state file (set by claude-aws).
+# Unsets AWS env vars that would override --profile (Bedrock credentials
+# from terminator.sh target a different account than the user's aws commands).
 
 if [[ ! -f "${CLAUDE_AWS_STATE:-}" ]]; then
 	echo "No AWS access granted. Run: claude-aws <profile> | off" >&2

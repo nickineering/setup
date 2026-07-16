@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# PATH wrapper: prompts for confirmation on write operations.
-# Read-only commands pass through freely. Write commands require
-# interactive approval — even from subprocesses.
+# PATH wrapper for git in Claude sessions.
+#
+# Read-only commands pass freely. Write commands (commit, push, etc.)
+# require CLAUDE_APPROVED=1 in the environment, which terminator.sh sets.
+# The flag is unset before exec so child processes don't inherit it —
+# this prevents a script approved at the top level from silently chaining
+# multiple write operations (e.g. make deploy → git push → git tag).
 
 set -euo pipefail
 
