@@ -7,5 +7,22 @@ if [[ ! -f "${CLAUDE_AWS_STATE:-}" ]]; then
 	exit 1
 fi
 
+# Find the real aws binary by skipping our own directory on PATH.
+self_dir="$(cd "$(dirname "$0")" && pwd)"
+real_aws=""
+while IFS= read -r -d: dir; do
+	[[ "$dir" == "$self_dir" ]] && continue
+	if [[ -x "$dir/aws" ]]; then
+		real_aws="$dir/aws"
+		break
+	fi
+done <<<"$PATH:"
+
+if [[ -z "$real_aws" ]]; then
+	echo "aws: real binary not found on PATH" >&2
+	exit 1
+fi
+
 target_profile="$(cat "$CLAUDE_AWS_STATE")"
-exec command aws --profile "$target_profile" "$@"
+unset AWS_PROFILE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION AWS_REGION
+exec "$real_aws" --profile "$target_profile" "$@"

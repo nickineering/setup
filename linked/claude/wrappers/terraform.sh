@@ -6,6 +6,22 @@ set -euo pipefail
 POLICY_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 source "$POLICY_DIR/policy.conf"
 
+# Find the real terraform binary by skipping our own directory on PATH.
+self_dir="$(cd "$(dirname "$0")" && pwd)"
+real_terraform=""
+while IFS= read -r -d: dir; do
+	[[ "$dir" == "$self_dir" ]] && continue
+	if [[ -x "$dir/terraform" ]]; then
+		real_terraform="$dir/terraform"
+		break
+	fi
+done <<<"$PATH:"
+
+if [[ -z "$real_terraform" ]]; then
+	echo "terraform: real binary not found on PATH" >&2
+	exit 1
+fi
+
 # --- Require AWS access ---
 if [[ ! -f "${CLAUDE_AWS_STATE:-}" ]]; then
 	echo "No AWS access granted. Run: claude-aws <profile> | off" >&2
@@ -25,54 +41,27 @@ for arg in "$@"; do
 	esac
 done
 
+# --- Inject AWS profile and execute ---
+target_profile="$(cat "$CLAUDE_AWS_STATE")"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_DEFAULT_REGION AWS_REGION
+
 # No subcommand — allow (shows help)
 if [[ -z "$subcmd" ]]; then
-	target_profile="$(cat "$CLAUDE_AWS_STATE")"
-	AWS_PROFILE="$target_profile" exec command terraform "$@"
+	AWS_PROFILE="$target_profile" exec "$real_terraform" "$@"
 fi
 
-# --- Check blocked subcommands ---
-for blocked in "${TERRAFORM_BLOCKED[@]}"; do
-	read -ra words <<<"$blocked"
-	if [[ "$subcmd" == "${words[0]}" ]]; then
-		if [[ ${#words[@]} -eq 1 ]]; then
-			echo "BLOCKED (wrapper): terraform $subcmd is not allowed in Claude subprocesses" >&2
-			exit 1
-		fi
-		# Multi-word: check remaining args (e.g. "state rm")
-		for arg in "$@"; do
-			if [[ "$arg" == "${words[1]}" ]]; then
-				echo "BLOCKED (wrapper): terraform $blocked is not allowed in Claude subprocesses" >&2
-				exit 1
-			fi
-		done
+# --- Read-only commands pass through freely ---
+for allowed in "${TERRAFORM_ALLOWED_READONLY[@]}"; do
+	if [[ "$subcmd" == "$allowed" ]]; then
+		AWS_PROFILE="$target_profile" exec "$real_terraform" "$@"
 	fi
 done
 
-# --- Check allowed subcommands (default-deny) ---
-allowed=false
-for entry in "${TERRAFORM_ALLOWED[@]}"; do
-	read -ra words <<<"$entry"
-	if [[ "$subcmd" == "${words[0]}" ]]; then
-		if [[ ${#words[@]} -eq 1 ]]; then
-			allowed=true
-			break
-		fi
-		# Multi-word: check if second word matches (e.g. "state list")
-		for arg in "$@"; do
-			if [[ "$arg" == "${words[1]}" ]]; then
-				allowed=true
-				break 2
-			fi
-		done
-	fi
-done
-
-if [[ "$allowed" != "true" ]]; then
-	echo "BLOCKED (wrapper): terraform $subcmd is not in the allowed list for Claude subprocesses" >&2
-	exit 1
+# --- Write commands require CLAUDE_APPROVED flag (not inherited by children) ---
+if [[ "${CLAUDE_APPROVED:-}" == "1" ]]; then
+	unset CLAUDE_APPROVED
+	AWS_PROFILE="$target_profile" exec "$real_terraform" "$@"
 fi
 
-# --- Execute with profile ---
-target_profile="$(cat "$CLAUDE_AWS_STATE")"
-AWS_PROFILE="$target_profile" exec command terraform "$@"
+echo "BLOCKED (wrapper): terraform $subcmd requires approval. Not called directly by Claude." >&2
+exit 1

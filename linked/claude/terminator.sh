@@ -13,7 +13,14 @@ set -euo pipefail
 #   TERMINATOR_MODEL_SONNET        - Sonnet model ID (sonnet alias)
 #   TERMINATOR_MODEL_HAIKU         - Haiku model ID (background queries + haiku alias)
 
-SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve through symlinks to find the real script directory
+_source="${BASH_SOURCE[0]}"
+while [[ -L "$_source" ]]; do
+	_dir="$(cd "$(dirname "$_source")" && pwd)"
+	_source="$(readlink "$_source")"
+	[[ "$_source" != /* ]] && _source="$_dir/$_source"
+done
+SELF_DIR="$(cd "$(dirname "$_source")" && pwd)"
 
 # --- Validate configuration ---
 if [[ -z "${TERMINATOR_AWS_BEDROCK_PROFILE:-}" ]]; then
@@ -74,6 +81,7 @@ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_CREDENTIAL_E
 
 declare -a env_vars=(
 	"CLAUDE_SESSION=1"
+	"CLAUDE_APPROVED=1"
 	"CLAUDE_AWS_STATE=$state_file"
 	"AWS_PROFILE=$TERMINATOR_AWS_BEDROCK_PROFILE"
 	"AWS_REGION=$BEDROCK_REGION"
