@@ -59,7 +59,17 @@ if [[ ${#sudo_tasks[@]} -gt 0 ]]; then
 	echo ""
 
 	if [[ "$run_sudo" =~ ^[Yy]$ ]]; then
-		sudo -v
+		SUDO_PASS_FILE=$(mktemp)
+		chmod 600 "$SUDO_PASS_FILE"
+		ASKPASS_SCRIPT=$(mktemp)
+		chmod 700 "$ASKPASS_SCRIPT"
+		printf '#!/bin/sh\ncat "%s"\n' "$SUDO_PASS_FILE" >"$ASKPASS_SCRIPT"
+		export SUDO_ASKPASS="$ASKPASS_SCRIPT"
+		read -r -s -p "Password: " sudo_pass </dev/tty
+		echo ""
+		printf '%s' "$sudo_pass" >"$SUDO_PASS_FILE"
+		unset sudo_pass
+		sudo -A -v
 		start_sudo_keepalive
 	else
 		info "Skipped privileged operations"
@@ -70,12 +80,11 @@ else
 	info "Nothing to do"
 fi
 
-# ── Cask operations (SUDO_ASKPASS prevents brew's forked process from
-# prompting for a password it can't receive — failures are non-fatal) ───────
+# ── Cask operations ────────────────────────────────────────────────────────
 
 if [[ -n "$outdated_casks" ]]; then
 	info "Upgrading casks: $(echo "$outdated_casks" | tr '\n' ' ')"
-	SUDO_ASKPASS=/usr/bin/false brew upgrade --cask --greedy --no-quit -y || warn "Some casks failed to upgrade"
+	brew upgrade --cask --greedy --no-quit -y || warn "Some casks failed to upgrade"
 fi
 
 if [[ -n "$missing_casks" ]]; then
@@ -108,3 +117,8 @@ if [[ "$needs_lockscreen" == "true" ]]; then
 		info "Skipped lock screen message"
 	fi
 fi
+
+# ── Cleanup ────────────────────────────────────────────────────────────────
+
+rm -f "${SUDO_PASS_FILE:-}" "${ASKPASS_SCRIPT:-}"
+unset SUDO_ASKPASS SUDO_PASS_FILE ASKPASS_SCRIPT

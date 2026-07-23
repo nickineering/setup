@@ -50,6 +50,7 @@ source lib/packages.sh
 CURRENT_STEP=""
 cleanup_on_exit() {
 	stop_sudo_keepalive 2>/dev/null || true
+	rm -f "${SUDO_PASS_FILE:-}" "${ASKPASS_SCRIPT:-}"
 }
 cleanup_on_interrupt() {
 	cleanup_on_exit
