@@ -154,13 +154,9 @@
       "Bash(zip *)",
       "Bash(~/.claude/skills/cost/cost.sh*)",
       "Edit(./**)",
-      "Glob(./**)",
-      "Glob(~/projects/**)",
-      "Glob(~/work/**)",
       "Grep(./**)",
       "Grep(~/projects/**)",
       "Grep(~/work/**)",
-      "NotebookEdit(./**)",
       "Read(./**)",
       "Read(/opt/homebrew/**)",
       "Read(~/.aws/config)",
@@ -175,8 +171,7 @@
       "Read(~/work/**)",
       "mcp__kraken-mcp__*",
       "WebFetch(*)",
-      "WebSearch(*)",
-      "Write(./**)"
+      "WebSearch(*)"
     ],
     "deny": [
       "Bash(* > /Library/*)",
@@ -185,7 +180,6 @@
       "Bash(* > /usr/*)",
       "Bash(* > /var/*)",
       "Edit(**/.git/**)",
-      "NotebookEdit(**/.git/**)",
       "Read(**/*.key)",
       "Read(**/*.pem)",
       "Read(**/*secret*)",
@@ -195,8 +189,7 @@
       "Read(~/.aws/sso/**)",
       "Read(~/.netrc)",
       "Read(~/.npmrc)",
-      "Read(~/.ssh/*)",
-      "Write(**/.git/**)"
+      "Read(~/.ssh/*)"
     ],
     "ask": [
       "Edit(**/*settings*.json)",
@@ -204,13 +197,7 @@
       "Edit(**/hooks/**)",
       "Edit(**/policy.conf)",
       "Edit(**/terminator.sh)",
-      "Edit(**/wrappers/**)",
-      "Write(**/*settings*.json)",
-      "Write(**/CLAUDE.md)",
-      "Write(**/hooks/**)",
-      "Write(**/policy.conf)",
-      "Write(**/terminator.sh)",
-      "Write(**/wrappers/**)"
+      "Edit(**/wrappers/**)"
     ]
   },
   "attribution": {
