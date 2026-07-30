@@ -70,7 +70,9 @@ sure to complete any steps noted:
    7. iTerm: Tab
 1. Paragon NTFS
 1. Raycast
-   1. Assign `cmd + space` hotkey
+   1. Settings -> General -> Assign `cmd + space` hotkey
+   1. Settings -> Extensions -> Search Emoji & Symbols -> Record Hotkey ->
+      `ctrl + cmd + space`
 1. Rocket
    1. Open and follow instructions
    2. Enable start on startup
