@@ -39,6 +39,53 @@ lines() {
 	fd --type f --extension "$ext" --exec cat {} \; 2>/dev/null | wc -l
 }
 
+# Read a number 1..N with auto-execute when input is unambiguous.
+# Outputs the chosen number to stdout; returns 1 on invalid input.
+_read_choice() {
+	local count=$1 input=""
+	echo -n "Select [1-$count]: "
+	while true; do
+		read -r -s -k 1 char
+		if [[ "$char" == $'\n' ]]; then
+			echo
+			if [[ -n "$input" && "$input" -ge 1 && "$input" -le "$count" ]] 2>/dev/null; then
+				echo "$input"
+				return
+			fi
+			echo "\033[1;31mInvalid selection\033[0m" >&2
+			return 1
+		fi
+		if [[ "$char" == $'\x7f' || "$char" == $'\b' ]]; then
+			if [[ -n "$input" ]]; then
+				input="${input%?}"
+				printf "\b \b"
+			fi
+			continue
+		fi
+		[[ "$char" != [0-9] ]] && continue
+		input="${input}${char}"
+		printf "%s" "$char"
+
+		local matches=0 last_match=""
+		for ((n=1; n<=count; n++)); do
+			if [[ "$n" == "${input}"* ]]; then
+				((matches++))
+				last_match=$n
+			fi
+		done
+
+		if [[ $matches -eq 1 ]]; then
+			echo
+			echo "$last_match"
+			return
+		elif [[ $matches -eq 0 ]]; then
+			echo
+			echo "\033[1;31mInvalid selection\033[0m" >&2
+			return 1
+		fi
+	done
+}
+
 # Find a subdirectory and cd to it (shows menu if multiple matches)
 godir() {
 	local dirs
@@ -54,29 +101,32 @@ godir() {
 
 	if [[ "$count" -eq 1 ]]; then
 		cd "$dirs" && pwd
-	elif command -v fzf &>/dev/null; then
+		return
+	fi
+
+	if command -v fzf &>/dev/null; then
 		local target
 		target=$(echo "$dirs" | fzf --height=40% --reverse --prompt="Select directory: ")
-		if [[ -n "$target" ]]; then
-			cd "$target" && pwd
-		fi
+		[[ -n "$target" ]] && cd "$target" && pwd
+		return
+	fi
+
+	echo "Multiple matches found:"
+	local i=1
+	while IFS= read -r d; do
+		echo "  $i) $d"
+		((i++))
+	done <<<"$dirs"
+
+	local choice
+	choice=$(_read_choice "$count") || return 1
+	local target
+	target=$(echo "$dirs" | sed -n "${choice}p")
+	if [[ -n "$target" ]]; then
+		cd "$target" && pwd
 	else
-		echo "Multiple matches found:"
-		local i=1
-		while IFS= read -r d; do
-			echo "  $i) $d"
-			((i++))
-		done <<<"$dirs"
-		echo -n "Select [1-$count]: "
-		read -r choice
-		local target
-		target=$(echo "$dirs" | sed -n "${choice}p")
-		if [[ -n "$target" ]]; then
-			cd "$target" && pwd
-		else
-			echo "Invalid selection"
-			return 1
-		fi
+		echo "\033[1;31mInvalid selection\033[0m"
+		return 1
 	fi
 }
 
