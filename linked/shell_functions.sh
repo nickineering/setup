@@ -43,11 +43,11 @@ lines() {
 # Outputs the chosen number to stdout; returns 1 on invalid input.
 _read_choice() {
 	local count=$1 input=""
-	echo -n "Select [1-$count]: "
+	echo -n "Select [1-$count]: " >&2
 	while true; do
 		read -r -s -k 1 char
 		if [[ "$char" == $'\n' ]]; then
-			echo
+			echo >&2
 			if [[ -n "$input" && "$input" -ge 1 && "$input" -le "$count" ]] 2>/dev/null; then
 				echo "$input"
 				return
@@ -58,13 +58,13 @@ _read_choice() {
 		if [[ "$char" == $'\x7f' || "$char" == $'\b' ]]; then
 			if [[ -n "$input" ]]; then
 				input="${input%?}"
-				printf "\b \b"
+				printf "\b \b" >&2
 			fi
 			continue
 		fi
 		[[ "$char" != [0-9] ]] && continue
 		input="${input}${char}"
-		printf "%s" "$char"
+		printf "%s" "$char" >&2
 
 		local matches=0 last_match=""
 		for ((n=1; n<=count; n++)); do
@@ -75,11 +75,11 @@ _read_choice() {
 		done
 
 		if [[ $matches -eq 1 ]]; then
-			echo
+			echo >&2
 			echo "$last_match"
 			return
 		elif [[ $matches -eq 0 ]]; then
-			echo
+			echo >&2
 			echo "\033[1;31mInvalid selection\033[0m" >&2
 			return 1
 		fi
