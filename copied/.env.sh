@@ -14,3 +14,7 @@
 # Suppresses "not found" warnings for apps not installed, and
 # "not managed by setup" warnings for apps present but not in the managed list.
 # export DOCK_IGNORE_APPS="NordVPN|Spotify"
+
+# Login items to ignore on this machine (pipe-separated).
+# Suppresses "not managed by setup" warnings for login items not in the managed list.
+# export LOGIN_IGNORE_APPS="Slack|iTerm"

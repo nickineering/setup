@@ -185,6 +185,14 @@ for app_path in "${login_items[@]}"; do
 	fi
 done
 
+# Build ignore lookup from LOGIN_IGNORE_APPS (pipe-separated, set in ~/.env.sh)
+declare -A _login_ignored=()
+if [[ -n "${LOGIN_IGNORE_APPS:-}" ]]; then
+	while IFS= read -r _app; do
+		_login_ignored["$_app"]=1
+	done < <(echo "$LOGIN_IGNORE_APPS" | tr '|' '\n')
+fi
+
 # Detect login items not managed here
 if [[ -n "$current_login_items" ]]; then
 	while IFS= read -r item_path; do
@@ -198,7 +206,9 @@ if [[ -n "$current_login_items" ]]; then
 		done
 		if [[ "$found" == "false" ]]; then
 			app_name=$(basename "$item_path" .app)
-			warn "'$app_name' is a login item but not managed by setup — remove manually if unwanted"
+			if [[ -z "${_login_ignored[$app_name]+x}" ]]; then
+				warn "'$app_name' is a login item but not managed by setup — remove manually if unwanted"
+			fi
 		fi
 	done <<<"${current_login_items//, /$'\n'}"
 fi
