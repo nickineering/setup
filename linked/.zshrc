@@ -162,4 +162,8 @@ source ~/.profile.sh
 
 # There should be no code below this comment.
 # If there is copy it into ~/.profile.sh.
+
+eval
+TWILIO_AC_ZSH_SETUP_PATH=/Users/nicholas.ferrara/.twilio-cli/autocomplete/zsh_setup && test -f $TWILIO_AC_ZSH_SETUP_PATH && source $TWILIO_AC_ZSH_SETUP_PATH # twilio autocomplete setup
+
 # ------------------------------------------------------------------------------------ #
