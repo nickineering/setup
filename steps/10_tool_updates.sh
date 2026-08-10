@@ -1,9 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034,SC2154
 #
-# Updates uv, tldr, Oh My Zsh, Claude Code, and Go tools concurrently. Each runs
-# in a background subshell writing to a temp file; results print in fixed order
-# after all complete so output stays deterministic.
+# Updates uv, tldr, Oh My Zsh, Claude Code, and Go tools concurrently.
+# Each prints its result immediately on completion (order may vary between runs).
 
 # Inline formatting for subshells (can't use helpers across process boundaries)
 _info="\033[38;5;245m·"
@@ -11,43 +10,41 @@ _success="\033[92m✓"
 _warn="\033[33m⚠"
 _reset="\033[0m"
 
-tool_update_dir=$(mktemp -d)
-
 if command -v uv &>/dev/null; then
 	(
-		uv_output=$(uv tool upgrade --all 2>/dev/null) || echo -e "${_warn} uv tool upgrade failed${_reset}"
+		uv_output=$(uv tool upgrade --all 2>/dev/null) || { echo -e "${_warn} uv tool upgrade failed${_reset}"; exit; }
 		if [[ -z "$uv_output" || "$uv_output" == "Nothing to upgrade" ]]; then
 			echo -e "${_info} uv tools: up to date${_reset}"
 		else
 			echo -e "${_success} uv tools: updated${_reset}"
 		fi
-	) >"$tool_update_dir/uv" 2>&1 &
+	) &
 fi
 
 if command -v tldr &>/dev/null; then
 	(
 		cache_dir="${HOME}/Library/Caches/tealdeer"
 		before=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
-		tldr --update >/dev/null 2>&1 || echo -e "${_warn} tldr update failed${_reset}"
+		tldr --update >/dev/null 2>&1 || { echo -e "${_warn} tldr update failed${_reset}"; exit; }
 		after=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
 		if [[ "$before" != "$after" && "$before" != "0" ]]; then
 			echo -e "${_success} tldr: pages updated${_reset}"
 		else
 			echo -e "${_info} tldr: up to date${_reset}"
 		fi
-	) >"$tool_update_dir/tldr" 2>&1 &
+	) &
 fi
 
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 	(
-		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || echo -e "${_warn} Oh My Zsh update failed${_reset}"
+		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || { echo -e "${_warn} Oh My Zsh update failed${_reset}"; exit; }
 		if [[ "$omz_output" == *"already at the latest"* ]]; then
 			echo -e "${_info} Oh My Zsh: up to date${_reset}"
 		else
 			echo -e "${_success} Oh My Zsh: updated${_reset}"
 		fi
-	) >"$tool_update_dir/omz" 2>&1 &
+	) &
 fi
 
 (
@@ -72,7 +69,7 @@ fi
 			echo -e "${_success} Claude Code: installed${_reset}"
 		fi
 	fi
-) >"$tool_update_dir/claude" 2>&1 &
+) &
 
 if command -v go &>/dev/null; then
 	(
@@ -91,13 +88,8 @@ if command -v go &>/dev/null; then
 		else
 			echo -e "${_info} Go tools: up to date${_reset}"
 		fi
-	) >"$tool_update_dir/go" 2>&1 &
+	) &
 fi
 
 wait
-
-for tool in uv tldr omz claude go; do
-	[[ -f "$tool_update_dir/$tool" ]] && cat "$tool_update_dir/$tool"
-done
-rm -rf "$tool_update_dir"
 echo ""
