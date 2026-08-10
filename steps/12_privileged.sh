@@ -14,10 +14,21 @@ desired_casks=$(parse_state_file "$SETUP/state/brew_casks.txt")
 installed_casks=$(get_installed_casks)
 missing_casks=$(set_difference "$installed_casks" "$desired_casks")
 
+# Casks where brew says "installed" but the .app isn't actually in /Applications
+zombie_casks=""
+while IFS=$'\t' read -r token app_name; do
+	[[ -n "$app_name" ]] && [[ ! -e "/Applications/$app_name" ]] && zombie_casks+="$token"$'\n'
+done < <(brew info --cask --json=v2 $installed_casks 2>/dev/null \
+	| jq -r '.casks[] | .token as $t | .artifacts[] | .app? // empty | .[] | "\($t)\t\(.)"' 2>/dev/null)
+zombie_casks="${zombie_casks%$'\n'}"
+
 sudo_tasks=()
 
 if [[ -n "$outdated_casks" ]]; then
 	sudo_tasks+=("Upgrade casks: $(echo "$outdated_casks" | tr '\n' ' ')")
+fi
+if [[ -n "$zombie_casks" ]]; then
+	sudo_tasks+=("Reinstall casks (app missing from /Applications): $(echo "$zombie_casks" | tr '\n' ' ')")
 fi
 if [[ -n "$missing_casks" ]]; then
 	sudo_tasks+=("Install casks: $(echo "$missing_casks" | tr '\n' ' ')")
@@ -74,7 +85,7 @@ if [[ ${#sudo_tasks[@]} -gt 0 ]]; then
 	else
 		info "Skipped privileged operations"
 		needs_zoom=false needs_womp=false needs_lockscreen=false
-		outdated_casks="" missing_casks="" removed_casks=""
+		outdated_casks="" zombie_casks="" missing_casks="" removed_casks=""
 	fi
 else
 	info "Nothing to do"
@@ -84,7 +95,13 @@ fi
 
 if [[ -n "$outdated_casks" ]]; then
 	info "Upgrading casks: $(echo "$outdated_casks" | tr '\n' ' ')"
-	brew upgrade --cask --greedy --no-quit -y || warn "Some casks failed to upgrade"
+	brew upgrade --cask --greedy --force --no-quit -y || warn "Some casks failed to upgrade"
+fi
+
+if [[ -n "$zombie_casks" ]]; then
+	info "Reinstalling casks missing from /Applications: $(echo "$zombie_casks" | tr '\n' ' ')"
+	# shellcheck disable=SC2086
+	brew reinstall --cask --force $zombie_casks || warn "Some casks failed to reinstall"
 fi
 
 if [[ -n "$missing_casks" ]]; then
