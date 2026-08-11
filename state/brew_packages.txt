@@ -6,30 +6,31 @@ ccusage                 # Coding agent usage and cost tracking
 chroma                  # Syntax highlighting utility. Required by ZSH-Colorize
 coreutils               # Mac default outdated
 deno                    # TypeScript native Node alternative written in Rust
+dprint                  # Fast Rust based formatter for web languages
 exiftool                # Remove metadata from images
 fd                      # Fast find alternative written in Rust
 findutils                # Mac default outdated
 gawk                    # Mac default outdated
-dprint                  # Fast Rust based formatter for web languages
 gh                      # Github CLI
-glab                    # GitLab CLI
 git                     # Latest Git (macOS ships an older Xcode version)
 git-lfs                 # Better handling of large files by Git
+glab                    # GitLab CLI
 gnu-indent              # Mac default outdated
 go                      # Go programming language
-jq                      # JSON query and processor
 gopls                   # Go Language Server
 gzip                    # Mac default outdated
-terraform               # Infrastructure as Code tool (via hashicorp/tap)
+jq                      # JSON query and processor
 jupyterlab              # Interactive code editing notebook
 make                    # Mac default outdated
 nvm                     # local JavaScript runtime
+poppler                 # PDF tools including pdftotext
 ripgrep                 # Fast grep alternative written in Rust
 ruff                    # Super fast Python linting written in Rust
 rust                    # Rust programming language
 shellcheck              # Linter for shell scripts
 shellharden             # Autofix for shell scripts
 shfmt                   # Formatter for shell scripts
+terraform               # Infrastructure as Code tool (via hashicorp/tap)
 tfsec                   # Security scanner for Terraform
 thefuck                 # Type "fuck" after misspelling terminal commands to autocorrect
 tldr                    # Simple help pages for command-line tools
