@@ -81,7 +81,7 @@ run_step "Installing git"
 if brew list git &>/dev/null; then
 	info "Already installed"
 else
-	brew install git
+	brew install -y git
 fi
 
 # ── 3. Clone or update repo ─────────────────────────────────────────────────
@@ -107,7 +107,7 @@ run_step "Installing modern bash"
 if brew list bash &>/dev/null; then
 	info "Already installed"
 else
-	if ! brew install bash; then
+	if ! brew install -y bash; then
 		echo "Error: Failed to install bash" >&2
 		exit 1
 	fi

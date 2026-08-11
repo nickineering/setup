@@ -101,7 +101,7 @@ fi
 if [[ -n "$zombie_casks" ]]; then
 	info "Reinstalling casks missing from /Applications: $(echo "$zombie_casks" | tr '\n' ' ')"
 	# shellcheck disable=SC2086
-	brew reinstall --cask --force "$zombie_casks" || warn "Some casks failed to reinstall"
+	brew reinstall --cask --force -y "$zombie_casks" || warn "Some casks failed to reinstall"
 fi
 
 if [[ -n "$missing_casks" ]]; then

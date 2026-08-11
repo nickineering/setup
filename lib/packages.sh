@@ -88,8 +88,8 @@ install_missing() {
 		action "Installing ${type}: ${item}"
 		local install_cmd
 		case "$type" in
-		package) install_cmd=(brew install) ;;
-		cask) install_cmd=(brew install --cask --adopt) ;; # --adopt: claim apps already in /Applications
+		package) install_cmd=(brew install -y) ;;
+		cask) install_cmd=(brew install --cask --adopt -y) ;;
 		extension) install_cmd=(code --install-extension) ;;
 		npm) install_cmd=(npm install -g --fund=false --audit=false) ;;
 		esac
