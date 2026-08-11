@@ -7,3 +7,14 @@ export REPO_ROOT
 source "$REPO_ROOT/lib/colors.sh"
 source "$REPO_ROOT/lib/backup.sh"
 source "$REPO_ROOT/lib/packages.sh"
+source "$REPO_ROOT/lib/steps.sh"
+
+# Strips ANSI escape sequences so assertions can match user-facing text
+# without embedding color codes. Reads $1, or stdin when no argument given.
+strip_ansi() {
+	if (($#)); then
+		printf '%s' "$1" | sed $'s/\033\\[[0-9;]*m//g'
+	else
+		sed $'s/\033\\[[0-9;]*m//g'
+	fi
+}

@@ -12,7 +12,10 @@ _reset="\033[0m"
 
 if command -v uv &>/dev/null; then
 	(
-		uv_output=$(uv tool upgrade --all 2>/dev/null) || { echo -e "${_warn} uv tool upgrade failed${_reset}"; exit; }
+		uv_output=$(uv tool upgrade --all 2>/dev/null) || {
+			echo -e "${_warn} uv tool upgrade failed${_reset}"
+			exit
+		}
 		if [[ -z "$uv_output" || "$uv_output" == "Nothing to upgrade" ]]; then
 			echo -e "${_info} uv tools: up to date${_reset}"
 		else
@@ -25,7 +28,10 @@ if command -v tldr &>/dev/null; then
 	(
 		cache_dir="${HOME}/Library/Caches/tealdeer"
 		before=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
-		tldr --update >/dev/null 2>&1 || { echo -e "${_warn} tldr update failed${_reset}"; exit; }
+		tldr --update >/dev/null 2>&1 || {
+			echo -e "${_warn} tldr update failed${_reset}"
+			exit
+		}
 		after=$(stat -f %Sm -t %s "$cache_dir" 2>/dev/null || echo "0")
 		if [[ "$before" != "$after" && "$before" != "0" ]]; then
 			echo -e "${_success} tldr: pages updated${_reset}"
@@ -38,7 +44,10 @@ fi
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [[ -d "$ZSH" && -x "$ZSH/tools/upgrade.sh" ]]; then
 	(
-		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || { echo -e "${_warn} Oh My Zsh update failed${_reset}"; exit; }
+		omz_output=$("$ZSH/tools/upgrade.sh" -v minimal 2>&1) || {
+			echo -e "${_warn} Oh My Zsh update failed${_reset}"
+			exit
+		}
 		if [[ "$omz_output" == *"already at the latest"* ]]; then
 			echo -e "${_info} Oh My Zsh: up to date${_reset}"
 		else

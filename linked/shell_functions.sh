@@ -67,8 +67,8 @@ _read_choice() {
 		printf "%s" "$char" >&2
 
 		local matches=0 last_match=""
-		for ((n=1; n<=count; n++)); do
-			if [[ "$n" == "${input}"* ]]; then
+		for ((n = 1; n <= count; n++)); do
+			if [[ "$n" == "$input"* ]]; then
 				((matches++))
 				last_match=$n
 			fi

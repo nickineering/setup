@@ -70,4 +70,3 @@ If failures reveal deeper issues (e.g., architectural problems, widespread type
 errors, test design flaws), STOP and consult the user rather than applying quick
 fixes. Prioritize clean maintainable code over suppressing issues to get CI
 green.
-

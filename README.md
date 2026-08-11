@@ -99,6 +99,9 @@ See `git-aliases` and `git-functions` for the full list.
 | ------------------- | ------------------------------------- |
 | `devenv`            | Re-run setup (safe, idempotent)       |
 | `devenv --clean`    | Also clear tool caches                |
+| `devenv --skip N…`  | Skip steps by number (`--skip 12 13`) |
+| `devenv --only N…`  | Run only these steps (`--only 8,9`)   |
+| `devenv --help`     | Usage, flags, and the step numbers    |
 | `godir <pat>`       | Find and cd to a directory by pattern |
 | `finddir <pat>`     | Find directories matching pattern     |
 | `cs <dir>`          | cd + ls                               |
@@ -202,6 +205,25 @@ Safe to run anytime - all operations are idempotent:
 devenv          # or: make setup
 devenv --clean  # also clear package manager caches
 ```
+
+To run a subset, pass step numbers - the same numbers shown as `[N/13]` during a
+run, and the prefixes on the files in `steps/`. Run `devenv --help` for the
+list.
+
+```bash
+devenv --skip 13     # everything except the slow macOS software update
+devenv --skip 12,13  # skip the steps that need sudo
+devenv --only 8,9    # just re-link dotfiles and reconfigure tools
+```
+
+Numbers can be separated by commas, spaces or both, so these are equivalent:
+
+```bash
+devenv --skip 12,13   devenv --skip 12, 13   devenv --skip 12 13   devenv --skip=12,13
+```
+
+An out-of-range or non-numeric value is rejected before any step runs, with the
+valid step list printed for reference.
 
 ## Development
 

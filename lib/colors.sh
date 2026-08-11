@@ -19,4 +19,5 @@ info() { echo -e "${dim}· $1${reset}"; }
 action() { echo -e "${sky}› $1${reset}"; }
 warn() { echo -e "${yellow}⚠ $1${reset}"; }
 success() { echo -e "${green}✓ $1${reset}"; }
+error() { echo -e "${red}✗ $1${reset}" >&2; }
 prompt() { echo -ne "${bold}$1${reset} "; }

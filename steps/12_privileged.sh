@@ -18,8 +18,8 @@ missing_casks=$(set_difference "$installed_casks" "$desired_casks")
 zombie_casks=""
 while IFS=$'\t' read -r token app_name; do
 	[[ -n "$app_name" ]] && [[ ! -e "/Applications/$app_name" ]] && zombie_casks+="$token"$'\n'
-done < <(brew info --cask --json=v2 $installed_casks 2>/dev/null \
-	| jq -r '.casks[] | .token as $t | .artifacts[] | .app? // empty | .[] | "\($t)\t\(.)"' 2>/dev/null)
+done < <(brew info --cask --json=v2 "$installed_casks" 2>/dev/null |
+	jq -r '.casks[] | .token as $t | .artifacts[] | .app? // empty | .[] | "\($t)\t\(.)"' 2>/dev/null)
 zombie_casks="${zombie_casks%$'\n'}"
 
 sudo_tasks=()
@@ -101,7 +101,7 @@ fi
 if [[ -n "$zombie_casks" ]]; then
 	info "Reinstalling casks missing from /Applications: $(echo "$zombie_casks" | tr '\n' ' ')"
 	# shellcheck disable=SC2086
-	brew reinstall --cask --force $zombie_casks || warn "Some casks failed to reinstall"
+	brew reinstall --cask --force "$zombie_casks" || warn "Some casks failed to reinstall"
 fi
 
 if [[ -n "$missing_casks" ]]; then

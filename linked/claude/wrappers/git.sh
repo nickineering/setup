@@ -34,7 +34,8 @@ for ((i = 1; i <= $#; i++)); do
 	arg="${!i}"
 	case "$arg" in
 	-C | -c | --git-dir | --work-tree | --namespace)
-		((i++)) ;;
+		((i++))
+		;;
 	--git-dir=* | --work-tree=* | -c\ * | --namespace=*)
 		;;
 	-*)
