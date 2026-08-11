@@ -6,6 +6,7 @@
   },
   "permissions": {
     "allow": [
+      "Bash(~/.claude/skills/cost/cost.sh*)",
       "Bash(awk *)",
       "Bash(aws *)",
       "Bash(base64 *)",
@@ -156,11 +157,12 @@
       "Bash(xargs *)",
       "Bash(yq *)",
       "Bash(zip *)",
-      "Bash(~/.claude/skills/cost/cost.sh*)",
       "Edit(./**)",
       "Grep(./**)",
       "Grep(~/projects/**)",
       "Grep(~/work/**)",
+      "mcp__kraken-mcp__*",
+      "mcp__plugin_twilio-developer-kit_twilio-docs__*",
       "Read(./**)",
       "Read(/opt/homebrew/**)",
       "Read(~/.aws/config)",
@@ -173,7 +175,6 @@
       "Read(~/.zshrc)",
       "Read(~/projects/**)",
       "Read(~/work/**)",
-      "mcp__kraken-mcp__*",
       "WebFetch(*)",
       "WebSearch(*)"
     ],
