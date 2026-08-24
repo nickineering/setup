@@ -100,5 +100,31 @@ if command -v go &>/dev/null; then
 	) &
 fi
 
+# mermaid-cli renders PNGs via puppeteer, which needs a chrome-headless-shell
+# build matching the version its bundled puppeteer-core pins. A mermaid-cli
+# upgrade moves that pin, so read it back rather than assuming @stable.
+if command -v mmdc &>/dev/null; then
+	(
+		revisions=$(npm root -g 2>/dev/null)/@mermaid-js/mermaid-cli/node_modules/puppeteer-core/lib/puppeteer/revisions.js
+		wanted=$(sed -n "s/.*'chrome-headless-shell': *'\([^']*\)'.*/\1/p" "$revisions" 2>/dev/null)
+
+		if [[ -z "$wanted" ]]; then
+			echo -e "${_warn} mermaid browser: could not read pinned version${_reset}"
+			exit
+		fi
+
+		if [[ -d "$HOME/.cache/puppeteer/chrome-headless-shell/mac_arm-${wanted}" ]]; then
+			echo -e "${_info} mermaid browser: up to date${_reset}"
+			exit
+		fi
+
+		if npx --yes @puppeteer/browsers install "chrome-headless-shell@${wanted}" >/dev/null 2>&1; then
+			echo -e "${_success} mermaid browser: installed ${wanted}${_reset}"
+		else
+			echo -e "${_warn} mermaid browser: install failed (${wanted})${_reset}"
+		fi
+	) &
+fi
+
 wait
 echo ""

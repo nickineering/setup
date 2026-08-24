@@ -27,7 +27,7 @@ the full workflow, rules, and config paths below in the agent's prompt.
 Theme configs are bundled with this skill at
 `~/projects/setup/linked/claude/skills/mermaid/`:
 
-- `puppeteer-config.json` - Chrome path for rendering
+- `puppeteer-config.json` - Browser launch options for rendering
 - `mermaid-config.json` - Theme and spacing settings
 - `mermaid.css` - Branding styles
 
@@ -117,6 +117,19 @@ mv -n <diagram>-1.png <diagram>.png
 
 - `-s 3` - Scale 3x for crisp text without excessive file size
 - `-c` - Config with theme and spacing settings
+
+**If rendering fails,** re-run `mmdc` with **no `-p` flag** first. Puppeteer
+reports a missing browser as `The browser is already running for <profile>` or a
+bare `TimeoutError`; dropping `-p` surfaces the real message, usually
+`Could not find chrome-headless-shell (ver. X)`. Fix by installing that version:
+
+```bash
+npx --yes @puppeteer/browsers install chrome-headless-shell@<ver>
+```
+
+`steps/06_tool_updates.sh` does this automatically, so normally it is already
+handled. Do not add `executablePath` pointing at desktop Google Chrome — it
+collides with the running browser's profile lock.
 
 ### 3. Report results
 
