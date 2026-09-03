@@ -19,7 +19,7 @@ After running, complete the [manual steps](MANUAL_STEPS.md).
 ### Package Management
 
 - **Homebrew packages** - `fd`, `ripgrep`, `jq`, `yq`, `uv`, `go`, `rust`,
-  `deno`, `terraform`, `shellcheck`, `ruff`, `tldr`, `thefuck`, `autojump`,
+  `deno`, `terraform`, `shellcheck`, `ruff`, `tldr`, `pay-respects`, `autojump`,
   `tmux`, `trash`, and more
 - **Homebrew casks** - VS Code, iTerm2, Docker, 1Password, Raycast, Firefox
   Developer Edition, Postman, Shottr, Tiles, and more

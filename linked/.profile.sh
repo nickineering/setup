@@ -22,8 +22,19 @@ export PATH="$HOMEBREW_PREFIX/opt/unzip/bin:$PATH"
 # Needed for uv
 export PATH="$HOME/.local/bin:$PATH"
 
-# Enable thefuck to correct mistyped commands
-eval "$(thefuck --alias)"
+# Correct mistyped commands with "fuck". Interactive only, and needs the shell
+# named explicitly since this file is sourced by both.
+case $- in
+*i*)
+	if command -v pay-respects >/dev/null 2>&1; then
+		if [ -n "${ZSH_VERSION:-}" ]; then
+			eval "$(pay-respects zsh --alias fuck)"
+		elif [ -n "${BASH_VERSION:-}" ]; then
+			eval "$(pay-respects bash --alias fuck)"
+		fi
+	fi
+	;;
+esac
 
 # Easy access to this repo
 export SETUP=~/projects/setup

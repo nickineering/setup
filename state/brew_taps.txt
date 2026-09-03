@@ -4,3 +4,4 @@
 beeftornado/rmtree
 hashicorp/tap
 terraform-linters/tap
+timescam/tap
