@@ -195,3 +195,296 @@ wipe_local() {
 		echo "Aborted"
 	fi
 }
+
+# ------------------------------------------------------------------------------------ #
+#                                     Worktrees
+# ------------------------------------------------------------------------------------ #
+#
+# The ~/work mirror is addressable: a GitLab path maps straight onto a filesystem
+# path, which is what makes it usable as an LLM context corpus. Worktrees would
+# break that if they landed inside the clones, so they go in a parallel tree that
+# mirrors the same structure:
+#
+#   ~/work/<gitlab-path>                    main clone, tracks develop/main
+#   ~/work/.worktrees/<gitlab-path>/<slug>  one directory per active branch
+#
+# <slug> is the branch name with "/" replaced by "-".
+#
+# Claude Code's WorktreeCreate/WorktreeRemove hooks call wt_hook_create and
+# wt_hook_remove, so `claude --worktree` and worktree-isolated subagents land here
+# too rather than in <repo>/.claude/worktrees/. Repos outside ~/work keep Claude
+# Code's default location — see wt_hook_create.
+
+# git_default_branch. $SETUP is not guaranteed in a hook environment, hence the
+# fallback.
+# shellcheck source=../lib/git.sh
+source "${SETUP:-$HOME/projects/setup}/lib/git.sh"
+
+# Root of the parallel worktree tree
+_wt_root() {
+	printf '%s' "$HOME/work/.worktrees"
+}
+
+# Branch name -> directory name
+_wt_slug() {
+	printf '%s' "$1" | tr '/' '-'
+}
+
+# Path of the current repo relative to ~/work. Fails if not in the mirror.
+_wt_repo_rel() {
+	local root
+	root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+	case "$root" in
+	"$HOME/work/"*) printf '%s' "${root#"$HOME"/work/}" ;;
+	*) return 1 ;;
+	esac
+}
+
+# Commits on HEAD that are not on the remote yet, for $1=WORKTREE_DIRECTORY.
+# New branches are created --no-track, so @{upstream} is usually absent until the
+# first push and we have to fall back to comparing against the default branch.
+_wt_unpushed_count() {
+	local dir="$1" count default
+	count=$(git -C "$dir" rev-list --count '@{upstream}..HEAD' 2>/dev/null)
+	if [[ -z "$count" ]]; then
+		default=$(git_default_branch "$dir")
+		[[ -n "$default" ]] &&
+			count=$(git -C "$dir" rev-list --count "origin/$default..HEAD" 2>/dev/null)
+	fi
+	printf '%s' "${count:-0}"
+}
+
+# Worktree directory for a branch in the current repo: $1=BRANCH
+_wt_path() {
+	local rel
+	rel=$(_wt_repo_rel) || return 1
+	printf '%s/%s/%s' "$(_wt_root)" "$rel" "$(_wt_slug "$1")"
+}
+
+# Copy gitignored config into a new worktree. A WorktreeCreate hook replaces
+# git's own logic, so Claude Code does not process .worktreeinclude — this stands
+# in for it. $1=SOURCE_WORKTREE, $2=NEW_WORKTREE
+_wt_copy_local_files() {
+	local src="$1" dst="$2" f
+	for f in .env .env.local .envrc; do
+		[[ -f "$src/$f" && ! -e "$dst/$f" ]] && cp "$src/$f" "$dst/$f" 2>/dev/null
+	done
+	return 0
+}
+
+# Create a worktree at an explicit path. $1=DIRECTORY, $2=BRANCH
+# Progress goes to stderr so callers can capture the path from stdout.
+#
+# NOTE: worktree directories are held in `wtdir`, never `path` — zsh ties `path`
+# to $PATH, so `local path` empties PATH for the rest of the function.
+_wt_add() {
+	local wtdir="$1" branch="$2" default src
+
+	# Already there: reuse it, so re-running is cheap and idempotent
+	if [[ -d "$wtdir" ]]; then
+		echo "Worktree already exists: $wtdir" >&2
+		printf '%s\n' "$wtdir"
+		return 0
+	fi
+
+	# Pick up any new remote branches before deciding how to create this one
+	git fetch --quiet origin >/dev/null 2>&1
+	# Resolved after the fetch so a newly created remote default is visible
+	default=$(git_default_branch)
+
+	src=$(git rev-parse --show-toplevel 2>/dev/null)
+	if git show-ref --verify --quiet "refs/heads/$branch"; then
+		# Git already refuses a second checkout, naming the worktree that holds it
+		git worktree add --quiet "$wtdir" "$branch" >&2 || return 1
+	elif git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+		# Track the existing remote branch
+		git worktree add --quiet --track -b "$branch" "$wtdir" "origin/$branch" >&2 || return 1
+	else
+		# New branch from the remote default, matching worktree.baseRef "fresh".
+		# --no-track keeps origin/<default> from becoming this branch's upstream,
+		# which would break both `git push` and the sync's stale detection.
+		local base
+		if [[ -n "$default" ]] && git show-ref --verify --quiet "refs/remotes/origin/$default"; then
+			base="origin/$default"
+		else
+			# No origin to be fresh from (a local-only repo), so branch from here
+			base=HEAD
+		fi
+		git worktree add --quiet --no-track -b "$branch" "$wtdir" "$base" >&2 || return 1
+	fi
+
+	[[ -n "$src" ]] && _wt_copy_local_files "$src" "$wtdir"
+	printf '%s\n' "$wtdir"
+}
+
+# Create (or reuse) a worktree for a branch in the current mirror repo.
+# Prints the path to stdout; `git wt` in shell_functions.sh cds into it.
+# $1=BRANCH
+wt_create() {
+	local branch="${1:?usage: git wt BRANCH}" wtdir default
+	if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+		echo "Not in a git repository" >&2
+		return 1
+	fi
+	if ! wtdir=$(_wt_path "$branch"); then
+		echo "Not in the ~/work mirror — use git worktree add directly" >&2
+		return 1
+	fi
+
+	# The main clone owns the default branch. sync_repo.sh fast-forwards it with
+	# `git branch -f`, which git refuses for a branch checked out anywhere else.
+	default=$(git_default_branch)
+	case "$branch" in
+	main | master | develop | "$default")
+		echo "Refusing to worktree $branch — the main clone owns the default branch" >&2
+		return 1
+		;;
+	esac
+
+	_wt_add "$wtdir" "$branch"
+}
+
+# Remove a worktree and its branch: $1=BRANCH
+# Warns about work that will be lost but does not stop, matching `git bdr`.
+wt_remove() {
+	local branch="${1:?usage: git wt-rm BRANCH}" wtdir root d ahead
+	wtdir=$(_wt_path "$branch") || {
+		echo "Not in the ~/work mirror" >&2
+		return 1
+	}
+	if [[ ! -d "$wtdir" ]]; then
+		echo "No worktree at $wtdir" >&2
+		return 1
+	fi
+
+	if [[ -n "$(git -C "$wtdir" status --porcelain 2>/dev/null)" ]]; then
+		echo "⚠ Discarding uncommitted changes in $wtdir" >&2
+	fi
+	ahead=$(_wt_unpushed_count "$wtdir")
+	if [[ "$ahead" != "0" ]]; then
+		echo "⚠ Discarding $ahead unpushed commit(s) on $branch" >&2
+	fi
+
+	git worktree remove --force "$wtdir" || return 1
+	git branch -D "$branch" 2>/dev/null
+
+	# Tidy the scaffolding this worktree needed, but never climb past .worktrees
+	root=$(_wt_root)
+	d=$(dirname "$wtdir")
+	while [[ "$d" != "$root" && "$d" != "/" && -n "$d" ]]; do
+		rmdir "$d" 2>/dev/null || break
+		d=$(dirname "$d")
+	done
+	echo "Removed worktree $wtdir" >&2
+}
+
+# Every worktree in the mirror — the "what am I working on" view.
+# Reads the parallel tree directly instead of asking 360 repos.
+wt_list_all() {
+	local root out
+	root=$(_wt_root)
+	if [[ ! -d "$root" ]]; then
+		echo "No worktrees."
+		return 0
+	fi
+	# A linked worktree's git entry is a file, not a directory — that is also why
+	# the sync's `fd --type d '^\.git$'` scan never mistakes one for a repo.
+	out=$(fd --hidden --no-ignore --max-depth 8 --type f '^\.git$' "$root" 2>/dev/null |
+		sed 's|/[^/]*$||' | sort | while IFS= read -r d; do
+		local branch dirty ahead
+		branch=$(git -C "$d" branch --show-current 2>/dev/null)
+		[[ -n "$branch" ]] || continue
+		dirty=""
+		[[ -n "$(git -C "$d" status --porcelain 2>/dev/null)" ]] && dirty=" [dirty]"
+		ahead=$(_wt_unpushed_count "$d")
+		[[ "$ahead" != "0" ]] && dirty="$dirty [+$ahead]"
+		printf '%s  →  %s%s\n' "${d#"$root"/}" "$branch" "$dirty"
+	done)
+	if [[ -z "$out" ]]; then
+		echo "No worktrees."
+	else
+		printf '%s\n' "$out"
+	fi
+}
+
+# WorktreeCreate hook. Reads Claude Code's JSON on stdin and prints the created
+# directory on stdout; any non-zero exit fails worktree creation, so repos
+# outside the mirror fall back to Claude Code's own default location rather than
+# losing worktree support entirely.
+wt_hook_create() {
+	local input name cwd root rel wtdir
+	input=$(cat)
+	name=$(printf '%s' "$input" | jq -r '.name // empty' 2>/dev/null)
+	cwd=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null)
+
+	# Payload (verified against the 2.1.245 binary): the common hook fields
+	# session_id / transcript_path / cwd / permission_mode / agent_id, plus
+	# hook_event_name and `name` — the requested worktree name. agent_id is set for
+	# subagents, if we ever want to file agent worktrees separately.
+	if [[ -n "${WT_HOOK_DEBUG:-}" ]]; then
+		printf '%s\n' "$input" >>"${TMPDIR:-/tmp}/wt_hook.log"
+	fi
+
+	# CLAUDE_PROJECT_DIR stays at the launch directory, so trust cwd instead
+	[[ -n "$cwd" && -d "$cwd" ]] && cd "$cwd" || true
+	[[ -n "$name" ]] || name="session-$$"
+
+	root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+		echo "WorktreeCreate: not in a git repository" >&2
+		return 1
+	}
+
+	if rel=$(_wt_repo_rel); then
+		wtdir="$(_wt_root)/$rel/$(_wt_slug "$name")"
+	else
+		# Outside ~/work: reproduce Claude Code's default so this hook never makes
+		# worktrees worse than not having it
+		echo "WorktreeCreate: $root is outside ~/work, using .claude/worktrees" >&2
+		wtdir="$root/.claude/worktrees/$(_wt_slug "$name")"
+	fi
+
+	_wt_add "$wtdir" "$name"
+}
+
+# WorktreeRemove hook. Only ever touches worktrees inside the mirror's parallel
+# tree, so a stray path in the payload can never delete real work.
+wt_hook_remove() {
+	local input wtdir root d branch ahead maindir
+	input=$(cat)
+	# `worktree_path` is the field this build sends; the others are belt and braces
+	wtdir=$(printf '%s' "$input" | jq -r '.worktree_path // .path // .worktree // empty' 2>/dev/null)
+	[[ -n "${WT_HOOK_DEBUG:-}" ]] && printf '%s\n' "$input" >>"${TMPDIR:-/tmp}/wt_hook.log"
+	[[ -n "$wtdir" && -d "$wtdir" ]] || return 0
+
+	root=$(_wt_root)
+	case "$wtdir" in
+	"$root"/*) ;;
+	*) return 0 ;;
+	esac
+
+	# Read these while the worktree still exists
+	branch=$(git -C "$wtdir" branch --show-current 2>/dev/null)
+	ahead=$(_wt_unpushed_count "$wtdir")
+	maindir=$(git -C "$wtdir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+	maindir=$(dirname "$maindir")
+
+	git -C "$wtdir" worktree remove --force "$wtdir" 2>/dev/null ||
+		git worktree remove --force "$wtdir" 2>/dev/null
+
+	# Unlike `git wt-rm`, this can fire unattended — Claude Code sweeps old
+	# worktrees on its own (cleanupPeriodDays). So only drop the branch when it
+	# holds nothing origin does not already have; otherwise keep it and say so,
+	# leaving it to `git bd` or the sync's stale-branch pass once it merges.
+	if [[ -n "$branch" && "$ahead" == "0" ]]; then
+		git -C "$maindir" branch -D "$branch" >/dev/null 2>&1
+	elif [[ -n "$branch" ]]; then
+		echo "Kept branch $branch — it has $ahead unpushed commit(s)" >&2
+	fi
+
+	d=$(dirname "$wtdir")
+	while [[ "$d" != "$root" && "$d" != "/" && -n "$d" ]]; do
+		rmdir "$d" 2>/dev/null || break
+		d=$(dirname "$d")
+	done
+	return 0
+}

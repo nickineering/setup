@@ -54,3 +54,7 @@
 	recurse = true
 [tag]
 	gpgSign = true
+[worktree]
+	# Relative links between a worktree and its clone, so the ~/work mirror and
+	# its parallel .worktrees tree survive being moved together
+	useRelativePaths = true

@@ -17,8 +17,22 @@ _count_lines() {
 	if [[ -z "$1" ]]; then echo 0; else echo "$1" | wc -l | tr -d ' '; fi
 }
 
+# Remove the now-empty parent directories the mirrored worktree layout leaves
+# behind. Stops at the worktree root, so it can never climb into $repos_dir.
+# Usage: _prune_worktree_parents <removed_path> <worktree_root>
+_prune_worktree_parents() {
+	local d root="$2"
+	d=$(dirname "$1")
+	while [[ "$d" != "$root" && "$d" != "/" && -n "$d" ]]; do
+		rmdir "$d" 2>/dev/null || break
+		d=$(dirname "$d")
+	done
+}
+
 sync_repos() {
 	local repos_dir="${HOME:?}/work"
+	# Parallel worktree tree — see the Worktrees section in linked/git_functions.sh
+	local worktrees_dir="$repos_dir/.worktrees"
 	local parallel_jobs=$(($(sysctl -n hw.ncpu) * 2))
 
 	# Safety: ensure repos_dir is a reasonable path (not root, not home)
@@ -35,9 +49,16 @@ sync_repos() {
 		done < <(echo "$GITLAB_EXCLUDE_DIRS" | tr '|' '\n')
 	fi
 
-	# Helper: find all git repos, excluding configured directories
+	# Helper: find all git repos, excluding configured directories.
+	#
+	# .worktrees is excluded unconditionally rather than via GITLAB_EXCLUDE_DIRS:
+	# this list is diffed against GitLab to decide what to clone and what to trash,
+	# and a worktree has no counterpart there, so a miss here would offer to delete
+	# real work. (A linked worktree's git entry is a file, not a directory, so
+	# --type d already skips them — this makes the guarantee explicit and cheap.)
 	_find_repos() {
-		fd --type d --hidden '^\.git$' "$repos_dir" "${exclude_args[@]}" 2>/dev/null |
+		fd --type d --hidden '^\.git$' "$repos_dir" \
+			--exclude .worktrees "${exclude_args[@]}" 2>/dev/null |
 			sed -E 's|/\.git/?$||'
 	}
 
@@ -185,7 +206,16 @@ sync_repos() {
 				[[ -z "$repo" ]] && continue
 				# Safety: validate path is under repos_dir before deleting
 				local target="$repos_dir/$repo"
-				[[ "$target" == "$repos_dir"/* && -d "$target" ]] && trash "$target"
+				[[ "$target" == "$repos_dir"/* && -d "$target" ]] || continue
+				# Worktrees first — their git entries point back into the clone, so
+				# trashing the clone would leave them dangling and unremovable.
+				local wt_target="$worktrees_dir/$repo"
+				if [[ "$wt_target" == "$worktrees_dir"/* && -d "$wt_target" ]]; then
+					echo -e "  ${dim}Removing worktrees for $repo${reset}"
+					trash "$wt_target"
+					_prune_worktree_parents "$wt_target" "$worktrees_dir"
+				fi
+				trash "$target"
 			done
 			repo_list=$(_find_repos)
 		fi
@@ -216,11 +246,23 @@ sync_repos() {
 		stale_count=$(wc -l <"$stale_branches_file" | tr -d ' ')
 		info "Found ${bold}${yellow}${stale_count}${reset}${dim} stale branch(es)"
 		echo ""
-		while IFS=: read -r repo branch; do
-			printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
+		# Third field is the worktree holding the branch, empty for mainline branches
+		while IFS=: read -r repo branch wt; do
+			if [[ -n "$wt" ]]; then
+				printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(worktree)${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
+			else
+				printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
+			fi
 			read -r -n 1 confirm </dev/tty
 			echo ""
 			if [[ "$confirm" =~ ^[Yy]$ ]]; then
+				# The worktree has to go first: git refuses `branch -D` for a branch
+				# that is checked out anywhere. Upstream is gone, so nothing to push.
+				if [[ -n "$wt" && "$wt" == "$worktrees_dir"/* ]]; then
+					git -C "$repos_dir/$repo" worktree remove --force "$wt" 2>/dev/null ||
+						echo -e "  ${yellow}⚠ Failed to remove worktree $wt${reset}"
+					_prune_worktree_parents "$wt" "$worktrees_dir"
+				fi
 				git -C "$repos_dir/$repo" branch -D "$branch" 2>/dev/null &&
 					echo -e "  ${green}✓ Deleted${reset}" ||
 					echo -e "  ${yellow}⚠ Failed to delete${reset}"
@@ -231,12 +273,16 @@ sync_repos() {
 		echo ""
 	fi
 
-	# Show repos with active feature branches (unmerged work)
+	# Show repos with active feature branches (unmerged work) and live worktrees
 	if [[ -s "$active_branches_file" ]]; then
-		echo -e "${bold}› Active feature branches (unmerged)${reset}"
-		while IFS=: read -r repo branch; do
-			printf "  ${coral}%s${reset} → ${coral}%s${reset}\n" "$repo" "$branch"
-		done <"$active_branches_file"
+		echo -e "${bold}› Active work${reset}"
+		while IFS=: read -r repo branch wt; do
+			if [[ -n "$wt" ]]; then
+				printf "  ${coral}%s${reset} → ${coral}%s${reset} ${dim}(worktree)${reset}\n" "$repo" "$branch"
+			else
+				printf "  ${coral}%s${reset} → ${coral}%s${reset}\n" "$repo" "$branch"
+			fi
+		done < <(sort "$active_branches_file")
 		echo ""
 	fi
 }

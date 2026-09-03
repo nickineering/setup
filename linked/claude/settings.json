@@ -230,7 +230,30 @@
           }
         ]
       }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/worktree-create.sh"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/projects/setup/linked/claude/hooks/worktree-remove.sh"
+          }
+        ]
+      }
     ]
+  },
+  "enabledPlugins": {
+    "twilio-developer-kit@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,
@@ -252,7 +275,5 @@
       ]
     }
   },
-  "enabledPlugins": {
-    "twilio-developer-kit@claude-plugins-official": true
-  }
+  "tui": "fullscreen"
 }

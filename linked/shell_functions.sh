@@ -52,7 +52,7 @@ _read_choice() {
 				echo "$input"
 				return
 			fi
-			echo "\033[1;31mInvalid selection\033[0m" >&2
+			printf "\033[1;31mInvalid selection\033[0m\n" >&2
 			return 1
 		fi
 		if [[ "$char" == $'\x7f' || "$char" == $'\b' ]]; then
@@ -80,7 +80,7 @@ _read_choice() {
 			return
 		elif [[ $matches -eq 0 ]]; then
 			echo >&2
-			echo "\033[1;31mInvalid selection\033[0m" >&2
+			printf "\033[1;31mInvalid selection\033[0m\n" >&2
 			return 1
 		fi
 	done
@@ -125,7 +125,7 @@ godir() {
 	if [[ -n "$target" ]]; then
 		cd "$target" && pwd
 	else
-		echo "\033[1;31mInvalid selection\033[0m"
+		printf "\033[1;31mInvalid selection\033[0m\n"
 		return 1
 	fi
 }
@@ -138,11 +138,27 @@ godir() {
 # SIDE EFFECT: Shadows the `git` command. Use `command git` to bypass.
 #
 # OVERRIDES:
-#   root        - cd to repository root
-#   start [REF] - cd to root, checkout REF (default: master/main), pull
+#   root         - cd to repository root
+#   start [REF]  - cd to root, checkout REF (default: master/main), pull
+#   wt [BRANCH]  - cd to a worktree for BRANCH, creating it if needed
 git() {
+	# git wt [branch] - create/reuse a worktree and cd into it; no args lists them
+	if [[ "$1" == "wt" ]]; then
+		if [[ -z "${2:-}" ]]; then
+			command git worktree list
+			return
+		fi
+		local wt_path
+		# The alias prints only the path on stdout; progress goes to stderr
+		wt_path=$(command git wt "$2") || return 1
+		if [[ -z "$wt_path" || ! -d "$wt_path" ]]; then
+			echo "Worktree was not created"
+			return 1
+		fi
+		cd "$wt_path" || return 1
+		pwd
 	# git root - cd to repository root
-	if [[ "$1" == "root" ]]; then
+	elif [[ "$1" == "root" ]]; then
 		local root
 		root=$(command git rev-parse --show-toplevel 2>/dev/null)
 		if [[ -n "$root" ]]; then
