@@ -78,6 +78,9 @@ ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
 # Automatically load node version specified by .nvmrc
 zstyle ':omz:plugins:nvm' autoload true
 
+# Load nvm on first nvm/node/npm/yarn/corepack call instead of at startup
+zstyle ':omz:plugins:nvm' lazy yes
+
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
@@ -94,13 +97,21 @@ plugins=(
 	dotenv                  # Automatically load .env files in current directory
 	gnu-utils               # Aliases updated coreutils to replace Mac defaults
 	gh                      # Completion for Github
-	gpg-agent               # Enable GPG keys for commit signing
 	nvm                     # Source NVM and add completions
 	rust                    # Rust completions
 	web-search              # Web search straight from the command line
 	zsh-autosuggestions     # Automatically show results from history while typing
 	zsh-syntax-highlighting # Syntax highlight shell commands while typing
 )
+
+# Completion dirs, which must join fpath before the compinit oh-my-zsh runs below.
+fpath+=(
+	~/.zfunc                                 # ruff
+	~/.twilio-cli/autocomplete/functions/zsh # twilio
+)
+
+# Skip compaudit's fpath permission check
+ZSH_DISABLE_COMPFIX=true
 
 source $ZSH/oh-my-zsh.sh
 
@@ -144,15 +155,13 @@ setopt nomatch              # Error if no file matches a glob
 setopt notify               # Report the status of background jobs immediately
 setopt interactive_comments # Allow comment (#) characters in interactive shells
 
-# Needed for ruff autocompletions
-fpath+=~/.zfunc
-
-# The following lines were added by compinstall
-# Install better completions
-zstyle :compinstall filename '~/.zshrc'
-autoload -Uz compinit
-compinit
-# End of lines added by compinstall
+# Point GPG at the current tty so signing prompts appear in the right place
+export GPG_TTY=$TTY
+function _gpg_update_tty {
+	gpg-connect-agent updatestartuptty /bye &>/dev/null
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec _gpg_update_tty
 
 # Iterm2 advanced features
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
@@ -162,8 +171,5 @@ source ~/.profile.sh
 
 # There should be no code below this comment.
 # If there is copy it into ~/.profile.sh.
-
-eval
-TWILIO_AC_ZSH_SETUP_PATH=/Users/nicholas.ferrara/.twilio-cli/autocomplete/zsh_setup && test -f $TWILIO_AC_ZSH_SETUP_PATH && source $TWILIO_AC_ZSH_SETUP_PATH # twilio autocomplete setup
 
 # ------------------------------------------------------------------------------------ #
