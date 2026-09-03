@@ -5,13 +5,11 @@
 load test_helper
 
 setup() {
-    TEST_DIR="$(mktemp -d)"
+    # bats creates and removes $BATS_TEST_TMPDIR itself. mktemp -d is blocked in
+    # Claude sessions, and no teardown means no rm for the wrapper to refuse.
+    TEST_DIR="$BATS_TEST_TMPDIR"
     export BACKUPS="$TEST_DIR/backups"
     mkdir -p "$BACKUPS"
-}
-
-teardown() {
-    [[ -d "$TEST_DIR" ]] && rm -rf "$TEST_DIR"
 }
 
 # ============================================

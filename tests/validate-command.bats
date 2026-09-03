@@ -6,16 +6,36 @@ setup_file() {
     export HOOK="$REPO_ROOT/linked/claude/hooks/validate-command.sh"
 }
 
-# Helper: run hook with JSON input, expect it to pass (exit 0)
+# The hook has three outcomes:
+#   allow       - exit 0, no output
+#   ask         - exit 0, JSON with permissionDecision "ask" (user decides)
+#   hard block  - exit 2, "BLOCKED:" on stderr (no way to override)
+
+# Helper: expect the command to run without prompting
 pass() {
     run bash -c "echo '$1' | \"$HOOK\""
     [[ "$status" -eq 0 ]]
+    [[ "$output" != *permissionDecision* ]]
 }
 
-# Helper: run hook with JSON input, expect it to block (exit non-zero)
+# Helper: expect the command NOT to proceed unchallenged - either tier is fine
 block() {
     run bash -c "echo '$1' | \"$HOOK\""
-    [[ "$status" -ne 0 ]]
+    [[ "$status" -ne 0 || "$output" == *'"permissionDecision":"ask"'* ]]
+}
+
+# Helper: expect a hard block that the user cannot approve past
+hard_block() {
+    run bash -c "echo '$1' | \"$HOOK\""
+    [[ "$status" -eq 2 ]]
+    [[ "$output" == *BLOCKED* ]]
+}
+
+# Helper: expect an approval prompt (not a hard block)
+ask() {
+    run bash -c "echo '$1' | \"$HOOK\""
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *'"permissionDecision":"ask"'* ]]
 }
 
 # Helper: create Bash tool JSON
@@ -319,8 +339,8 @@ bash_cmd() {
     pass "$(bash_cmd 'git branch new-branch')"
 }
 
-@test "git branch -d (safe delete)" {
-    pass "$(bash_cmd 'git branch -d old-branch')"
+@test "git branch -d (safe delete) asks" {
+    ask "$(bash_cmd 'git branch -d old-branch')"
 }
 
 @test "git branch -D (force delete) blocked" {
@@ -771,8 +791,8 @@ bash_cmd() {
     block "$(bash_cmd 'git push -f origin main')"
 }
 
-@test "git push" {
-    pass "$(bash_cmd 'git push origin main')"
+@test "git push asks (shared state)" {
+    ask "$(bash_cmd 'git push origin main')"
 }
 
 @test "git checkout -- file blocked" {
@@ -1015,8 +1035,8 @@ bash_cmd() {
     block "$(bash_cmd 'git commit --amend -m fix')"
 }
 
-@test "git commit" {
-    pass "$(bash_cmd 'git commit -m \"message\"')"
+@test "git commit asks" {
+    ask "$(bash_cmd 'git commit -m \"message\"')"
 }
 
 # ============================================
