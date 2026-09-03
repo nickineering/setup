@@ -4,6 +4,18 @@
     "timezone": "Europe/London",
     "breakdown": true,
     "pricingOverrides": {
+      "claude-fable-5": {
+        "inputCostPerToken": 0.000011,
+        "outputCostPerToken": 0.000055,
+        "cacheCreationInputTokenCost": 0.00001375,
+        "cacheReadInputTokenCost": 0.0000011
+      },
+      "claude-opus-5": {
+        "inputCostPerToken": 0.0000055,
+        "outputCostPerToken": 0.0000275,
+        "cacheCreationInputTokenCost": 0.000006875,
+        "cacheReadInputTokenCost": 0.00000055
+      },
       "claude-opus-4-6": {
         "inputCostPerToken": 0.0000055,
         "outputCostPerToken": 0.0000275,
@@ -21,6 +33,12 @@
         "outputCostPerToken": 0.0000275,
         "cacheCreationInputTokenCost": 0.000006875,
         "cacheReadInputTokenCost": 0.00000055
+      },
+      "claude-sonnet-5": {
+        "inputCostPerToken": 0.0000022,
+        "outputCostPerToken": 0.000011,
+        "cacheCreationInputTokenCost": 0.00000275,
+        "cacheReadInputTokenCost": 0.00000022
       },
       "claude-sonnet-4-5-20250929": {
         "inputCostPerToken": 0.0000033,
