@@ -72,8 +72,13 @@ fi
 
 # ── 3. GitLab CLI ────────────────────────────────────────────────────────────
 run_step "Authenticating GitLab CLI"
-if ! glab auth status &>/dev/null 2>&1; then
-	glab auth login
+# Scoped to GITLAB_HOST when set: a bare `glab auth status` covers every host it
+# knows about, so one stale entry would drag a working host into a needless
+# re-login.
+glab_host_args=()
+[[ -n "${GITLAB_HOST:-}" ]] && glab_host_args=(--hostname "$GITLAB_HOST")
+if ! glab auth status "${glab_host_args[@]}" &>/dev/null; then
+	glab auth login "${glab_host_args[@]}"
 	success "Configured GitLab CLI"
 else
 	info "GitLab CLI already authenticated"

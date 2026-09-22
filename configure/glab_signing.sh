@@ -8,9 +8,48 @@ local_gitconfig="$HOME/work/.gitconfig"
 
 mkdir -p "$HOME/work"
 
-# If ~/work/.gitconfig already has a signing key, we're done
-if [[ -f "$local_gitconfig" ]] && git config --file "$local_gitconfig" user.signingkey &>/dev/null; then
+# Publish the signing key to whichever instance glab points at. Deliberately not
+# guarded by the local-config check below: GPG keys are per-account, so a key
+# already recorded in ~/work/.gitconfig still has to be uploaded when the instance
+# changes — otherwise every commit silently shows as Unverified.
+publish_gpg_key() {
+	local key_id="$1" gpg_pubkey key_fingerprint
+	gpg_pubkey=$(gpg --armor --export "$key_id")
+
+	# Checked against GITLAB_HOST, because that is where the api calls below land. A
+	# bare status passes as long as any host is authenticated, which would send us on
+	# to a POST that fails for the one host that matters.
+	local glab_host_args=()
+	[[ -n "${GITLAB_HOST:-}" ]] && glab_host_args=(--hostname "$GITLAB_HOST")
+	if ! glab auth status "${glab_host_args[@]}" &>/dev/null; then
+		warn "glab not authenticated. After authenticating, add your GPG key:"
+		echo -e "  ${dim}Run: gpg --armor --export $key_id | glab api --method POST user/gpg_keys -F key=@-${reset}"
+		return 0
+	fi
+
+	key_fingerprint=$(echo "$gpg_pubkey" | sed -n '3p')
+	if glab api "user/gpg_keys" 2>/dev/null | grep -q "$key_fingerprint"; then
+		info "GPG key already on GitLab"
+		return 0
+	fi
+
+	info "Adding GPG key to GitLab..."
+	if echo "$gpg_pubkey" | glab api --method POST "user/gpg_keys" -F "key=@-" &>/dev/null; then
+		success "GPG key added to GitLab"
+	else
+		warn "Failed to add GPG key to GitLab. Add manually:"
+		echo -e "  ${dim}Run: gpg --armor --export $key_id | glab api --method POST user/gpg_keys -F key=@-${reset}"
+	fi
+}
+
+# The local identity is a one-time setup; publishing the key is not.
+existing_key=""
+if [[ -f "$local_gitconfig" ]]; then
+	existing_key=$(git config --file "$local_gitconfig" user.signingkey 2>/dev/null || echo "")
+fi
+if [[ -n "$existing_key" ]]; then
 	info "Work git identity already configured"
+	publish_gpg_key "$existing_key"
 	return 0
 fi
 
@@ -43,24 +82,6 @@ fi
 git config --file "$local_gitconfig" user.email "$work_email"
 git config --file "$local_gitconfig" user.signingkey "$GPG_KEY_ID"
 
-# Add to GitLab if glab is authenticated
-if glab auth status &>/dev/null; then
-	gpg_pubkey=$(gpg --armor --export "$GPG_KEY_ID")
-	key_fingerprint=$(echo "$gpg_pubkey" | sed -n '3p')
-	if glab api "user/gpg_keys" 2>/dev/null | grep -q "$key_fingerprint"; then
-		info "GPG key already on GitLab"
-	else
-		info "Adding GPG key to GitLab..."
-		if echo "$gpg_pubkey" | glab api --method POST "user/gpg_keys" -F "key=@-" &>/dev/null; then
-			success "GPG key added to GitLab"
-		else
-			warn "Failed to add GPG key to GitLab. Add manually:"
-			echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | glab api --method POST user/gpg_keys -F key=@-${reset}"
-		fi
-	fi
-else
-	warn "glab not authenticated. After authenticating, add your GPG key:"
-	echo -e "  ${dim}Run: gpg --armor --export $GPG_KEY_ID | glab api --method POST user/gpg_keys -F key=@-${reset}"
-fi
+publish_gpg_key "$GPG_KEY_ID"
 
 success "Work git identity configured (key: $GPG_KEY_ID)"

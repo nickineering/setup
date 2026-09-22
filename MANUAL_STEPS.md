@@ -37,7 +37,16 @@ Configure machine-specific options in `~/.env.sh`:
 
 ```bash
 # GitLab repo syncing (auth is handled automatically on first sync)
-export GITLAB_GROUP="your-group"
+export GITLAB_GROUP="your-group"  # nested groups work: "parent/child"
+# Optional: a self-hosted instance instead of gitlab.com. `glab auth login
+# --hostname "$GITLAB_HOST"` registers the token and writes the matching git
+# credential helper.
+export GITLAB_HOST="gitlab.example.com"
+# Optional: other hostnames for the same instance (pipe-separated). Some instances
+# report clone URLs on a different name than the one you queried — a Geo secondary
+# reports its primary — and git has no credential for that name. These are rewritten
+# to GITLAB_HOST at the git level, which fixes every tool at once.
+export GITLAB_URL_ALIASES="https://gitlab-other.example.com/"
 # Optional: exclude specific subdirectories (pipe-separated)
 export GITLAB_EXCLUDE_DIRS="archived|sandbox"
 

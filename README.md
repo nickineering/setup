@@ -129,9 +129,20 @@ Automatically sync all repos from a GitLab group:
 
 ```bash
 # In ~/.env.sh
-export GITLAB_GROUP="your-group"
+export GITLAB_GROUP="your-group"          # nested groups work: "parent/child"
+export GITLAB_HOST="gitlab.example.com"   # optional: self-hosted instance
 export GITLAB_EXCLUDE_DIRS="archive|sandbox"  # optional
 ```
+
+`GITLAB_GROUP` is stripped from each repo's path, so `~/work` mirrors the
+group's own structure however deeply the group itself is nested. `GITLAB_HOST`
+is read by `glab`; leave it unset for gitlab.com.
+
+If the instance answers on one hostname but reports clone URLs on another — a
+Geo secondary reports its primary's `external_url` — set `GITLAB_URL_ALIASES` to
+the other prefixes, pipe-separated. They are rewritten to `GITLAB_HOST` via
+git's `insteadOf`, so remotes are recorded on the right host and every tool that
+follows an API-supplied URL is covered, not just cloning.
 
 The `devenv` command will:
 

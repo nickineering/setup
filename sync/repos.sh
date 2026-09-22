@@ -17,6 +17,13 @@ _count_lines() {
 	if [[ -z "$1" ]]; then echo 0; else echo "$1" | wc -l | tr -d ' '; fi
 }
 
+# The API takes a namespace as one path segment, so a nested group
+# ("parent/child") has to arrive with its slashes escaped or it reads as a
+# deeper route. Only the API needs this — clone paths stay literal.
+_encode_group() {
+	echo "${1//\//%2F}"
+}
+
 # Remove the now-empty parent directories the mirrored worktree layout leaves
 # behind. Stops at the worktree root, so it can never climb into $repos_dir.
 # Usage: _prune_worktree_parents <removed_path> <worktree_root>
@@ -89,10 +96,11 @@ sync_repos() {
 
 	# Fetch repo list from GitLab
 	echo -e "${bold}› Fetching repo list from GitLab${reset}"
-	local total_pages remote_repos glab_response
+	local total_pages remote_repos glab_response group_api
+	group_api=$(_encode_group "$GITLAB_GROUP")
 
 	# Test glab authentication, offer login if needed
-	if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
+	if ! glab_response=$(glab api "groups/$group_api/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 		if [[ "$glab_response" == *"auth"* || "$glab_response" == *"401"* || "$glab_response" == *"login"* ]]; then
 			echo -e "${yellow}⚠ GitLab authentication required${reset}"
 			prompt "Run glab auth login? [Y/n]:"
@@ -104,7 +112,7 @@ sync_repos() {
 					return 0
 				}
 				# Retry after login
-				if ! glab_response=$(glab api "groups/$GITLAB_GROUP/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
+				if ! glab_response=$(glab api "groups/$group_api/projects?per_page=100&page=1&include_subgroups=true&archived=false" --include 2>&1); then
 					echo -e "${yellow}⚠ Still unable to fetch repos after login${reset}"
 					echo -e "${dim}$glab_response${reset}"
 					return 0
@@ -124,7 +132,7 @@ sync_repos() {
 	total_pages=${total_pages:-1}
 
 	seq 1 "$total_pages" | xargs -P "$parallel_jobs" -I{} sh -c \
-		'glab api "groups/'"$GITLAB_GROUP"'/projects?per_page=100&page={}&include_subgroups=true&archived=false" 2>/dev/null > "$1/page_{}.json" && printf "."' _ "$tmpdir"
+		'glab api "groups/'"$group_api"'/projects?per_page=100&page={}&include_subgroups=true&archived=false" 2>/dev/null > "$1/page_{}.json" && printf "."' _ "$tmpdir"
 	echo ""
 
 	# Validate we got data before parsing

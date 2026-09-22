@@ -12,7 +12,10 @@
 #
 # Configuration (set in ~/.env.sh):
 #   GITLAB_GROUP        - GitLab group/namespace to sync (optional)
+#   GITLAB_HOST         - Self-hosted GitLab host; unset means gitlab.com (optional)
 #   GITLAB_EXCLUDE_DIRS - Pipe-separated dirs to exclude (optional)
+#   GITLAB_URL_ALIASES  - Pipe-separated https:// prefixes for other hostnames of
+#                         the same instance, rewritten to GITLAB_HOST (optional)
 #   DOCK_IGNORE_APPS    - Pipe-separated apps to skip in Dock management (optional)
 
 set -euo pipefail
