@@ -230,6 +230,24 @@ _wt_slug() {
 	printf '%s' "$1" | tr '/' '-'
 }
 
+# Branch new worktrees are cut from, for $1=DIRECTORY (default: cwd). Repos whose
+# real trunk is not what git_default_branch guesses — it prefers origin/develop,
+# then origin/main — set it per repo:
+#
+#     git config --local worktree.base trunk
+#
+# Deliberately scoped to worktrees: sync_repo.sh keeps using git_default_branch,
+# so overriding this does not change which branch the main clone fast-forwards.
+_wt_base() {
+	local dir="${1:-.}" base
+	base=$(git -C "$dir" config --get worktree.base 2>/dev/null)
+	if [[ -n "$base" ]]; then
+		printf '%s' "$base"
+	else
+		git_default_branch "$dir"
+	fi
+}
+
 # Path of the current repo relative to ~/work. Fails if not in the mirror.
 _wt_repo_rel() {
 	local root
@@ -242,14 +260,16 @@ _wt_repo_rel() {
 
 # Commits on HEAD that are not on the remote yet, for $1=WORKTREE_DIRECTORY.
 # New branches are created --no-track, so @{upstream} is usually absent until the
-# first push and we have to fall back to comparing against the default branch.
+# first push and we have to fall back to comparing against the base branch. It has
+# to be the same ref _wt_add branched from, or every commit between the base and
+# git_default_branch's guess is miscounted as unpushed work.
 _wt_unpushed_count() {
-	local dir="$1" count default
+	local dir="$1" count base
 	count=$(git -C "$dir" rev-list --count '@{upstream}..HEAD' 2>/dev/null)
 	if [[ -z "$count" ]]; then
-		default=$(git_default_branch "$dir")
-		[[ -n "$default" ]] &&
-			count=$(git -C "$dir" rev-list --count "origin/$default..HEAD" 2>/dev/null)
+		base=$(_wt_base "$dir")
+		[[ -n "$base" ]] &&
+			count=$(git -C "$dir" rev-list --count "origin/$base..HEAD" 2>/dev/null)
 	fi
 	printf '%s' "${count:-0}"
 }
@@ -261,13 +281,36 @@ _wt_path() {
 	printf '%s/%s/%s' "$(_wt_root)" "$rel" "$(_wt_slug "$1")"
 }
 
-# Copy gitignored config into a new worktree. A WorktreeCreate hook replaces
-# git's own logic, so Claude Code does not process .worktreeinclude — this stands
-# in for it. $1=SOURCE_WORKTREE, $2=NEW_WORKTREE
+# Copy gitignored config into a new worktree. A WorktreeCreate hook replaces git's
+# own logic, so Claude Code never reads .worktreeinclude itself — this stands in
+# for it, honouring the repo's .worktreeinclude when there is one and falling back
+# to the usual env files when there is not.
+# $1=SOURCE_WORKTREE, $2=NEW_WORKTREE
 _wt_copy_local_files() {
-	local src="$1" dst="$2" f
-	for f in .env .env.local .envrc; do
-		[[ -f "$src/$f" && ! -e "$dst/$f" ]] && cp "$src/$f" "$dst/$f" 2>/dev/null
+	local src="$1" dst="$2" entry paths=()
+
+	if [[ -f "$src/.worktreeinclude" ]]; then
+		while IFS= read -r entry || [[ -n "$entry" ]]; do
+			entry="${entry%%#*}"                            # strip comments
+			entry="${entry#"${entry%%[![:space:]]*}"}"      # trim leading space
+			entry="${entry%"${entry##*[![:space:]]}"}"      # trim trailing space
+			[[ -n "$entry" ]] && paths+=("${entry%/}")
+		done <"$src/.worktreeinclude"
+	else
+		paths=(.env .env.local .envrc)
+	fi
+
+	for entry in "${paths[@]}"; do
+		# Absolute paths and .. would write outside the new worktree
+		case "$entry" in
+		/* | *..*) continue ;;
+		esac
+		[[ -e "$src/$entry" && ! -e "$dst/$entry" ]] || continue
+		mkdir -p "$(dirname "$dst/$entry")" 2>/dev/null
+		# -c clones on APFS, so a 758M terraform/.terraform costs no disk and no
+		# wait. Plain -R is the fallback where clonefile is unavailable.
+		cp -Rc "$src/$entry" "$dst/$entry" 2>/dev/null ||
+			cp -R "$src/$entry" "$dst/$entry" 2>/dev/null
 	done
 	return 0
 }
@@ -278,7 +321,7 @@ _wt_copy_local_files() {
 # NOTE: worktree directories are held in `wtdir`, never `path` — zsh ties `path`
 # to $PATH, so `local path` empties PATH for the rest of the function.
 _wt_add() {
-	local wtdir="$1" branch="$2" default src
+	local wtdir="$1" branch="$2" base_branch src
 
 	# Already there: reuse it, so re-running is cheap and idempotent
 	if [[ -d "$wtdir" ]]; then
@@ -289,8 +332,8 @@ _wt_add() {
 
 	# Pick up any new remote branches before deciding how to create this one
 	git fetch --quiet origin >/dev/null 2>&1
-	# Resolved after the fetch so a newly created remote default is visible
-	default=$(git_default_branch)
+	# Resolved after the fetch so a newly created remote base is visible
+	base_branch=$(_wt_base)
 
 	src=$(git rev-parse --show-toplevel 2>/dev/null)
 	if git show-ref --verify --quiet "refs/heads/$branch"; then
@@ -300,12 +343,12 @@ _wt_add() {
 		# Track the existing remote branch
 		git worktree add --quiet --track -b "$branch" "$wtdir" "origin/$branch" >&2 || return 1
 	else
-		# New branch from the remote default, matching worktree.baseRef "fresh".
-		# --no-track keeps origin/<default> from becoming this branch's upstream,
+		# New branch from the remote base, matching worktree.baseRef "fresh".
+		# --no-track keeps origin/<base> from becoming this branch's upstream,
 		# which would break both `git push` and the sync's stale detection.
 		local base
-		if [[ -n "$default" ]] && git show-ref --verify --quiet "refs/remotes/origin/$default"; then
-			base="origin/$default"
+		if [[ -n "$base_branch" ]] && git show-ref --verify --quiet "refs/remotes/origin/$base_branch"; then
+			base="origin/$base_branch"
 		else
 			# No origin to be fresh from (a local-only repo), so branch from here
 			base=HEAD
