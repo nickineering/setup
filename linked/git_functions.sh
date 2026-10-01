@@ -291,9 +291,9 @@ _wt_copy_local_files() {
 
 	if [[ -f "$src/.worktreeinclude" ]]; then
 		while IFS= read -r entry || [[ -n "$entry" ]]; do
-			entry="${entry%%#*}"                            # strip comments
-			entry="${entry#"${entry%%[![:space:]]*}"}"      # trim leading space
-			entry="${entry%"${entry##*[![:space:]]}"}"      # trim trailing space
+			entry="${entry%%#*}"                       # strip comments
+			entry="${entry#"${entry%%[![:space:]]*}"}" # trim leading space
+			entry="${entry%"${entry##*[![:space:]]}"}" # trim trailing space
 			[[ -n "$entry" ]] && paths+=("${entry%/}")
 		done <"$src/.worktreeinclude"
 	else
