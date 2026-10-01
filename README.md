@@ -149,6 +149,11 @@ The `devenv` command will:
 - Clone new repos to `~/work/`
 - Detect repos deleted from GitLab
 - Sync branches and prune stale ones
+- Prune stale worktrees the same way. A live worktree is only offered once its
+  work has merged, and never while it is dirty or holds unpushed commits — those
+  are reported under Active work instead. Directories in `~/work/.worktrees/`
+  that git can no longer resolve are offered too, and since git cannot say what
+  is in them they go to the Trash rather than being deleted
 - Run in parallel for speed
 
 ### macOS Configuration

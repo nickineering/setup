@@ -367,7 +367,8 @@ _orphan_upstream() {
         "$REPO" "$TEST_DIR/work" "$stale_dir" "$active_dir"
     [[ "$status" -eq 0 ]]
     run cat "$active_dir"/*
-    [[ "$output" == "backend/pocs/demo:feat/live:$path" ]]
+    # Third field carries the dirty/unpushed flags, empty for an untouched worktree
+    [[ "$output" == "backend/pocs/demo:feat/live::$path" ]]
 }
 
 @test "sync_repo: a stale worktree branch records its worktree path" {
@@ -394,6 +395,123 @@ _orphan_upstream() {
         "$REPO" "$TEST_DIR/work" "$stale_dir" "$active_dir" >/dev/null
     run bash -c 'cat "$1"/* 2>/dev/null || true' _ "$active_dir"
     [[ "$output" != *"feat/dead"* ]]
+}
+
+# Run the sync with every reporting directory it takes, in $stale_dir, $active_dir
+# and $stale_wt_dir
+_sync_repo() {
+    stale_dir="$TEST_DIR/stale"
+    active_dir="$TEST_DIR/active"
+    stale_wt_dir="$TEST_DIR/stale-wt"
+    mkdir -p "$stale_dir" "$active_dir" "$stale_wt_dir"
+    SETUP="$REPO_ROOT" "$REPO_ROOT/sync/sync_repo.sh" \
+        "$REPO" "$TEST_DIR/work" "$stale_dir" "$active_dir" "$stale_wt_dir" >/dev/null
+}
+
+# Contents of a reporting directory, empty string when nothing was written
+_reported() {
+    cat "$1"/* 2>/dev/null || true
+}
+
+# Land $1=BRANCH on origin/main the way a fast-forward merge request would,
+# leaving the remote branch in place so it is merged rather than gone
+_merge_upstream() {
+    git -C "$1" push --quiet -u origin HEAD
+    git -C "$1" push --quiet origin HEAD:main
+}
+
+# Move origin/main on by one commit from a throwaway clone
+_advance_main() {
+    git clone --quiet "$ORIGIN" "$TEST_DIR/scratch-$1" 2>/dev/null
+    echo "$1" >"$TEST_DIR/scratch-$1/$1.txt"
+    git -C "$TEST_DIR/scratch-$1" add .
+    git -C "$TEST_DIR/scratch-$1" commit --quiet -m "advance $1"
+    git -C "$TEST_DIR/scratch-$1" push --quiet origin main
+}
+
+@test "sync_repo: a merged worktree is offered for deletion" {
+    path=$(wt_create 'feat/done')
+    echo work >"$path/work.txt"
+    git -C "$path" add work.txt
+    git -C "$path" commit --quiet -m 'work'
+    _merge_upstream "$path"
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ "$output" == "merged:backend/pocs/demo:feat/done:$path" ]]
+    # ...and not also reported as work still in progress
+    run _reported "$active_dir"
+    [[ "$output" != *"feat/done"* ]]
+}
+
+@test "sync_repo: a worktree the base moved past is offered as having no commits" {
+    path=$(wt_create 'feat/idle')
+    _advance_main idle
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ "$output" == "no-commits:backend/pocs/demo:feat/idle:$path" ]]
+}
+
+@test "sync_repo: an untouched worktree at the base is left alone" {
+    # A worktree cut from the current base and not used yet is waiting for work,
+    # not finished with it
+    path=$(wt_create 'feat/fresh')
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ -z "$output" ]]
+    run _reported "$active_dir"
+    [[ "$output" == "backend/pocs/demo:feat/fresh::$path" ]]
+}
+
+@test "sync_repo: a dirty worktree is reported, never offered" {
+    path=$(wt_create 'feat/dirty')
+    echo work >"$path/work.txt"
+    git -C "$path" add work.txt
+    git -C "$path" commit --quiet -m 'work'
+    _merge_upstream "$path"
+    echo scratch >"$path/uncommitted.txt"
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ -z "$output" ]]
+    run _reported "$active_dir"
+    [[ "$output" == "backend/pocs/demo:feat/dirty:dirty:$path" ]]
+}
+
+@test "sync_repo: an unpushed worktree is reported, never offered" {
+    path=$(wt_create 'feat/unpushed')
+    echo work >"$path/work.txt"
+    git -C "$path" add work.txt
+    git -C "$path" commit --quiet -m 'work'
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ -z "$output" ]]
+    run _reported "$active_dir"
+    [[ "$output" == "backend/pocs/demo:feat/unpushed:+1:$path" ]]
+}
+
+@test "sync_repo: a worktree with nothing to measure against is flagged, not offered" {
+    path=$(wt_create 'feat/unmeasurable')
+    echo work >"$path/work.txt"
+    git -C "$path" add work.txt
+    git -C "$path" commit --quiet -m 'work'
+    # No upstream, and a base that was never fetched: the commit above cannot be
+    # counted, which must not read as "nothing to lose"
+    git -C "$REPO" config worktree.base never-fetched
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ -z "$output" ]]
+    run _reported "$active_dir"
+    [[ "$output" == "backend/pocs/demo:feat/unmeasurable:unpushed?:$path" ]]
+}
+
+@test "sync_repo: a worktree outside the mirror is never offered" {
+    # Only the mirror's own tree is the sync's to delete
+    git -C "$REPO" worktree add --quiet --track -b side "$TEST_DIR/manual" origin/main
+    _advance_main side
+    _sync_repo
+    run _reported "$stale_wt_dir"
+    [[ -z "$output" ]]
+    run _reported "$active_dir"
+    [[ "$output" == *"backend/pocs/demo:side:"* ]]
 }
 
 @test "sync_repo: prunes worktrees whose directory was deleted by hand" {
@@ -448,6 +566,108 @@ _orphan_upstream() {
     rmdir "$WT/feat-a"
     _prune_worktree_parents "$WT/feat-a" "$WTROOT"
     [[ -d "$WT/feat-b" ]]
+}
+
+@test "_stale_worktree_dirs: leaves a live worktree alone" {
+    source "$REPO_ROOT/sync/repos.sh"
+    wt_create 'feat/live' >/dev/null
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+}
+
+@test "_stale_worktree_dirs: reports scaffolding an untracked file kept alive" {
+    # The real case: `git wt-rm` left the directory because something untracked
+    # was sitting in it, so no worktree is registered but the tree is not empty
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir -p "$WT/feat-leftover"
+    echo notes >"$WT/feat-leftover/scratch.code-workspace"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ "$output" == "orphan:::$WT/feat-leftover" ]]
+}
+
+@test "_stale_worktree_dirs: a slug that matches a directory in the clone is safe" {
+    # Branch slugs collide with ordinary directory names, so a walk that matched
+    # them against ~/work would descend into this live checkout and offer its own
+    # tracked source for deletion
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir "$REPO/docs"
+    echo d >"$REPO/docs/readme.md"
+    git -C "$REPO" add docs
+    git -C "$REPO" commit --quiet -m 'add docs'
+    path=$(wt_create 'docs')
+    mkdir "$path/emptydir"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+    # Not even the empty directories inside it, which go without a prompt
+    [[ -d "$path/emptydir" ]]
+}
+
+@test "_stale_worktree_dirs: keeps the worktrees of a clone nested in the tree" {
+    # GitLab cannot serve a project and a group at one path, but a repo cloned by
+    # hand under another's path still owns real worktrees
+    source "$REPO_ROOT/sync/repos.sh"
+    nested="$TEST_DIR/work/backend/pocs/demo/vendor"
+    git clone --quiet "$ORIGIN" "$nested" 2>/dev/null
+    cd "$nested"
+    wt_create 'feat/vendored' >/dev/null
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+}
+
+@test "_stale_worktree_dirs: reports a repo directory with no worktrees left in it" {
+    # The leftovers sit beside the removed worktree rather than inside it, which
+    # is how an editor workspace file keeps a whole repo's directory alive
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir -p "$WT"
+    echo notes >"$WT/demo.code-workspace"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ "$output" == "leftover:::$WT" ]]
+}
+
+@test "_stale_worktree_dirs: a live worktree keeps its repo directory" {
+    source "$REPO_ROOT/sync/repos.sh"
+    wt_create 'feat/live' >/dev/null
+    echo notes >"$WT/demo.code-workspace"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+}
+
+@test "_stale_worktree_dirs: reports a worktree whose clone is gone" {
+    # What a re-clone leaves behind: the .git file points at admin data that the
+    # new clone knows nothing about
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir -p "$WT/feat-broken"
+    printf 'gitdir: %s\n' "$REPO/.git/worktrees/feat-broken" >"$WT/feat-broken/.git"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ "$output" == "orphan:::$WT/feat-broken" ]]
+}
+
+@test "_stale_worktree_dirs: reports a repo that is no longer cloned" {
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir -p "$WTROOT/backend/pocs/deleted/feat-x"
+    echo stuff >"$WTROOT/backend/pocs/deleted/feat-x/file.txt"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    # One prompt for the whole subtree, and never a walk into its contents
+    [[ "$output" == "repo-gone:::$WTROOT/backend/pocs/deleted" ]]
+}
+
+@test "_stale_worktree_dirs: removes empty scaffolding without asking" {
+    source "$REPO_ROOT/sync/repos.sh"
+    mkdir -p "$WT/feat-empty"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+    [[ ! -d "$WT/feat-empty" ]]
+    # Its now-empty parents go with it, but never the root itself
+    [[ ! -d "$WTROOT/backend" ]]
+    [[ -d "$WTROOT" ]]
+}
+
+@test "_stale_worktree_dirs: ignores a full clone under the worktree tree" {
+    source "$REPO_ROOT/sync/repos.sh"
+    git clone --quiet "$ORIGIN" "$WT/interloper" 2>/dev/null
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ -z "$output" ]]
+    [[ -d "$WT/interloper/.git" ]]
 }
 
 @test "repo scan: excludes the worktree tree" {

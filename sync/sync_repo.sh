@@ -3,8 +3,8 @@
 # Sync a single git repo: fetch, pull main+develop, checkout preferred branch.
 # Called by sync_repos via xargs for parallel execution.
 #
-# Usage: sync_repo.sh <repo_dir> <base_dir> [stale_branches_dir]
-# Example: sync_repo.sh ~/work/backend/foo ~/work /tmp/stale
+# Usage: sync_repo.sh <repo_dir> <base_dir> [stale_branches_dir] [active_branches_dir] [stale_worktrees_dir]
+# Example: sync_repo.sh ~/work/backend/foo ~/work /tmp/stale /tmp/active /tmp/stale-wt
 
 set -euo pipefail
 
@@ -12,7 +12,10 @@ repo_dir="$1"
 base_dir="$2"
 stale_dir="${3:-}"
 active_branches_dir="${4:-}"
+stale_worktrees_dir="${5:-}"
 repo_name="${repo_dir#"$base_dir"/}"
+# Parallel worktree tree — see the Worktrees section in linked/git_functions.sh
+worktrees_root="$base_dir/.worktrees"
 
 # shellcheck source=SCRIPTDIR/../lib/colors.sh
 source "$SETUP/lib/colors.sh"
@@ -37,6 +40,39 @@ _worktree_holding() {
 		awk -v b="branch refs/heads/$1" '
 			/^worktree /{wt = substr($0, 10)}
 			$0 == b {print wt; exit}'
+}
+
+# Ref that worktree branches are cut from and merge back into, mirroring _wt_base
+# in linked/git_functions.sh: a repo whose real trunk is not what
+# git_default_branch guesses sets worktree.base locally. Prefers origin/<base>,
+# because a merge happens on the remote. Fails when there is no base to compare
+# against, which leaves every worktree counted as active work.
+_worktree_base_ref() {
+	local base
+	base=$(git config --get worktree.base 2>/dev/null || true)
+	base="${base:-${preferred_default:-}}"
+	[[ -n "$base" ]] || return 1
+	if git show-ref --verify --quiet "refs/remotes/origin/$base"; then
+		printf 'origin/%s' "$base"
+	elif git show-ref --verify --quiet "refs/heads/$base"; then
+		printf '%s' "$base"
+	else
+		return 1
+	fi
+}
+
+# Commits in worktree $1 that origin does not have, mirroring _wt_unpushed_count in
+# linked/git_functions.sh. Worktree branches are created --no-track, so @{upstream}
+# is usually absent until the first push and the base ref $2 is all there is to
+# compare against. Prints nothing when neither resolves: unknown is not the same as
+# nothing to lose, and reporting 0 there would flag real work as clean.
+_worktree_unpushed() {
+	local dir="$1" base_ref="$2" count
+	count=$(git -C "$dir" rev-list --count '@{upstream}..HEAD' 2>/dev/null || true)
+	if [[ -z "$count" && -n "$base_ref" ]]; then
+		count=$(git -C "$dir" rev-list --count "$base_ref..HEAD" 2>/dev/null || true)
+	fi
+	printf '%s' "$count"
 }
 
 # Sync a branch to match its remote. Sets $branch_status with colored output.
@@ -162,21 +198,62 @@ elif [[ -n "${preferred_default:-}" ]]; then
 	final_branch="$preferred_default"
 fi
 
-# Record linked worktrees for the end-of-sync summary, alongside feature branches.
-# A worktree existing at all means active work, so unlike mainline branches there
-# is no unmerged-commits test. Their branches are never pulled here for the same
-# reason feature branches are not: local history may have been rewritten and not
-# yet pushed.
-if [[ -n "$active_branches_dir" ]]; then
-	active_file="$active_branches_dir/$(echo "$repo_name" | tr '/' '_')"
+# Classify linked worktrees: finished ones go to repos.sh for the same delete
+# prompt stale branches get, the rest are reported as active work. Their branches
+# are never pulled here for the same reason feature branches are not: local history
+# may have been rewritten and not yet pushed.
+if [[ -n "$active_branches_dir" || -n "$stale_worktrees_dir" ]]; then
+	[[ -n "$active_branches_dir" ]] && active_file="$active_branches_dir/$(echo "$repo_name" | tr '/' '_')"
+	[[ -n "$stale_worktrees_dir" ]] && stale_wt_file="$stale_worktrees_dir/$(echo "$repo_name" | tr '/' '_')"
+	base_ref=$(_worktree_base_ref || true)
 	# Tab-separated because worktree paths contain "/" but never a tab
 	while IFS=$'\t' read -r wt ref; do
 		[[ -z "$wt" || "$wt" == "$repo_dir" ]] && continue
 		wt_branch="${ref#refs/heads/}"
-		# Already offered for deletion as stale — do not also list it as active
-		track=$(git for-each-ref --format='%(upstream:track)' "refs/heads/$wt_branch" 2>/dev/null)
+		# Already offered for deletion as stale — do not also list it here
+		track=$(git for-each-ref --format='%(upstream:track)' "refs/heads/$wt_branch" 2>/dev/null || true)
 		[[ "$track" == "[gone]" ]] && continue
-		printf '%s:%s:%s\n' "$repo_name" "$wt_branch" "$wt" >>"$active_file"
+
+		wt_dirty=""
+		[[ -n "$(git -C "$wt" status --porcelain 2>/dev/null)" ]] && wt_dirty="dirty"
+		wt_ahead=$(_worktree_unpushed "$wt" "$base_ref")
+
+		# A worktree holding nothing origin lacks — clean, nothing unpushed, every
+		# commit of its own already in the base branch — is finished. Which way it
+		# finished decides the wording: an upstream means it was pushed, so the work
+		# merged; no upstream and a tip the base has moved past means it never
+		# started and the directory is only scaffolding. A tip still equal to the
+		# base with nothing pushed is a worktree waiting to be used, not a spent
+		# one, so it stays active work.
+		reason=""
+		if [[ -z "$wt_dirty" && "$wt_ahead" == "0" && -n "$base_ref" ]] &&
+			[[ "$(git rev-list --count "$base_ref..refs/heads/$wt_branch" 2>/dev/null || echo 1)" == "0" ]]; then
+			upstream=$(git for-each-ref --format='%(upstream)' "refs/heads/$wt_branch" 2>/dev/null || true)
+			if [[ -n "$upstream" ]]; then
+				reason="merged"
+			elif [[ "$(git rev-parse "refs/heads/$wt_branch")" != "$(git rev-parse "$base_ref")" ]]; then
+				reason="no-commits"
+			fi
+		fi
+
+		# Only the mirror's own tree is ever offered for deletion — a worktree added
+		# by hand elsewhere is reported as active work and left alone.
+		if [[ -n "$reason" && -n "$stale_worktrees_dir" && "$wt" == "$worktrees_root"/* ]]; then
+			printf '%s:%s:%s:%s\n' "$reason" "$repo_name" "$wt_branch" "$wt" >>"$stale_wt_file"
+			continue
+		fi
+
+		if [[ -n "$active_branches_dir" ]]; then
+			# Work that would be lost is flagged rather than offered for deletion
+			flags="$wt_dirty"
+			if [[ -z "$wt_ahead" ]]; then
+				# No upstream and no base to measure against
+				flags="${flags:+$flags }unpushed?"
+			elif [[ "$wt_ahead" != "0" ]]; then
+				flags="${flags:+$flags }+$wt_ahead"
+			fi
+			printf '%s:%s:%s:%s\n' "$repo_name" "$wt_branch" "$flags" "$wt" >>"$active_file"
+		fi
 	done < <(git worktree list --porcelain 2>/dev/null |
 		awk '/^worktree /{wt = substr($0, 10)}
 		     /^branch /{printf "%s\t%s\n", wt, substr($0, 8)}')

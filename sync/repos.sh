@@ -36,6 +36,104 @@ _prune_worktree_parents() {
 	done
 }
 
+# A linked worktree keeps a .git file pointing back at its clone. Both have to
+# hold: the file resolving to this very directory is what makes it live work.
+# Liveness is asked of git itself rather than of the clone list, so a repo whose
+# fetch failed this run can never have its worktrees called stale.
+# Usage: _worktree_is_live <directory>
+_worktree_is_live() {
+	local top
+	[[ -f "$1/.git" ]] || return 1
+	top=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null) || return 1
+	[[ "$top" -ef "$1" ]]
+}
+
+# True when $1 holds at least one directory
+_worktree_has_subdir() {
+	local entry
+	for entry in "$1"/*; do
+		[[ -d "$entry" ]] && return 0
+	done
+	return 1
+}
+
+# The worktree slots of one clone: $1=DIRECTORY, $2=CLONE_PATH_RELATIVE_TO_REPOS,
+# $3=REPOS_DIR. One level, never deeper — a slug's contents are a checkout, so
+# walking into them would start calling source directories stale.
+_scan_worktree_slots() {
+	local dir="$1" rel="$2" repos="$3" slot name
+	for slot in "$dir"/*; do
+		[[ -d "$slot" ]] || continue
+		name="${slot##*/}"
+		# A clone nested under another clone's path keeps its own worktrees here.
+		# GitLab cannot serve a project and a group at one path, so this only
+		# happens for something cloned by hand, but its worktrees are still real.
+		if [[ -d "$repos/$rel/$name/.git" ]]; then
+			_scan_worktree_slots "$slot" "$rel/$name" "$repos"
+			continue
+		fi
+		_worktree_is_live "$slot" && continue
+		# A full clone is not a worktree and not this pass's business
+		[[ -d "$slot/.git" ]] && continue
+		# Empty scaffolding: nothing to lose, so take it without asking.
+		# rmdir succeeding is itself the proof that it held nothing.
+		rmdir "$slot" 2>/dev/null && continue
+		printf 'orphan:::%s\n' "$slot"
+	done
+}
+
+# Walk the mirrored part of the worktree tree: $1=DIRECTORY,
+# $2=PATH_RELATIVE_TO_THE_WORKTREE_ROOT, $3=REPOS_DIR
+_scan_worktree_tree() {
+	local dir="$1" rel="$2" repos="$3" child name crel
+	for child in "$dir"/*; do
+		[[ -d "$child" ]] || continue
+		name="${child##*/}"
+		crel="${rel:+$rel/}$name"
+		if [[ -d "$repos/$crel/.git" ]]; then
+			# A clone, so everything directly below is one of its worktree slots
+			_scan_worktree_slots "$child" "$crel" "$repos"
+			# Leave nothing behind once a repo's last worktree goes
+			rmdir "$child" 2>/dev/null && continue
+			# Still standing with no worktree of any kind left in it: whatever is
+			# in there is what blocked the tidy-up — the real case being an editor
+			# workspace file sitting next to a removed worktree
+			_worktree_has_subdir "$child" || printf 'leftover:::%s\n' "$child"
+		elif [[ -d "$repos/$crel" ]]; then
+			# A group on the way to a clone
+			_scan_worktree_tree "$child" "$crel" "$repos"
+			rmdir "$child" 2>/dev/null || true
+		else
+			# Nothing is cloned at this path any more, so nothing below it is live
+			printf 'repo-gone:::%s\n' "$child"
+		fi
+	done
+}
+
+# Directories in the worktree tree that no longer hold live work: a worktree whose
+# clone was deleted or re-cloned (which drops the admin data its .git file points
+# at), or scaffolding a tidy-up could not remove because something untracked was
+# left in it. sync_repo.sh cannot see these — they belong to no working clone — so
+# they are found by walking the tree instead.
+#
+# The tree mirrors ~/work exactly, and the walk is anchored on the clones it finds
+# there: a directory is a worktree slot because its parent is a clone, never
+# because of its own name. Branch slugs collide with ordinary directory names —
+# `git wt docs` in a repo that has docs/ is enough — so matching a slug against
+# ~/work would walk straight into a live checkout and offer its source for
+# deletion.
+#
+# Usage: _stale_worktree_dirs <worktrees_root> <repos_dir>
+# Output: <reason>:::<path> — reason "orphan" (git cannot resolve it), "repo-gone"
+# (nothing is cloned there any more) or "leftover" (a repo's worktree directory
+# with no worktree left in it), with the repo and branch fields left empty so
+# callers can read these and the sync's own stale worktree lines alike.
+_stale_worktree_dirs() {
+	local root="$1" repos="$2"
+	[[ -d "$root" ]] || return 0
+	_scan_worktree_tree "$root" "" "$repos"
+}
+
 sync_repos() {
 	local repos_dir="${HOME:?}/work"
 	# Parallel worktree tree — see the Worktrees section in linked/git_functions.sh
@@ -84,15 +182,17 @@ sync_repos() {
 	fi
 
 	# Create temp files/dirs upfront for clean trap-based cleanup
-	local tmpdir stale_branches_dir active_branches_dir clone_errors sync_errors stale_branches_file active_branches_file
+	local tmpdir stale_branches_dir active_branches_dir stale_worktrees_dir clone_errors sync_errors stale_branches_file active_branches_file stale_worktrees_file
 	tmpdir=$(mktemp -d)
 	stale_branches_dir=$(mktemp -d)
 	active_branches_dir=$(mktemp -d)
+	stale_worktrees_dir=$(mktemp -d)
 	clone_errors=$(mktemp)
 	sync_errors=$(mktemp)
 	stale_branches_file=$(mktemp)
 	active_branches_file=$(mktemp)
-	trap 'rm -rf "${tmpdir:-}" "${stale_branches_dir:-}" "${active_branches_dir:-}" "${clone_errors:-}" "${sync_errors:-}" "${stale_branches_file:-}" "${active_branches_file:-}"' RETURN
+	stale_worktrees_file=$(mktemp)
+	trap 'rm -rf "${tmpdir:-}" "${stale_branches_dir:-}" "${active_branches_dir:-}" "${stale_worktrees_dir:-}" "${clone_errors:-}" "${sync_errors:-}" "${stale_branches_file:-}" "${active_branches_file:-}" "${stale_worktrees_file:-}"' RETURN
 
 	# Fetch repo list from GitLab
 	echo -e "${bold}› Fetching repo list from GitLab${reset}"
@@ -235,8 +335,9 @@ sync_repos() {
 	# Sync all repos
 	echo -e "${bold}› Syncing repos${reset}"
 	echo "$repo_list" | xargs -P "$parallel_jobs" -I{} sh -c \
-		'"$1/sync/sync_repo.sh" "$2" "$3" "$4" "$5" || echo "$2" >> "$6"' _ \
-		"$SETUP" {} "$repos_dir" "$stale_branches_dir" "$active_branches_dir" "$sync_errors"
+		'"$1/sync/sync_repo.sh" "$2" "$3" "$4" "$5" "$6" || echo "$2" >> "$7"' _ \
+		"$SETUP" {} "$repos_dir" "$stale_branches_dir" "$active_branches_dir" \
+		"$stale_worktrees_dir" "$sync_errors"
 	if [[ -s "$sync_errors" ]]; then
 		echo -e "${yellow}⚠ Failed to sync some repos:${reset}"
 		sed 's|^'"$repos_dir"'/||; s/^/  /' "$sync_errors"
@@ -281,14 +382,117 @@ sync_repos() {
 		echo ""
 	fi
 
+	# Prompt to delete stale worktrees. Runs after the stale-branch pass, which
+	# removes the worktrees holding the branches it deletes — so those are already
+	# gone from the tree by the time the scan below walks it.
+	# Entries that are no longer a directory in the mirror's own tree are dropped
+	# here rather than in the loop, so the count and the prompts cannot disagree
+	{
+		cat "$stale_worktrees_dir"/* 2>/dev/null || true
+		_stale_worktree_dirs "$worktrees_dir" "$repos_dir"
+	} | while IFS=: read -r reason repo branch wt; do
+		[[ "$wt" == "$worktrees_dir"/* && -d "$wt" ]] || continue
+		printf '%s:%s:%s:%s\n' "$reason" "$repo" "$branch" "$wt"
+	done >"$stale_worktrees_file"
+	if [[ -s "$stale_worktrees_file" ]]; then
+		echo -e "${bold}› Stale worktrees (merged/orphaned)${reset}"
+		local stale_wt_count
+		stale_wt_count=$(wc -l <"$stale_worktrees_file" | tr -d ' ')
+		info "Found ${bold}${yellow}${stale_wt_count}${reset}${dim} stale worktree(s)"
+		echo ""
+		# Path last so a colon in it cannot shift the fields that steer deletion
+		while IFS=: read -r reason repo branch wt; do
+			# Safety: only ever touch the mirror's own worktree tree
+			[[ "$wt" == "$worktrees_dir"/* && -d "$wt" ]] || continue
+			case "$reason" in
+			merged | no-commits)
+				local note ignored
+				note="merged"
+				[[ "$reason" == "no-commits" ]] && note="no commits of its own"
+				# git's own clean/dirty test says nothing about ignored files, and
+				# worktrees are created with .env and friends copied in, so say what
+				# else goes. They are reproducible — `git wt` copies them again —
+				# which is why this warns rather than holding the worktree back.
+				ignored=$(git -C "$wt" status --porcelain --ignored 2>/dev/null |
+					grep -c '^!!' || true)
+				[[ "${ignored:-0}" -gt 0 ]] && note="$note, ${ignored} ignored file(s) go too"
+				printf "${bold}Delete worktree ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(%s)${reset}${bold}? [y/N]:${reset} " \
+					"$branch" "$repo" "$note"
+				;;
+			repo-gone)
+				printf "${bold}Trash worktrees at ${yellow}%s${reset} ${dim}(repo no longer cloned, contents unknown to git)${reset}${bold}? [y/N]:${reset} " \
+					"${wt#"$worktrees_dir"/}"
+				;;
+			leftover)
+				printf "${bold}Trash leftovers at ${yellow}%s${reset} ${dim}(no worktrees left in it)${reset}${bold}? [y/N]:${reset} " \
+					"${wt#"$worktrees_dir"/}"
+				;;
+			*)
+				# orphan: the directory is still there, but git cannot resolve it —
+				# which also means nothing can be said about what is in it
+				printf "${bold}Trash worktree ${yellow}%s${reset} ${dim}(no longer a git worktree, contents unknown to git)${reset}${bold}? [y/N]:${reset} " \
+					"${wt#"$worktrees_dir"/}"
+				;;
+			esac
+			read -r -n 1 confirm </dev/tty
+			echo ""
+			if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+				echo -e "  ${dim}– Skipped${reset}"
+				continue
+			fi
+			if [[ "$reason" == "merged" || "$reason" == "no-commits" ]]; then
+				# The worktree has to go first: git refuses `branch -D` for a branch
+				# that is checked out anywhere. The branch holds nothing origin does
+				# not already have, so it goes with it.
+				#
+				# No --force: these were classified clean, so git has no reason to
+				# refuse, and leaving its refusals in place is the last check on a
+				# classification made before the prompt — or on a worktree that has
+				# been locked since.
+				if git -C "$repos_dir/$repo" worktree remove "$wt" 2>/dev/null; then
+					git -C "$repos_dir/$repo" branch -D "$branch" >/dev/null 2>&1 || true
+					echo -e "  ${green}✓ Deleted${reset}"
+				else
+					echo -e "  ${yellow}⚠ Failed to remove worktree $wt${reset}"
+					echo -e "  ${dim}Something changed in it since the sync — left alone${reset}"
+				fi
+			else
+				# No clone still owns this directory, so git cannot remove it
+				if trash "$wt"; then
+					echo -e "  ${green}✓ Trashed${reset}"
+				else
+					echo -e "  ${yellow}⚠ Failed to delete $wt${reset}"
+				fi
+				# Drop the registration too, where there is still a clone to ask. A
+				# leftover directory is the clone's own; everything else is one
+				# worktree inside it.
+				local owner
+				if [[ "$reason" == "leftover" ]]; then
+					owner="$repos_dir/${wt#"$worktrees_dir"/}"
+				else
+					owner="$repos_dir/$(dirname "${wt#"$worktrees_dir"/}")"
+				fi
+				if [[ -d "$owner/.git" ]]; then
+					git -C "$owner" worktree prune 2>/dev/null || true
+				fi
+			fi
+			_prune_worktree_parents "$wt" "$worktrees_dir"
+		done <"$stale_worktrees_file"
+		echo ""
+	fi
+
 	# Show repos with active feature branches (unmerged work) and live worktrees
 	if [[ -s "$active_branches_file" ]]; then
 		echo -e "${bold}› Active work${reset}"
-		while IFS=: read -r repo branch wt; do
+		# Flags mark work a delete prompt would lose, which is why these are only
+		# ever reported: dirty for uncommitted changes, +N for unpushed commits
+		while IFS=: read -r repo branch flags wt; do
+			local mark=""
+			[[ -n "$flags" ]] && mark=" ${yellow}[$flags]${reset}"
 			if [[ -n "$wt" ]]; then
-				printf "  ${coral}%s${reset} → ${coral}%s${reset} ${dim}(worktree)${reset}\n" "$repo" "$branch"
+				printf "  ${coral}%s${reset} → ${coral}%s${reset} ${dim}(worktree)${reset}%s\n" "$repo" "$branch" "$mark"
 			else
-				printf "  ${coral}%s${reset} → ${coral}%s${reset}\n" "$repo" "$branch"
+				printf "  ${coral}%s${reset} → ${coral}%s${reset}%s\n" "$repo" "$branch" "$mark"
 			fi
 		done < <(sort "$active_branches_file")
 		echo ""
