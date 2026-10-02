@@ -5,7 +5,11 @@
 # picked up automatically. The empty value first is git's idiom for resetting the
 # helper list: Homebrew's system gitconfig sets osxkeychain globally, and without
 # the reset it runs first and keeps replaying the password it cached before the
-# token was rotated. gitlab.com is already covered by linked/.gitconfig.
+# token was rotated. linked/.gitconfig clears the global list for the same reason;
+# this reset stays so the behaviour does not depend on that one being there.
+#
+# gitlab.com is skipped because glab writes its own credential entry for whichever
+# host you log in to, so there is nothing for this to add there.
 configure_gitlab_credential_helper() {
 	local host="${GITLAB_HOST:-}" glab_bin key want
 	[[ -n "$host" && "$host" != "gitlab.com" ]] || return 0
