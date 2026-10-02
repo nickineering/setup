@@ -124,6 +124,21 @@ See `git-aliases` and `git-functions` for the full list.
 | `please`                     | Alias for `sudo`                      |
 | `drun`                       | `docker compose run --rm app`         |
 
+### Python Helpers
+
+Short single-file Python utilities live in `scripts/` and are linked into
+`~/.local/bin` without their `.py` extension, so `scripts/awake.py` runs by
+typing `awake` from anywhere.
+
+| Command | Description                                             |
+| ------- | ------------------------------------------------------- |
+| `awake` | Keep the display on and apps showing this Mac as active |
+
+Each script declares its own dependencies in a
+[PEP 723](https://peps.python.org/pep-0723/) header and runs under
+`uv run --script`, so scripts never share a virtualenv and there is no project
+to install. `awake` needs Accessibility permission for the terminal running it.
+
 ### GitLab Sync
 
 Automatically sync all repos from a GitLab group:
@@ -215,6 +230,7 @@ Each run upgrades:
 | `copied/`    | Templates copied once (e.g., `~/.env.sh`)       |
 | `state/`     | Package/extension lists that drive installation |
 | `configure/` | Tool-specific setup scripts                     |
+| `scripts/`   | Python helpers linked into `~/.local/bin`       |
 | `sync/`      | GitLab repo sync scripts                        |
 | `lib/`       | Shared utilities                                |
 
@@ -242,6 +258,25 @@ echo "my-package" >> state/brew_packages.txt
 
 1. Add the file to `linked/`
 2. Add the filename to `state/linked_files.txt`
+
+### Adding a Python helper
+
+1. Create `scripts/<name>.py`, starting with:
+
+```python
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.13"
+# dependencies = ["requests"]
+# ///
+```
+
+2. `chmod +x scripts/<name>.py`
+3. `devenv --only 8,9` to link it and cache its dependencies
+
+There is no list to update - `scripts/` is globbed. Deleting a script removes
+its link on the next run. Edits take effect immediately; only dependency changes
+need step 9 again (or just run the script, which resolves them on demand).
 
 ### Machine-specific config
 

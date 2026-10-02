@@ -16,3 +16,11 @@ output=$(uv python upgrade 2>&1) || warn "Failed to upgrade Python"
 if [[ "$output" != *"already on latest"* ]]; then
 	echo "$output"
 fi
+
+# Build the cached environment for each scripts/ helper up front. Without this
+# the first `awake` on a new machine pays a dependency resolve, and would fail
+# outright with no network. Step 08 links them; this makes them ready to run.
+for script in "${SETUP:?}"/scripts/*.py; do
+	[[ -f "$script" ]] || continue # unmatched glob when scripts/ is empty
+	uv sync --quiet --script "$script" || warn "Failed to sync deps for $(basename "$script")"
+done
