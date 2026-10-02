@@ -147,7 +147,14 @@ else
 	# would outlive this step and sit next to the $confirm those callers use.
 	confirm_purge() {
 		local question="$1" reply
-		[[ -r /dev/tty ]] || return 1
+		# Opening /dev/tty for real, because `[[ -r /dev/tty ]]` is a false
+		# positive: the device node is readable by mode even when the process has
+		# no controlling terminal, and the open then fails with "Device not
+		# configured". The check has to come before prompt() or a non-interactive
+		# run prints a question nobody can answer. stderr is redirected first on
+		# purpose — redirections apply left to right, so `</dev/tty 2>/dev/null`
+		# fails before the 2> is ever installed and the error still leaks.
+		: 2>/dev/null </dev/tty || return 1
 		prompt "$question [y/N]:"
 		read -r -n 1 reply </dev/tty || {
 			echo ""
