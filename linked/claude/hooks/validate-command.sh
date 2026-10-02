@@ -14,10 +14,15 @@ fi
 # --- Normalize command for pattern matching ---
 # Strip leading KEY=value env assignments and resolve command to basename.
 # Catches: NO_PROXY=github.com /usr/bin/git push → git push
+#
+# The assignment value must not contain `$`, a backtick or `(`: those make it a
+# substitution, not a literal, and the value then runs past the first space.
+# `result=$(dd if=/dev/zero of=file)` would otherwise normalize to `of=file)`,
+# dropping the `$(dd` that every downstream check is looking for.
 if [[ -n "$COMMAND" ]]; then
-	STRIPPED=$(echo "$COMMAND" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]]*[[:space:]]\)*//')
+	STRIPPED=$(echo "$COMMAND" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]$`(]*[[:space:]]\)*//')
 	CMD_FIRST=$(echo "$STRIPPED" | awk '{print $1}')
-	CMD_BASE=$(basename "$CMD_FIRST")
+	CMD_BASE=$(basename -- "$CMD_FIRST" 2>/dev/null || echo "$CMD_FIRST")
 	if [[ "$STRIPPED" == *" "* ]]; then
 		COMMAND="$CMD_BASE ${STRIPPED#* }"
 	else
@@ -42,9 +47,9 @@ check_segment_approval() {
 	seg=$(echo "$seg" | sed 's/^[[:space:]]*//')
 	# Normalize: strip env vars, resolve basename (same logic as top-level)
 	local stripped cmd_first cmd_base normalized
-	stripped=$(echo "$seg" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]]*[[:space:]]\)*//')
+	stripped=$(echo "$seg" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]$`(]*[[:space:]]\)*//')
 	cmd_first=$(echo "$stripped" | awk '{print $1}')
-	cmd_base=$(basename "$cmd_first")
+	cmd_base=$(basename -- "$cmd_first" 2>/dev/null || echo "$cmd_first")
 	if [[ "$stripped" == *" "* ]]; then
 		normalized="$cmd_base ${stripped#* }"
 	else
@@ -84,14 +89,21 @@ check_segment_approval() {
 	fi
 
 	# Infrastructure operations that mutate state
-	if [[ "$normalized" =~ ^terraform[[:space:]]+(apply|destroy) ]]; then
-		ask_approval "terraform apply/destroy requires explicit approval"
+	if [[ "$normalized" =~ ^terraform[[:space:]]+(apply|destroy|import|taint|untaint) ]]; then
+		ask_approval "terraform state-mutating command requires explicit approval"
 	fi
-	if [[ "$normalized" =~ ^cdk[[:space:]]+(deploy|destroy) ]]; then
-		ask_approval "cdk deploy/destroy requires explicit approval"
+	# `state rm` and friends rewrite state without touching infrastructure, so
+	# they read as harmless subcommands but are as destructive as a destroy.
+	if [[ "$normalized" =~ ^terraform[[:space:]]+state[[:space:]]+(rm|mv|push|replace-provider) ]]; then
+		ask_approval "terraform state mutation requires explicit approval"
 	fi
-	if [[ "$normalized" =~ ^sam[[:space:]]+(deploy|delete) ]]; then
-		ask_approval "sam deploy/delete requires explicit approval"
+	# bootstrap provisions a CDK toolkit stack, so it is a deploy by another name
+	if [[ "$normalized" =~ ^cdk[[:space:]]+(deploy|destroy|bootstrap) ]]; then
+		ask_approval "cdk deploy/destroy/bootstrap requires explicit approval"
+	fi
+	# sync pushes code straight to a live stack, bypassing a reviewed deploy
+	if [[ "$normalized" =~ ^sam[[:space:]]+(deploy|delete|sync) ]]; then
+		ask_approval "sam deploy/delete/sync requires explicit approval"
 	fi
 }
 
@@ -213,7 +225,9 @@ if [[ "$COMMAND" =~ (^|[[:space:]]|\"|\')\/var\/ ]] && [[ ! "$COMMAND" =~ \/var\
 fi
 
 # For file-writing commands, block absolute paths outside allowed directories
-# Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/.claude, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
+# Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
+# ~/.claude is deliberately absent: it holds the settings and hooks that enforce
+# all of this, and its tracked contents live in ~/projects/setup/linked/claude.
 WRITE_COMMANDS='^(cp|mv|tar|unzip|mkdir|touch|tee)[[:space:]]'
 if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 	# Extract absolute paths that are complete arguments (preceded by space)
@@ -234,9 +248,9 @@ if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
 
 		# Check if path is within allowed directories: projects, work, .Trash, .cache, Library/Caches
 		if [[ "$expanded_path" =~ ^/ ]]; then
-			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|\.claude|Library/Caches)(/?|/.*)$ ]]; then
+			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
 				# shellcheck disable=SC2088 # Tilde is intentional in user-facing message
-				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/.claude, ~/Library/Caches, /tmp" >&2
+				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
 				exit 2
 			fi
 		fi
