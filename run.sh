@@ -142,7 +142,14 @@ source lib/packages.sh
 CURRENT_STEP=""
 cleanup_on_exit() {
 	stop_sudo_keepalive 2>/dev/null || true
-	rm -f "${SUDO_PASS_FILE:-}" "${ASKPASS_SCRIPT:-}"
+	# Same `|| true` as in steps/12_privileged.sh: this runs from an EXIT trap
+	# under errexit, so a failing rm would cut the trap short. The warning then
+	# has to live here too — an interrupted run never reaches step 12's own
+	# check, and a plaintext password left behind must not be silent.
+	rm -f "${SUDO_PASS_FILE:-}" "${ASKPASS_SCRIPT:-}" || true
+	if [[ -n "${SUDO_PASS_FILE:-}" && -e "${SUDO_PASS_FILE:-}" ]]; then
+		echo -e "${yellow}⚠ Could not remove ${SUDO_PASS_FILE} — it holds your sudo password in plain text. Delete it by hand.${reset}" >&2
+	fi
 }
 cleanup_on_interrupt() {
 	cleanup_on_exit

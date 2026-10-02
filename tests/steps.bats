@@ -286,9 +286,14 @@ setup() {
 }
 
 @test "step file prefixes match their run order in run.sh" {
+    # Anchored on run_step rather than grepping the whole file: a comment that
+    # names a step file is legitimate, and matching those too made this test fail
+    # on a cross-reference added to the EXIT trap. Only the invocations define
+    # run order.
     local -a files=()
     while IFS= read -r file; do files+=("$file"); done \
-        < <(grep -oE 'steps/[0-9]{2}_[a-z_]+\.sh' "$REPO_ROOT/run.sh")
+        < <(grep -E '^run_step ' "$REPO_ROOT/run.sh" |
+            grep -oE 'steps/[0-9]{2}_[a-z_]+\.sh')
 
     [[ "${#files[@]}" -eq 13 ]]
     for i in "${!files[@]}"; do
