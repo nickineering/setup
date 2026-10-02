@@ -199,6 +199,26 @@ setup() {
     [[ -f "$REPO_ROOT/state/brew_taps.txt" ]]
 }
 
+@test "state/brew_trusted_formulae.txt exists" {
+    [[ -f "$REPO_ROOT/state/brew_trusted_formulae.txt" ]]
+}
+
+@test "every narrow trust entry belongs to a tap in brew_taps.txt" {
+    local taps entry tap
+    # parse_state_file, not hand-rolled stripping: both files allow inline
+    # comments and indented entries, and the test has to read them the same way
+    # the step does or it diverges from what actually gets trusted.
+    taps=$(parse_state_file "$REPO_ROOT/state/brew_taps.txt")
+    while IFS= read -r entry; do
+        [[ -z "$entry" ]] && continue
+        tap="${entry%/*}"
+        # Entry must be owner/repo/formula, so stripping the last component has
+        # to have changed something — otherwise an empty $tap passes vacuously
+        [[ -n "$tap" && "$tap" != "$entry" ]]
+        grep -qxF "$tap" <<<"$taps"
+    done < <(parse_state_file "$REPO_ROOT/state/brew_trusted_formulae.txt")
+}
+
 @test "state/vscode_extensions.txt exists" {
     [[ -f "$REPO_ROOT/state/vscode_extensions.txt" ]]
 }

@@ -1,0 +1,13 @@
+# Formula-level trust for third-party taps (Homebrew 7+)
+# Format: owner/repo/formula (one per line)
+#
+# A tap named here is trusted only for the formulae listed, not wholesale.
+# `brew tap` parses every *trusted* file in a tap and refuses the entire tap if
+# any one of them fails to load, so a tap carrying an unrelated broken formula
+# or cask cannot be tapped at all. Narrowing trust leaves those files untrusted,
+# and therefore unread.
+#
+# Taps absent from this file are trusted wholesale, which is the right default
+# for a tap whose contents all parse.
+
+timescam/tap/pay-respects  # tap's imfile/music-lyric-app casks lack depends_on :macos
