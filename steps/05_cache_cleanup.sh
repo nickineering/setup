@@ -6,9 +6,11 @@
 # Playwright, Cypress, node-gyp, Copilot, pyright).
 # Gated on --clean flag — skipped on normal runs to keep things fast.
 #
-# Caches that come back on their own are cleared outright. Caches that need an
-# explicit reinstall command are prompted for individually, in one block near
-# the end, and default to being kept — answering no to all of them is fine.
+# Caches that come back on their own are cleared outright. Caches whose recovery
+# costs real time — a reinstall, a re-download of every wheel, a rebuild of every
+# hook environment — are prompted for individually, in one block near the end,
+# and default to being kept. Answering no to all of them is fine; the unprompted
+# section has already reclaimed everything that costs nothing.
 #
 # Deliberately NOT touched:
 #   - pypoetry/virtualenvs, which are project environments rather than cache
@@ -185,10 +187,39 @@ else
 		done <<<"$paths"
 	}
 
+	# Prompts like purge_group, but empties the cache with the tool's own command
+	# instead of trashing the directory, so the space comes back immediately.
+	# $3 is only measured, to size the prompt; everything after it is the command.
+	#
+	# Always returns 0. run.sh sources this file under errexit, and these calls
+	# sit at the end of an `if` body, so a non-zero return would abort the run.
+	purge_group_native() {
+		local label="$1" recovery="$2" path="$3"
+		shift 3
+		local total
+		total=$(size_kb "$path")
+		[[ $total -gt 0 ]] || return 0
+		if ! confirm_purge "Clear $label ($(human_kb "$total"))? Restored with: $recovery"; then
+			info "$label: kept"
+			return 0
+		fi
+		if "$@" >/dev/null 2>&1; then
+			info "$label: cleared, $(human_kb "$total") freed"
+		else
+			warn "$label: '$*' failed, cache left alone"
+		fi
+		return 0
+	}
+
 	# --- Caches with a tool-native purge -------------------------------------
 	# These unlink directly rather than shelling out to rm, so the space comes
 	# back immediately and the wrapper never sees them.
-	cleanup_output=$(brew cleanup --prune=7 2>&1)
+	# --prune=all, not --prune=7: the 7-day window only prunes downloads older
+	# than a week, which left 4.5 GB of bottle tarballs sitting in
+	# Homebrew/downloads indefinitely. Nothing installed depends on them — they
+	# are the archives a formula was unpacked from, needed again only if you
+	# reinstall or roll back that exact version, so this stays unprompted.
+	cleanup_output=$(brew cleanup --prune=all 2>&1)
 	if [[ -z "$cleanup_output" ]]; then
 		info "Homebrew: cache already clean"
 	else
@@ -255,6 +286,23 @@ $(stale_versions "$HOME/.cache/puppeteer/chrome-headless-shell")"
 		"$HOME/Library/Caches/ms-playwright"
 	purge_group "Cypress binaries" "cypress install" \
 		"$HOME/Library/Caches/Cypress"
+
+	# `uv cache prune` above only evicts entries uv considers unused, which left
+	# 4.7 GB of wheels and source dists behind. `clean` empties the lot. Nothing
+	# breaks, but the next resolve in every Python project re-downloads, so it is
+	# asked about rather than assumed.
+	if command -v uv &>/dev/null; then
+		purge_group_native "the whole uv cache" "the next uv sync or uv pip install" \
+			"$HOME/.cache/uv" uv cache clean
+	fi
+
+	# `pre-commit gc` above only collects repos no installed hook references.
+	# `clean` removes the built hook environments too, and rebuilding them means
+	# recreating virtualenvs and recompiling — minutes per repo, not seconds.
+	if command -v pre-commit &>/dev/null; then
+		purge_group_native "pre-commit hook environments" "pre-commit install-hooks" \
+			"$HOME/.cache/pre-commit" pre-commit clean
+	fi
 
 	# --- Summary --------------------------------------------------------------
 	disk_after=$(df -k / | awk 'NR==2 {print $4}')
