@@ -49,6 +49,12 @@ export GITLAB_HOST="gitlab.example.com"
 export GITLAB_URL_ALIASES="https://gitlab-other.example.com/"
 # Optional: exclude specific subdirectories (pipe-separated)
 export GITLAB_EXCLUDE_DIRS="archived|sandbox"
+# Optional: clone no new repos — for a machine that should only hold a few.
+# Every uncloned repo still gets its directory in ~/work, holding a .gitkeep
+# that says so, so the tree keeps GitLab's shape; clone one by hand and the
+# next run drops its placeholder. Deleted repos, branches and worktrees are
+# still handled as usual. `devenv --placeholders-only` does it for one run.
+export GITLAB_PLACEHOLDERS_ONLY=1
 
 # Hide Dock icons not installed or not wanted on this machine (pipe-separated)
 export DOCK_IGNORE_APPS="NordVPN|Spotify"

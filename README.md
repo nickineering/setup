@@ -95,33 +95,34 @@ See `git-aliases` and `git-functions` for the full list.
 
 ### Shell Commands
 
-| Command             | Description                           |
-| ------------------- | ------------------------------------- |
-| `devenv`            | Re-run setup (safe, idempotent)       |
-| `devenv --clean`    | Also clear tool caches                |
-| `devenv --skip N…`  | Skip steps by number (`--skip 12 13`) |
-| `devenv --only N…`  | Run only these steps (`--only 8,9`)   |
-| `devenv --help`     | Usage, flags, and the step numbers    |
-| `godir <pat>`       | Find and cd to a directory by pattern |
-| `finddir <pat>`     | Find directories matching pattern     |
-| `cs <dir>`          | cd + ls                               |
-| `mcd <dir>`         | mkdir + cd                            |
-| `..`, `...`, `....` | Navigate up 1, 2, 3 directories       |
-| `lines <ext>`       | Count lines of code by extension      |
-| `count`             | Count files in directory tree         |
-| `count_lines`       | Count lines in directory tree         |
-| `afk`               | Lock screen                           |
-| `reload`            | Reload shell                          |
-| `path`              | Print PATH entries (one per line)     |
-| `ip`                | Show public IP address                |
-| `localip`           | Show local IP address                 |
-| `cleanup`           | Recursively delete `.DS_Store` files  |
-| `urlencode <str>`   | URL-encode a string                   |
-| `mergepdf`          | Merge PDFs preserving hyperlinks      |
-| `unmeta <file>`     | Remove metadata from photos           |
-| `backup_secrets`    | Backup `~/.env.sh` and `~/.gitconfig` |
-| `please`            | Alias for `sudo`                      |
-| `drun`              | `docker compose run --rm app`         |
+| Command                      | Description                           |
+| ---------------------------- | ------------------------------------- |
+| `devenv`                     | Re-run setup (safe, idempotent)       |
+| `devenv --clean`             | Also clear tool caches                |
+| `devenv --placeholders-only` | Sync, but clone no new repos          |
+| `devenv --skip N…`           | Skip steps by number (`--skip 12 13`) |
+| `devenv --only N…`           | Run only these steps (`--only 8,9`)   |
+| `devenv --help`              | Usage, flags, and the step numbers    |
+| `godir <pat>`                | Find and cd to a directory by pattern |
+| `finddir <pat>`              | Find directories matching pattern     |
+| `cs <dir>`                   | cd + ls                               |
+| `mcd <dir>`                  | mkdir + cd                            |
+| `..`, `...`, `....`          | Navigate up 1, 2, 3 directories       |
+| `lines <ext>`                | Count lines of code by extension      |
+| `count`                      | Count files in directory tree         |
+| `count_lines`                | Count lines in directory tree         |
+| `afk`                        | Lock screen                           |
+| `reload`                     | Reload shell                          |
+| `path`                       | Print PATH entries (one per line)     |
+| `ip`                         | Show public IP address                |
+| `localip`                    | Show local IP address                 |
+| `cleanup`                    | Recursively delete `.DS_Store` files  |
+| `urlencode <str>`            | URL-encode a string                   |
+| `mergepdf`                   | Merge PDFs preserving hyperlinks      |
+| `unmeta <file>`              | Remove metadata from photos           |
+| `backup_secrets`             | Backup `~/.env.sh` and `~/.gitconfig` |
+| `please`                     | Alias for `sudo`                      |
+| `drun`                       | `docker compose run --rm app`         |
 
 ### GitLab Sync
 
@@ -132,6 +133,7 @@ Automatically sync all repos from a GitLab group:
 export GITLAB_GROUP="your-group"          # nested groups work: "parent/child"
 export GITLAB_HOST="gitlab.example.com"   # optional: self-hosted instance
 export GITLAB_EXCLUDE_DIRS="archive|sandbox"  # optional
+export GITLAB_PLACEHOLDERS_ONLY=1             # optional: clone nothing new
 ```
 
 `GITLAB_GROUP` is stripped from each repo's path, so `~/work` mirrors the
@@ -155,6 +157,38 @@ The `devenv` command will:
   that git can no longer resolve are offered too, and since git cannot say what
   is in them they go to the Trash rather than being deleted
 - Run in parallel for speed
+
+#### Cloning only some of them
+
+A group too big to hold on one machine — disk, or the time every update takes —
+can be synced without cloning anything new: set `GITLAB_PLACEHOLDERS_ONLY=1` in
+`~/.env.sh`, or pass `--placeholders-only` for a single run.
+
+`~/work` still mirrors the group's structure, so the tree says where everything
+lives whether or not it is here: each uncloned repo gets its directory with a
+`.gitkeep` in it explaining itself. The rest of the sync is untouched — the
+repos that are cloned are still synced, and repos, branches and worktrees that
+are gone from GitLab are still offered for deletion.
+
+Placeholders are reconciled on every run:
+
+- a repo with nothing at its path yet gets one — only while the setting is on,
+  since otherwise the run has just cloned it
+- one that has been cloned since loses its `.gitkeep`, so cloning a repo by hand
+  is all it takes to start syncing it
+- one whose repo has left GitLab loses the directory too
+
+The last two happen whether or not the setting is on, which is what makes
+turning it off leave nothing behind: every placeholder is replaced by the real
+repo in the same run.
+
+To take a single repo, clear its placeholder first — git will not clone into a
+directory that is not empty, and the `.gitkeep` holds the two commands:
+
+```bash
+trash ~/work/<path>/.gitkeep && rmdir ~/work/<path>
+glab repo clone <group>/<path> ~/work/<path>
+```
 
 ### macOS Configuration
 

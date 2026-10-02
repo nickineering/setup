@@ -201,6 +201,19 @@ setup() {
     [[ "$output" == *"--skip N..."* ]]
 }
 
+@test "run.sh --help documents --placeholders-only" {
+    run "$REPO_ROOT/run.sh" --help
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"--placeholders-only"* ]]
+    [[ "$output" == *"GITLAB_PLACEHOLDERS_ONLY"* ]]
+}
+
+@test "run.sh takes --placeholders-only as a flag, not a step number" {
+    run "$REPO_ROOT/run.sh" --placeholders-only --skip 99
+    [[ "$status" -ne 0 ]]
+    [[ "$(strip_ansi "$output")" == *"'99' is not a step number"* ]]
+}
+
 @test "run.sh rejects unknown option" {
     run "$REPO_ROOT/run.sh" --bogus
     [[ "$status" -eq 1 ]]

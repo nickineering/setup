@@ -10,7 +10,12 @@
 #   GITLAB_GROUP        - GitLab group/namespace to sync
 #   SETUP               - Path to setup repo
 # Optional:
-#   GITLAB_EXCLUDE_DIRS - Pipe-separated dirs to exclude
+#   GITLAB_EXCLUDE_DIRS      - Pipe-separated dirs to exclude
+#   GITLAB_PLACEHOLDERS_ONLY - Non-empty to clone nothing new and mirror the
+#                              uncloned repos as placeholder directories instead
+
+# shellcheck source=sync/placeholders.sh
+source "${SETUP:?}/sync/placeholders.sh"
 
 # Helper: count lines (returns 0 for empty string)
 _count_lines() {
@@ -24,10 +29,11 @@ _encode_group() {
 	echo "${1//\//%2F}"
 }
 
-# Remove the now-empty parent directories the mirrored worktree layout leaves
-# behind. Stops at the worktree root, so it can never climb into $repos_dir.
-# Usage: _prune_worktree_parents <removed_path> <worktree_root>
-_prune_worktree_parents() {
+# Remove the now-empty parent directories a mirrored layout leaves behind.
+# Stops at the root it is given, so a worktree tidy-up can never climb into
+# $repos_dir and a placeholder tidy-up can never climb out of it.
+# Usage: _prune_empty_parents <removed_path> <root>
+_prune_empty_parents() {
 	local d root="$2"
 	d=$(dirname "$1")
 	while [[ "$d" != "$root" && "$d" != "/" && -n "$d" ]]; do
@@ -99,8 +105,10 @@ _scan_worktree_tree() {
 			# in there is what blocked the tidy-up — the real case being an editor
 			# workspace file sitting next to a removed worktree
 			_worktree_has_subdir "$child" || printf 'leftover:::%s\n' "$child"
-		elif [[ -d "$repos/$crel" ]]; then
-			# A group on the way to a clone
+		elif [[ -d "$repos/$crel" ]] && ! _is_placeholder "$repos/$crel"; then
+			# A group on the way to a clone. A placeholder directory is not one, even
+			# though it is a directory with no clone in it: the repo it stands for is
+			# uncloned, so its worktrees are as dead as a deleted repo's.
 			_scan_worktree_tree "$child" "$crel" "$repos"
 			rmdir "$child" 2>/dev/null || true
 		else
@@ -134,6 +142,86 @@ _stale_worktree_dirs() {
 	_scan_worktree_tree "$root" "" "$repos"
 }
 
+# Bring the placeholder directories back in line with GitLab — see the header of
+# sync/placeholders.sh for what they are and why. Three things can have moved
+# since the last run, in the order a repo tends to meet them:
+#
+#   added   - on GitLab with nothing at its path here yet. Only ever written
+#             while GITLAB_PLACEHOLDERS_ONLY is set; otherwise the clone pass
+#             has just taken the repo and there is nothing to stand in for it
+#   cleared - cloned since, so the placeholder has done its job and the clone
+#             owns the path now. sync/clone_repo.sh clears the ones it clones
+#             over itself, so this is for a clone that arrived by hand
+#   removed - gone from GitLab, so the path means nothing any more. The
+#             directory goes with the file, and its empty parents with it
+#
+# Clearing and removing run whether or not the setting is on, which is what
+# makes turning it off leave nothing behind.
+#
+# Usage: _reconcile_placeholders <repos_dir> <remote_repos> <cloned_repos> <found>
+# The last three are newline-separated lists of paths relative to <repos_dir>:
+# every repo on GitLab, the ones cloned here, and the placeholders found in the
+# tree. remote and cloned must be sorted, as the caller's own diffs need anyway.
+_reconcile_placeholders() {
+	local repos_dir="$1" remote="$2" cloned="$3" found="$4"
+	local added=0 cleared=0 removed=0 rel dir
+	local -a kept=()
+
+	# Existing placeholders first: one cleared here is cloned, and one removed is
+	# gone from GitLab, so neither can be counted as missing by the pass below.
+	while IFS= read -r rel; do
+		[[ -n "$rel" ]] || continue
+		dir="$repos_dir/$rel"
+		# A .gitkeep a repo tracks itself only looks like one of ours
+		_is_placeholder "$dir" || continue
+		if [[ -e "$dir/.git" ]]; then
+			if _clear_placeholder "$dir"; then
+				((cleared++)) || true
+			fi
+		elif ! grep -qxF "$rel" <<<"$remote"; then
+			if _remove_placeholder "$dir"; then
+				_prune_empty_parents "$dir" "$repos_dir"
+				((removed++)) || true
+			else
+				kept+=("$rel")
+			fi
+		fi
+	done <<<"$found"
+
+	if [[ -n "${GITLAB_PLACEHOLDERS_ONLY:-}" ]]; then
+		while IFS= read -r rel; do
+			[[ -n "$rel" ]] || continue
+			dir="$repos_dir/$rel"
+			# Cloned, or already standing in for an uncloned repo
+			[[ -e "$dir/.git" ]] && continue
+			_is_placeholder "$dir" && continue
+			if _write_placeholder "$repos_dir" "$rel"; then
+				((added++)) || true
+			else
+				kept+=("$rel")
+			fi
+		done < <(comm -13 <(echo "$cloned") <(echo "$remote"))
+	fi
+
+	if ((added > 0)); then
+		info "Added ${bold}${green}${added}${reset}${dim} placeholder(s) for repos not cloned here"
+	fi
+	if ((cleared > 0)); then
+		info "Cleared ${bold}${cleared}${reset}${dim} placeholder(s) for repos cloned since"
+	fi
+	if ((removed > 0)); then
+		info "Removed ${bold}${removed}${reset}${dim} placeholder(s) for repos gone from GitLab"
+	fi
+	if ((added + cleared + removed == 0)); then
+		echo -e "${dim}· None${reset}"
+	fi
+	# Not a placeholder's directory to take over or to delete, so say which
+	if ((${#kept[@]} > 0)); then
+		warn "Left alone - something other than a placeholder is in the way:"
+		printf "  ${dim}%s${reset}\n" "${kept[@]}"
+	fi
+}
+
 sync_repos() {
 	local repos_dir="${HOME:?}/work"
 	# Parallel worktree tree — see the Worktrees section in linked/git_functions.sh
@@ -165,6 +253,18 @@ sync_repos() {
 		fd --type d --hidden '^\.git$' "$repos_dir" \
 			--exclude .worktrees "${exclude_args[@]}" 2>/dev/null |
 			sed -E 's|/\.git/?$||'
+	}
+
+	# Helper: the placeholder directories in the tree, relative to $repos_dir.
+	#
+	# Same exclusions as _find_repos, for the same reason in reverse: a directory
+	# that is excluded from the diff against GitLab would have every placeholder
+	# in it read as a repo GitLab has never heard of. Candidates only — a cloned
+	# repo may track a .gitkeep of its own, which _is_placeholder rules out.
+	_find_placeholders() {
+		fd --type f --hidden --glob "$PLACEHOLDER_FILE" "$repos_dir" \
+			--exclude .worktrees "${exclude_args[@]}" 2>/dev/null |
+			sed -E "s|/$PLACEHOLDER_FILE\$||" | sed "s|^$repos_dir/||"
 	}
 
 	# Check prerequisites
@@ -262,7 +362,11 @@ sync_repos() {
 	local new_repos
 	new_repos=$(comm -13 <(echo "$local_repos") <(echo "$remote_repos"))
 
-	if [[ -n "$new_repos" ]]; then
+	if [[ -n "${GITLAB_PLACEHOLDERS_ONLY:-}" ]]; then
+		# Everything else still runs: a repo taken here is still synced, and one
+		# deleted on GitLab is still offered for deletion. Only the taking is off.
+		info "Skipped: ${bold}GITLAB_PLACEHOLDERS_ONLY${reset}${dim} is set, so ${bold}$(_count_lines "$new_repos")${reset}${dim} repo(s) stay uncloned"
+	elif [[ -n "$new_repos" ]]; then
 		action "Cloning ${bold}${green}$(_count_lines "$new_repos")${reset}${sky} new repos..."
 		echo "$new_repos" | xargs -P "$parallel_jobs" -I{} sh -c \
 			'"$1/sync/clone_repo.sh" "$2" "$3" "$4" 2>>"$5"' _ \
@@ -280,6 +384,14 @@ sync_repos() {
 	else
 		echo -e "${dim}· None${reset}"
 	fi
+	echo ""
+
+	# Mirror the repos that are not cloned here. After the clone pass, so a repo
+	# just taken is seen as cloned rather than mirrored and immediately cleared;
+	# the cloned list is re-derived from the refreshed repo_list for that reason.
+	echo -e "${bold}› Placeholder directories${reset}"
+	_reconcile_placeholders "$repos_dir" "$remote_repos" \
+		"$(echo "$repo_list" | sed "s|^$repos_dir/||" | sort)" "$(_find_placeholders)"
 	echo ""
 
 	# Detect deleted repos
@@ -321,7 +433,7 @@ sync_repos() {
 				if [[ "$wt_target" == "$worktrees_dir"/* && -d "$wt_target" ]]; then
 					echo -e "  ${dim}Removing worktrees for $repo${reset}"
 					trash "$wt_target"
-					_prune_worktree_parents "$wt_target" "$worktrees_dir"
+					_prune_empty_parents "$wt_target" "$worktrees_dir"
 				fi
 				trash "$target"
 			done
@@ -370,7 +482,7 @@ sync_repos() {
 				if [[ -n "$wt" && "$wt" == "$worktrees_dir"/* ]]; then
 					git -C "$repos_dir/$repo" worktree remove --force "$wt" 2>/dev/null ||
 						echo -e "  ${yellow}⚠ Failed to remove worktree $wt${reset}"
-					_prune_worktree_parents "$wt" "$worktrees_dir"
+					_prune_empty_parents "$wt" "$worktrees_dir"
 				fi
 				git -C "$repos_dir/$repo" branch -D "$branch" 2>/dev/null &&
 					echo -e "  ${green}✓ Deleted${reset}" ||
@@ -476,7 +588,7 @@ sync_repos() {
 					git -C "$owner" worktree prune 2>/dev/null || true
 				fi
 			fi
-			_prune_worktree_parents "$wt" "$worktrees_dir"
+			_prune_empty_parents "$wt" "$worktrees_dir"
 		done <"$stale_worktrees_file"
 		echo ""
 	fi

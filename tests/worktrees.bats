@@ -548,23 +548,23 @@ _advance_main() {
 # repos.sh helpers
 # ============================================
 
-@test "_prune_worktree_parents: stops at the worktree root" {
+@test "_prune_empty_parents: stops at the worktree root" {
     source "$REPO_ROOT/sync/repos.sh"
     mkdir -p "$WT/feat-thing"
-    _prune_worktree_parents "$WT/feat-thing" "$WTROOT"
+    _prune_empty_parents "$WT/feat-thing" "$WTROOT"
     # feat-thing itself is the caller's to remove; its empty parents go
     rmdir "$WT/feat-thing"
-    _prune_worktree_parents "$WT/feat-thing" "$WTROOT"
+    _prune_empty_parents "$WT/feat-thing" "$WTROOT"
     [[ ! -d "$WTROOT/backend" ]]
     [[ -d "$WTROOT" ]]
     [[ -d "$TEST_DIR/work" ]]
 }
 
-@test "_prune_worktree_parents: leaves non-empty parents alone" {
+@test "_prune_empty_parents: leaves non-empty parents alone" {
     source "$REPO_ROOT/sync/repos.sh"
     mkdir -p "$WT/feat-a" "$WT/feat-b"
     rmdir "$WT/feat-a"
-    _prune_worktree_parents "$WT/feat-a" "$WTROOT"
+    _prune_empty_parents "$WT/feat-a" "$WTROOT"
     [[ -d "$WT/feat-b" ]]
 }
 
@@ -649,6 +649,18 @@ _advance_main() {
     run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
     # One prompt for the whole subtree, and never a walk into its contents
     [[ "$output" == "repo-gone:::$WTROOT/backend/pocs/deleted" ]]
+}
+
+@test "_stale_worktree_dirs: a placeholder is not a group on the way to a clone" {
+    # With GITLAB_PLACEHOLDERS_ONLY set, an uncloned repo still has a directory
+    # in ~/work. Reading it as a group would walk past it into worktrees whose
+    # clone is not there, and report each of them instead of the repo once
+    source "$REPO_ROOT/sync/repos.sh"
+    _write_placeholder "$TEST_DIR/work" "backend/pocs/shelved"
+    mkdir -p "$WTROOT/backend/pocs/shelved/feat-x"
+    echo stuff >"$WTROOT/backend/pocs/shelved/feat-x/file.txt"
+    run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
+    [[ "$output" == "repo-gone:::$WTROOT/backend/pocs/shelved" ]]
 }
 
 @test "_stale_worktree_dirs: removes empty scaffolding without asking" {

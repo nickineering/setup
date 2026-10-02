@@ -5,12 +5,16 @@
 #
 # Usage: clone_repo.sh <repo_path> <base_dir> <gitlab_group>
 # Example: clone_repo.sh backend/backend-apps/foo ~/work mycompany
+# Requires $SETUP, as sync_repo.sh does.
 
 set -euo pipefail
 
 repo="$1"
 dir="$2"
 group="$3"
+
+# shellcheck source=SCRIPTDIR/placeholders.sh
+source "${SETUP:?}/sync/placeholders.sh"
 
 _retry() {
 	local attempts=4 delay=5 i output
@@ -60,6 +64,20 @@ _error_reason() {
 export GIT_TERMINAL_PROMPT=0
 
 mkdir -p "$dir/$(dirname "$repo")"
+
+# A placeholder standing in for this repo has to go before the clone: git refuses
+# to clone into a directory that is not empty, and a directory holding nothing
+# but the marker is exactly what the clone is here to replace. Anything else in
+# it makes _remove_placeholder refuse, and the clone then reports the real
+# reason rather than this script deciding what was worth losing.
+#
+# Silenced because this script's stderr is the caller's list of failed clones:
+# one line from trash there would report a repo that cloned perfectly well as
+# having failed, with the removal's complaint as its reason.
+if _is_placeholder "$dir/$repo"; then
+	_remove_placeholder "$dir/$repo" 2>/dev/null || true
+fi
+
 if output=$(_retry glab repo clone "$group/$repo" "$dir/$repo"); then
 	printf '\033[92m✓ Cloned: %s\033[0m\n' "$repo"
 else

@@ -5,7 +5,7 @@
 # Safe to run anytime - all operations are idempotent or diff-based.
 #
 # Usage:
-#   run.sh [--clean] [--skip N...] [--only N...]
+#   run.sh [--clean] [--placeholders-only] [--skip N...] [--only N...]
 #
 # Step numbers match the [N/N] labels printed during a run and the step file
 # prefixes in steps/. The step list itself lives in lib/steps.sh (STEP_NAMES).
@@ -16,6 +16,8 @@
 #   GITLAB_EXCLUDE_DIRS - Pipe-separated dirs to exclude (optional)
 #   GITLAB_URL_ALIASES  - Pipe-separated https:// prefixes for other hostnames of
 #                         the same instance, rewritten to GITLAB_HOST (optional)
+#   GITLAB_PLACEHOLDERS_ONLY - Non-empty to clone no new repos, mirroring them as
+#                         placeholder directories instead (optional)
 #   DOCK_IGNORE_APPS    - Pipe-separated apps to skip in Dock management (optional)
 
 set -euo pipefail
@@ -30,9 +32,14 @@ source "$LIB/steps.sh"
 
 usage() {
 	cat <<EOF
-Usage: run.sh [--clean] [--skip N...] [--only N...]
+Usage: run.sh [--clean] [--placeholders-only] [--skip N...] [--only N...]
 
   --clean        Also clear tool caches
+  --placeholders-only
+                 Clone no new repos in the GitLab sync; keep a placeholder
+                 directory where each uncloned repo would go. Everything else
+                 about the sync is unchanged. Same as GITLAB_PLACEHOLDERS_ONLY
+                 in ~/.env.sh, for one run
   --skip N...    Skip these steps
   --only N...    Run only these steps
   -h, --help     Show this help
@@ -48,6 +55,7 @@ Examples:
   run.sh --skip $STEP_TOTAL      # everything except macOS software updates
   run.sh --only 8,9     # just symlinks and tool config
   run.sh --skip 1 2 3   # skip the repo update and Homebrew steps
+  run.sh --only 11 --placeholders-only  # sync what is here, clone nothing new
 EOF
 }
 
@@ -72,6 +80,9 @@ collect_step_args() {
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 	--clean) export CLEAN_CACHES=true ;;
+	# Exported, not forwarded: the sync reads it as the setting it mirrors, so
+	# the flag and ~/.env.sh cannot drift apart
+	--placeholders-only) export GITLAB_PLACEHOLDERS_ONLY=1 ;;
 	--skip | --only | --skip=* | --only=*)
 		flag="${1%%=*}"
 		[[ "$flag" == --skip ]] && target=SKIP_STEPS || target=ONLY_STEPS
