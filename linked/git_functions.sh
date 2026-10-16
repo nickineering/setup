@@ -59,20 +59,30 @@ interactive_rebase() {
 	git rebase --interactive HEAD~"$DISTANCE"
 }
 
+# The clone's own exclude file, shared by all its worktrees. --git-common-dir is
+# asked of git rather than built from --show-toplevel because a linked worktree's
+# git entry is a *file*, which no path can descend through; it resolves to the
+# main clone's git directory from anywhere in the repo, so every worktree writes
+# to the one file, which is what "only on this clone" means.
+_local_exclude_file() {
+	local gitdir
+	gitdir=$(git rev-parse --path-format=absolute --git-common-dir) || return 1
+	mkdir -p "$gitdir/info" || return 1
+	printf '%s' "$gitdir/info/exclude"
+}
+
 # Ignore $1 as if in .gitignore, but only on this clone of the repo
 local_ignore() {
-	# Get root directory of current Git repo
-	local ROOT
-	ROOT=$(git rev-parse --show-toplevel)
-	echo "$1" >>"$ROOT"/.git/info/exclude
+	local exclude
+	exclude=$(_local_exclude_file) || return 1
+	echo "$1" >>"$exclude"
 }
 
 # Edit the Git file that ignores files only within this clone of the repo
 local_ignore_edit() {
-	# Get root directory of current Git repo
-	local ROOT
-	ROOT=$(git rev-parse --show-toplevel)
-	vim "$ROOT"/.git/info/exclude
+	local exclude
+	exclude=$(_local_exclude_file) || return 1
+	vim "$exclude"
 }
 
 # Run git pull on all git repos that are nested under the current directory
@@ -225,9 +235,17 @@ _wt_root() {
 	printf '%s' "$HOME/work/.worktrees"
 }
 
-# Branch name -> directory name
+# Branch name -> directory name, always exactly one path component. Replacing "/"
+# keeps a name from the hook payload inside its repo's slot, since every way out
+# of a directory needs a separator. "." and ".." need the prefix on top, because
+# they survive that substitution and name directories that already exist.
 _wt_slug() {
-	printf '%s' "$1" | tr '/' '-'
+	local slug
+	slug=$(printf '%s' "$1" | tr '/' '-')
+	case "$slug" in
+	. | ..) slug="wt-$slug" ;;
+	esac
+	printf '%s' "$slug"
 }
 
 # Branch new worktrees are cut from, for $1=DIRECTORY (default: cwd). Repos whose
@@ -238,6 +256,12 @@ _wt_slug() {
 #
 # Deliberately scoped to worktrees: sync_repo.sh keeps using git_default_branch,
 # so overriding this does not change which branch the main clone fast-forwards.
+#
+# worktree.base is the only base-ref control that reaches the WorktreeCreate
+# hook. Claude Code's own worktreeBaseRef ("fresh" | "head") cannot: the hook
+# owns worktree creation, and the payload on stdin does not carry the setting, so
+# honouring it would mean reimplementing Claude Code's settings cascade in bash.
+# _wt_add names the ref it used, so the choice is never silent.
 _wt_base() {
 	local dir="${1:-.}" base
 	base=$(git -C "$dir" config --get worktree.base 2>/dev/null)
@@ -248,10 +272,33 @@ _wt_base() {
 	fi
 }
 
-# Path of the current repo relative to ~/work. Fails if not in the mirror.
+# Root of the main clone, from anywhere in the repo — including a linked
+# worktree, where --show-toplevel would report that worktree instead and nest the
+# next one underneath it. --git-common-dir resolves to the main clone's git
+# directory from every worktree of the repo, and its parent is the main clone.
+#
+# Requires git 2.31 for --path-format, as wt_hook_remove already does. Fails
+# outside a repo, and for a bare repo, which has no working tree to mirror.
+_wt_main_root() {
+	local gitdir common top
+	gitdir=$(git rev-parse --path-format=absolute --absolute-git-dir 2>/dev/null) || return 1
+	common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || return 1
+	if [[ "$gitdir" == "$common" ]]; then
+		# The main clone itself: ask git for the working tree rather than deriving
+		# it, so a --separate-git-dir clone is not mistaken for its git directory's
+		# neighbour
+		top=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+		[[ -n "$top" ]] || return 1
+		printf '%s' "$top"
+	else
+		printf '%s' "${common%/*}"
+	fi
+}
+
+# Path of the main clone relative to ~/work. Fails if not in the mirror.
 _wt_repo_rel() {
 	local root
-	root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+	root=$(_wt_main_root) || return 1
 	case "$root" in
 	"$HOME/work/"*) printf '%s' "${root#"$HOME"/work/}" ;;
 	*) return 1 ;;
@@ -335,6 +382,9 @@ _wt_add() {
 	# Resolved after the fetch so a newly created remote base is visible
 	base_branch=$(_wt_base)
 
+	# The *current* worktree, deliberately, unlike _wt_repo_rel: local config is
+	# copied from wherever the session is working, which is also where the
+	# .worktreeinclude for this branch lives
 	src=$(git rev-parse --show-toplevel 2>/dev/null)
 	if git show-ref --verify --quiet "refs/heads/$branch"; then
 		# Git already refuses a second checkout, naming the worktree that holds it
@@ -346,12 +396,23 @@ _wt_add() {
 		# New branch from the remote base, matching worktree.baseRef "fresh".
 		# --no-track keeps origin/<base> from becoming this branch's upstream,
 		# which would break both `git push` and the sync's stale detection.
-		local base
+		local base current
 		if [[ -n "$base_branch" ]] && git show-ref --verify --quiet "refs/remotes/origin/$base_branch"; then
 			base="origin/$base_branch"
 		else
 			# No origin to be fresh from (a local-only repo), so branch from here
 			base=HEAD
+		fi
+		# Name the ref this was cut from, and shout when it is not what the calling
+		# session has checked out — the case nobody expects, and the one _wt_base
+		# cannot avoid. stderr only, since stdout is the created directory.
+		current=$(git branch --show-current 2>/dev/null)
+		if [[ -n "$current" && "$base" != "$current" && "$base" != "origin/$current" ]]; then
+			echo "⚠ $branch is cut from $base, NOT the checked-out $current" >&2
+			echo "⚠ Claude Code's worktreeBaseRef does not apply to this hook." \
+				"To change the base: git config worktree.base <ref>" >&2
+		else
+			echo "Branching $branch from $base" >&2
 		fi
 		git worktree add --quiet --no-track -b "$branch" "$wtdir" "$base" >&2 || return 1
 	fi
@@ -472,7 +533,10 @@ wt_hook_create() {
 	[[ -n "$cwd" && -d "$cwd" ]] && cd "$cwd" || true
 	[[ -n "$name" ]] || name="session-$$"
 
-	root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+	# The main clone, not the current worktree — a session inside a worktree must
+	# still resolve to the one repo path, both for the mirror and for the
+	# .claude/worktrees fallback below
+	root=$(_wt_main_root) || {
 		echo "WorktreeCreate: not in a git repository" >&2
 		return 1
 	}

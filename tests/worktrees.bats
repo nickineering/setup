@@ -75,7 +75,28 @@ _hook_remove() {
     [[ "$output" == "feat-some-thing" ]]
 }
 
+@test "_wt_slug: a traversal in the name cannot leave the repo's slot" {
+    # Every way out of a directory needs a separator, and separators go
+    run _wt_slug '../../escape'
+    [[ "$output" == "..-..-escape" ]]
+    # ".." survives that and names a directory that already exists, which _wt_add
+    # would hand back as an "existing worktree"
+    run _wt_slug '..'
+    [[ "$output" == "wt-.." ]]
+    run _wt_slug '.'
+    [[ "$output" == "wt-." ]]
+}
+
 @test "_wt_repo_rel: repo path relative to the mirror root" {
+    run _wt_repo_rel
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "backend/pocs/demo" ]]
+}
+
+@test "_wt_repo_rel: resolves the main clone from inside a linked worktree" {
+    # --show-toplevel would answer with the worktree's own path here, which is
+    # under .worktrees and so mirrored a second time
+    cd "$(wt_create 'feat/outer')"
     run _wt_repo_rel
     [[ "$status" -eq 0 ]]
     [[ "$output" == "backend/pocs/demo" ]]
@@ -85,6 +106,20 @@ _hook_remove() {
     mkdir -p "$TEST_DIR/elsewhere"
     cd "$TEST_DIR/elsewhere"
     git init --quiet .
+    run _wt_repo_rel
+    [[ "$status" -ne 0 ]]
+}
+
+@test "_wt_repo_rel: fails in a bare repo, which has no tree to mirror" {
+    git init --bare --quiet "$TEST_DIR/work/backend/pocs/bare-demo"
+    cd "$TEST_DIR/work/backend/pocs/bare-demo"
+    run _wt_repo_rel
+    [[ "$status" -ne 0 ]]
+}
+
+@test "_wt_repo_rel: fails outside a repository altogether" {
+    mkdir -p "$TEST_DIR/work/backend/pocs/not-a-repo"
+    cd "$TEST_DIR/work/backend/pocs/not-a-repo"
     run _wt_repo_rel
     [[ "$status" -ne 0 ]]
 }
@@ -106,10 +141,21 @@ _hook_remove() {
 # ============================================
 
 @test "wt_create: mirrors the repo path under .worktrees" {
-    run wt_create 'feat/thing'
+    run --separate-stderr wt_create 'feat/thing'
     [[ "$status" -eq 0 ]]
     [[ "$output" == "$WT/feat-thing" ]]
     [[ -d "$WT/feat-thing" ]]
+}
+
+@test "wt_create: from inside a worktree, mirrors the main clone and not the worktree" {
+    # The doubled-.worktrees bug: a session already in the parallel tree read its
+    # own path as the repo path and mirrored it again
+    cd "$(wt_create 'feat/outer')"
+    run --separate-stderr wt_create 'feat/inner'
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "$WT/feat-inner" ]]
+    [[ -d "$WT/feat-inner" ]]
+    [[ ! -d "$WTROOT/.worktrees" ]]
 }
 
 @test "wt_create: leaves the main clone on its default branch" {
@@ -165,6 +211,31 @@ _hook_remove() {
     path=$(wt_create 'feat/brand-new')
     run git -C "$path" rev-parse HEAD
     [[ "$output" == "$(git -C "$REPO" rev-parse origin/main)" ]]
+}
+
+@test "wt_create: names the ref a new branch was cut from" {
+    run --separate-stderr wt_create 'feat/thing'
+    [[ "$stderr" == *"Branching feat/thing from origin/main"* ]]
+    # The hook contract: stdout stays the created directory and nothing else
+    [[ "$output" == "$WT/feat-thing" ]]
+}
+
+@test "wt_create: shouts when the base is not the branch the session is on" {
+    cd "$(wt_create 'feat/outer')"
+    run --separate-stderr wt_create 'feat/inner'
+    [[ "$stderr" == *"feat/inner is cut from origin/main"* ]]
+    [[ "$stderr" == *"NOT the checked-out feat/outer"* ]]
+    # worktreeBaseRef cannot reach this hook, so point at the override that works
+    [[ "$stderr" == *"worktreeBaseRef does not apply"* ]]
+    [[ "$stderr" == *"git config worktree.base"* ]]
+    [[ "$output" == "$WT/feat-inner" ]]
+}
+
+@test "wt_create: the worktree.base override names itself in the message" {
+    git push --quiet origin main:trunk
+    git -C "$REPO" config worktree.base trunk
+    run --separate-stderr wt_create 'feat/thing'
+    [[ "$stderr" == *"from origin/trunk"* ]]
 }
 
 @test "wt_create: git entry is a file, so the repo scan cannot see it" {
@@ -275,7 +346,7 @@ _hook_remove() {
 # ============================================
 
 @test "hook create: relocates Claude Code worktrees into the mirror" {
-    run _hook_create 'feat/agent'
+    run --separate-stderr _hook_create 'feat/agent'
     [[ "$status" -eq 0 ]]
     [[ "$output" == "$WT/feat-agent" ]]
     [[ -d "$WT/feat-agent" ]]
@@ -283,9 +354,23 @@ _hook_remove() {
 
 @test "hook create: resolves the repo from cwd, not the launch directory" {
     cd "$TEST_DIR"
-    run _hook_create 'feat/agent'
+    run --separate-stderr _hook_create 'feat/agent'
     [[ "$status" -eq 0 ]]
     [[ "$output" == "$WT/feat-agent" ]]
+}
+
+@test "hook create: a subagent launched inside a worktree is not nested under it" {
+    # Observed for real with isolation: worktree — the agent worktree landed at
+    # .worktrees/.worktrees/<rel>/<slug>/<agent>, underneath the branch worktree
+    outer=$(wt_create 'feat/outer')
+    run --separate-stderr _hook_create 'agent-abc123' "$outer"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "$WT/agent-abc123" ]]
+    [[ -d "$WT/agent-abc123" ]]
+    [[ ! -d "$WTROOT/.worktrees" ]]
+    # ...and one GitLab path still resolves to exactly one local repo path
+    run fd --hidden --no-ignore --max-depth 6 --type f '^\.git$' "$WTROOT"
+    [[ "${#lines[@]}" -eq 2 ]]
 }
 
 @test "hook create: falls back in-repo for repos outside the mirror" {
