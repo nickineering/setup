@@ -19,6 +19,12 @@ from time import sleep
 
 INTERVAL_SECONDS = 60
 
+# The ⚠ line and these codes are lib/colors.sh's warn(), so a message from here
+# looks like one from the shell scripts in this repo.
+YELLOW = "\033[33m"
+DIM = "\033[38;5;245m"
+RESET = "\033[0m"
+
 # Signals that land while pyautogui is importing are recorded here rather than
 # acted on. That import costs about a second of pyobjc loading, so a Ctrl-C in
 # the window is easy to hit, and pyautogui's macOS backend wraps its
@@ -84,13 +90,27 @@ def nudge() -> None:
     pyautogui.moveTo(x, y)
 
 
+def report_failsafe() -> None:
+    """Say what happened and what to do, where a traceback reads as a crash."""
+    stopped = "awake stopped: the pointer is in a screen corner, which means stop."
+    fix = "Move it out of the corner and run awake again."
+    # Colour a terminal only; in a pipe or a file the codes would be junk.
+    warn, dim, reset = (YELLOW, DIM, RESET) if sys.stderr.isatty() else ("", "", "")
+    print(f"{warn}⚠ {stopped}{reset}", file=sys.stderr)
+    print(f"{dim}  {fix}{reset}", file=sys.stderr)
+
+
 def main() -> None:
     """Nudge on a loop until a signal stops us; quiet_exit does the exiting."""
     # Silent in normal operation, like caffeinate: nothing to report until it is
     # stopped, and no output means nothing to interleave with whatever else is
     # using the terminal.
     while True:
-        nudge()
+        try:
+            nudge()
+        except pyautogui.FailSafeException:
+            report_failsafe()
+            sys.exit(1)
         sleep(INTERVAL_SECONDS)
 
 
