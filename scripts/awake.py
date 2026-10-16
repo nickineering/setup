@@ -77,7 +77,10 @@ signal.signal(signal.SIGTERM, quiet_exit)
 def nudge() -> None:
     """Move the pointer one pixel and straight back, leaving it where it was."""
     x, y = pyautogui.position()
-    pyautogui.moveTo(x + 1, y)
+    # A pixel left is on screen everywhere but the left edge, where right is.
+    # Going right first instead would land off screen at the right edge, where
+    # macOS clamps the move back to the starting pixel and nothing moves.
+    pyautogui.moveTo(x - 1 if x > 0 else x + 1, y)
     pyautogui.moveTo(x, y)
 
 
