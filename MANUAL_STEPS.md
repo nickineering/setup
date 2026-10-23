@@ -20,6 +20,9 @@ following manual steps to finish setting up your Mac:
 1. Go to System Settings -> Notifications -> Weather -> Disable "Play sound for
    notifications"
 1. Go to System Settings -> App Management -> iTerm -> Allow
+1. Go to System Settings -> Privacy & Security -> Accessibility -> Add iTerm.
+   macOS drops `awake`'s posted pointer events silently without this. An iTerm
+   update can invalidate the grant, so re-check it after one.
 1. Install Paragon NTFS for Mac for free via its Seagate Hard Drive installer
    and grant it permissions in System Settings as instructed during
    installation. This allows editing external NTFS drives.

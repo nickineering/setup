@@ -3,17 +3,24 @@
 # requires-python = ">=3.13"
 # dependencies = ["pyautogui>=0.9.54"]
 # ///
-"""Keep the display awake and prevent inactivity timeouts.
+"""Keep this Mac awake and reporting as active.
 
-Nudges the pointer a pixel and back on a fixed interval. That resets the display
-idle timer much like `caffeinate` does, and unlike `caffeinate` it registers as
-real user input, so it works on all apps.
+macOS tracks idleness on two clocks, so holding both off takes two mechanisms:
 
-Needs Accessibility permission for the terminal running it (System Settings >
-Privacy & Security > Accessibility).
+- The display and system sleep timers, which only a power assertion holds off.
+  Posted events do not reset them: powerd takes its tickle from the HID device
+  drivers, and a posted event carries no device. `caffeinate` asserts instead.
+- `HIDIdleTime`, which apps read to decide you are away. A posted pointer move
+  resets it; `caffeinate` does not touch it.
+
+The nudge needs Accessibility permission for the terminal running it (System
+Settings > Privacy & Security > Accessibility). Without it macOS drops the
+posted events silently and apps report you as away; sleep is still held off.
 """
 
+import os
 import signal
+import subprocess
 import sys
 from time import sleep
 
@@ -100,8 +107,18 @@ def report_failsafe() -> None:
     print(f"{dim}  {fix}{reset}", file=sys.stderr)
 
 
+def hold_display_on() -> subprocess.Popen[bytes]:
+    """Assert against display and idle system sleep for as long as we run."""
+    # -w releases the assertion when our pid goes, including on a SIGKILL. Being
+    # our child is not enough: an orphan would hold it indefinitely.
+    return subprocess.Popen(["caffeinate", "-d", "-i", "-w", str(os.getpid())])
+
+
 def main() -> None:
-    """Nudge on a loop until a signal stops us; quiet_exit does the exiting."""
+    """Assert, then nudge on a loop; quiet_exit does the exiting."""
+    # Bound to a name so the Popen is not collected while the child runs, which
+    # warns about an abandoned subprocess.
+    _caffeinate = hold_display_on()
     # Silent in normal operation, like caffeinate: nothing to report until it is
     # stopped, and no output means nothing to interleave with whatever else is
     # using the terminal.

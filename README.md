@@ -137,7 +137,12 @@ typing `awake` from anywhere.
 Each script declares its own dependencies in a
 [PEP 723](https://peps.python.org/pep-0723/) header and runs under
 `uv run --script`, so scripts never share a virtualenv and there is no project
-to install. `awake` needs Accessibility permission for the terminal running it.
+to install.
+
+`awake` holds a `caffeinate` power assertion against display and system sleep,
+and nudges the pointer every minute to reset `HIDIdleTime`, which apps read to
+decide you are away. Only the nudge needs Accessibility permission for the
+terminal running it.
 
 ### GitLab Sync
 
