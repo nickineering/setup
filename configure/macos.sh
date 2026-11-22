@@ -91,6 +91,7 @@ desired_dock_apps=(
 	"/System/Applications/Apps.app|Apps"
 	"/Applications/Boop.app|Boop"
 	"/System/Applications/Calculator.app|Calculator"
+	"/System/Applications/Claude.app|Claude"
 	"/Applications/Firefox Developer Edition.app|Firefox Developer Edition"
 	"/Applications/Google Chrome.app|Google Chrome"
 	"/System/Applications/iPhone Mirroring.app|iPhone Mirroring"
