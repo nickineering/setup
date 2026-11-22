@@ -70,6 +70,8 @@ sure to complete any steps noted:
 1. Keyclu
    1. Grant permissions
 1. Chrome - all profiles
+1. Claude
+   1. Grant permissions
 1. Docker
 1. Firefox
 1. VSCode
