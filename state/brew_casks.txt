@@ -1,6 +1,7 @@
 1password                 # Password manager
 1password-cli             # Use password manager in terminal
 boop                      # Scratchpad for developers with text wrangling tools
+claude                    # AI assistant
 copilot-cli               # Github Copilot AI assistance from terminal
 docker-desktop            # Code containerisation
 firefox@developer-edition  # Web browser with added dev tools
