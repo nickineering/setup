@@ -1,9 +1,19 @@
+# Matched with contains, not equality or startswith: transcripts record both
+# "claude-opus-5" and the prefixed "eu.anthropic.claude-opus-5", and Fable is
+# "global.anthropic.claude-fable-5". An id that matches nothing still costs 0,
+# so a new tier is a silent undercount rather than an error - check here first
+# when a total looks too low.
+#
+# Fable before opus: tier order is cost order, highest first.
+# Sonnet and haiku rates are 4.x-generation and have not been re-checked.
 def cost(model; i; o; cw; cr):
-  if model == "claude-opus-4-6" then
+  if model | contains("claude-fable") then
+    (i * 11.0 + cw * 13.75 + cr * 1.1 + o * 55.0) / 1e6
+  elif model | contains("claude-opus") then
     (i * 5.5 + cw * 6.875 + cr * 0.55 + o * 27.5) / 1e6
-  elif model | startswith("claude-sonnet") then
+  elif model | contains("claude-sonnet") then
     (i * 3.2976 + cw * 4.0982 + cr * 0.3272 + o * 16.4015) / 1e6
-  elif model | startswith("claude-haiku") then
+  elif model | contains("claude-haiku") then
     (i * 1.1 + cw * 1.375 + cr * 0.11 + o * 5.5) / 1e6
   else 0 end;
 
@@ -36,7 +46,7 @@ def entry_cost(e): cost(e.model; e.inputTokens; e.outputTokens; e.cacheCreationT
 (if $total_cw > 0 then ($total_cr / $total_cw * 10 | round / 10) else 0 end) as $cache_ratio |
 ($total_cost / $total_turns * 100 | round / 100) as $cost_per_turn |
 (cost("claude-opus-4-6"; 0; $total_output; 0; 0) / $total_cost * 100 | round) as $output_pct |
-($models | map(select(.model | startswith("claude-opus") | not)) | map(.turns) | add // 0) as $cheap_turns |
+($models | map(select(.model | (contains("claude-opus") or contains("claude-fable")) | not)) | map(.turns) | add // 0) as $cheap_turns |
 ($cheap_turns / $total_turns * 100 | round) as $delegation_pct |
 ($all | map(entry_cost(.)) | sort | last) as $max_turn_cost |
 (($all[-1].timestamp | split(".")[0] | split("T") | join(" ")) as $end |
