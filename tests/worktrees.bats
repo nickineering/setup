@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
-# Tests for the worktree helpers in linked/git_functions.sh, the Claude Code
-# WorktreeCreate/WorktreeRemove hooks, and worktree handling in the repo sync.
+# Tests for the worktree helpers in linked/git_functions.sh and for worktree
+# handling in the repo sync.
 #
 # Each test gets a throwaway $HOME containing a bare "origin" and a clone at
 # work/backend/pocs/demo, so the mirror layout ($HOME/work/<path>, worktrees in
@@ -38,90 +38,120 @@ setup() {
     git commit --quiet -m 'initial'
     git push --quiet -u origin main
 
-    # The hooks source git_functions.sh by absolute path under $HOME, so mirror
-    # that layout too — this also asserts that assumption still holds.
-    mkdir -p "$TEST_DIR/projects/setup/linked"
-    ln -s "$REPO_ROOT/linked/git_functions.sh" \
-        "$TEST_DIR/projects/setup/linked/git_functions.sh"
-    HOOKS="$REPO_ROOT/linked/claude/hooks"
-
-    # git_functions.sh sources lib/git.sh from $SETUP, and the hooks run as
-    # subprocesses, so it has to be exported rather than just set
+    # git_functions.sh sources lib/git.sh from $SETUP, and sync_repo.sh runs as a
+    # subprocess, so it has to be exported rather than just set
     export SETUP="$REPO_ROOT"
 
     source "$REPO_ROOT/linked/git_functions.sh"
 }
 
-
-# Drive the WorktreeCreate hook with the payload Claude Code sends.
-# $1=NAME, $2=CWD / default=the demo repo
-_hook_create() {
-    printf '{"session_id":"s1","transcript_path":"/tmp/t.jsonl","cwd":"%s","permission_mode":"default","hook_event_name":"WorktreeCreate","name":"%s"}' \
-        "${2:-$REPO}" "$1" | "$HOOKS/worktree-create.sh"
+# A worktree in the mirror layout sync_repo.sh scans, for BRANCH.
+#
+# --no-track: an upstream of origin/main would make every branch measurable,
+# and three of the tests below turn on the sync meeting one it cannot measure.
+mk_worktree() {
+    local branch="$1" slug dir
+    slug=${branch//\//-}
+    dir="$WT/$slug"
+    git -C "$REPO" worktree add --quiet --no-track -b "$branch" "$dir" origin/main >/dev/null 2>&1 ||
+        git -C "$REPO" worktree add --quiet "$dir" "$branch" >/dev/null 2>&1 ||
+        return 1
+    printf '%s' "$dir"
 }
 
-# Drive the WorktreeRemove hook. $1=WORKTREE_PATH, $2=CWD / default=the demo repo
-_hook_remove() {
-    printf '{"session_id":"s1","transcript_path":"/tmp/t.jsonl","cwd":"%s","permission_mode":"default","hook_event_name":"WorktreeRemove","worktree_path":"%s"}' \
-        "${2:-$REPO}" "$1" | "$HOOKS/worktree-remove.sh"
-}
 
 # ============================================
-# path math
+# base refs and creation
 # ============================================
 
-@test "_wt_slug: replaces slashes with dashes" {
-    run _wt_slug 'feat/some/thing'
-    [[ "$output" == "feat-some-thing" ]]
+@test "_wt_base: follows origin/HEAD, the ref Claude Code cuts from" {
+    git push --quiet origin main:develop
+    git fetch --quiet origin
+    git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+    run _wt_base
+    [[ "$output" == "main" ]]
 }
 
-@test "_wt_slug: a traversal in the name cannot leave the repo's slot" {
-    # Every way out of a directory needs a separator, and separators go
-    run _wt_slug '../../escape'
-    [[ "$output" == "..-..-escape" ]]
-    # ".." survives that and names a directory that already exists, which _wt_add
-    # would hand back as an "existing worktree"
-    run _wt_slug '..'
-    [[ "$output" == "wt-.." ]]
-    run _wt_slug '.'
-    [[ "$output" == "wt-." ]]
+@test "_wt_base: falls back to the guess when origin/HEAD is unset" {
+    git push --quiet origin main:develop
+    git fetch --quiet origin
+    git symbolic-ref -d refs/remotes/origin/HEAD 2>/dev/null || true
+    run _wt_base
+    [[ "$output" == "develop" ]]
 }
 
-@test "_wt_repo_rel: repo path relative to the mirror root" {
-    run _wt_repo_rel
+@test "wt_create: uses Claude Code's layout" {
+    run --separate-stderr wt_create agent-one
     [[ "$status" -eq 0 ]]
-    [[ "$output" == "backend/pocs/demo" ]]
+    [[ "$output" == "$REPO/.claude/worktrees/agent-one" ]]
+    [[ -d "$output" ]]
+    run git -C "$REPO/.claude/worktrees/agent-one" branch --show-current
+    [[ "$output" == "agent-one" ]]
 }
 
-@test "_wt_repo_rel: resolves the main clone from inside a linked worktree" {
-    # --show-toplevel would answer with the worktree's own path here, which is
-    # under .worktrees and so mirrored a second time
-    cd "$(wt_create 'feat/outer')"
-    run _wt_repo_rel
+@test "wt_create: a slashed name nests inside the worktrees directory" {
+    run --separate-stderr wt_create feat/thing
     [[ "$status" -eq 0 ]]
-    [[ "$output" == "backend/pocs/demo" ]]
+    [[ "$output" == "$REPO/.claude/worktrees/feat/thing" ]]
 }
 
-@test "_wt_repo_rel: fails outside the mirror" {
-    mkdir -p "$TEST_DIR/elsewhere"
-    cd "$TEST_DIR/elsewhere"
-    git init --quiet .
-    run _wt_repo_rel
+@test "wt_create: stdout is only the path, progress goes to stderr" {
+    run --separate-stderr wt_create agent-one
+    [[ "$output" == "$REPO/.claude/worktrees/agent-one" ]]
+    [[ "$stderr" == *"cut from"* ]]
+}
+
+@test "wt_create: cuts from the remote default, with no upstream to push to" {
+    path=$(wt_create agent-one)
+    run git -C "$path" rev-parse HEAD
+    [[ "$output" == "$(git -C "$REPO" rev-parse origin/main)" ]]
+    run git -C "$path" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'
     [[ "$status" -ne 0 ]]
 }
 
-@test "_wt_repo_rel: fails in a bare repo, which has no tree to mirror" {
-    git init --bare --quiet "$TEST_DIR/work/backend/pocs/bare-demo"
-    cd "$TEST_DIR/work/backend/pocs/bare-demo"
-    run _wt_repo_rel
-    [[ "$status" -ne 0 ]]
+@test "wt_create: reuse is idempotent" {
+    wt_create agent-one >/dev/null
+    run --separate-stderr wt_create agent-one
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "$REPO/.claude/worktrees/agent-one" ]]
+    [[ "$stderr" == *"Reusing"* ]]
 }
 
-@test "_wt_repo_rel: fails outside a repository altogether" {
-    mkdir -p "$TEST_DIR/work/backend/pocs/not-a-repo"
-    cd "$TEST_DIR/work/backend/pocs/not-a-repo"
-    run _wt_repo_rel
-    [[ "$status" -ne 0 ]]
+@test "wt_create: from inside a worktree, lands beside it and not nested in it" {
+    cd "$(wt_create agent-one)"
+    run --separate-stderr wt_create agent-two
+    [[ "$output" == "$REPO/.claude/worktrees/agent-two" ]]
+}
+
+@test "wt_create: refuses a name that would climb out" {
+    run wt_create '../escape'
+    [[ "$status" -eq 1 ]]
+    run wt_create '..'
+    [[ "$status" -eq 1 ]]
+    run wt_create 'a/../../b'
+    [[ "$status" -eq 1 ]]
+    [[ ! -e "$TEST_DIR/work/backend/pocs/escape" ]]
+}
+
+@test "wt_create: refuses a name with characters Claude Code would not accept" {
+    run wt_create 'feat thing'
+    [[ "$status" -eq 1 ]]
+    run wt_create 'feat;rm'
+    [[ "$status" -eq 1 ]]
+}
+
+@test "wt_create: needs a name" {
+    run wt_create
+    [[ "$status" -eq 1 ]]
+    [[ "$output" == *"Usage"* ]]
+}
+
+@test "wt_create: the worktree it makes is invisible to the repo scan" {
+    wt_create agent-one >/dev/null
+    # A linked worktree's .git is a file, and the scan matches directories only
+    [[ -f "$REPO/.claude/worktrees/agent-one/.git" ]]
+    run bash -c 'fd --type d --hidden "^\.git\$" "$1" | sed -E "s|/\.git/?\$||"' _ "$TEST_DIR/work"
+    [[ "$output" == "$REPO" ]]
 }
 
 @test "git_default_branch: prefers develop over main" {
@@ -137,302 +167,6 @@ _hook_remove() {
 }
 
 # ============================================
-# wt_create
-# ============================================
-
-@test "wt_create: mirrors the repo path under .worktrees" {
-    run --separate-stderr wt_create 'feat/thing'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$WT/feat-thing" ]]
-    [[ -d "$WT/feat-thing" ]]
-}
-
-@test "wt_create: from inside a worktree, mirrors the main clone and not the worktree" {
-    # The doubled-.worktrees bug: a session already in the parallel tree read its
-    # own path as the repo path and mirrored it again
-    cd "$(wt_create 'feat/outer')"
-    run --separate-stderr wt_create 'feat/inner'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$WT/feat-inner" ]]
-    [[ -d "$WT/feat-inner" ]]
-    [[ ! -d "$WTROOT/.worktrees" ]]
-}
-
-@test "wt_create: leaves the main clone on its default branch" {
-    wt_create 'feat/thing' >/dev/null
-    run git -C "$REPO" branch --show-current
-    [[ "$output" == "main" ]]
-}
-
-@test "wt_create: stdout is only the path, progress goes to stderr" {
-    run --separate-stderr wt_create 'feat/thing'
-    [[ "$output" == "$WT/feat-thing" ]]
-}
-
-@test "wt_create: refuses the default branch" {
-    run wt_create main
-    [[ "$status" -ne 0 ]]
-    [[ "$output" == *"main clone owns the default branch"* ]]
-}
-
-@test "wt_create: reuse is idempotent" {
-    wt_create 'feat/thing' >/dev/null
-    run wt_create 'feat/thing'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == *"$WT/feat-thing"* ]]
-}
-
-@test "wt_create: refuses a branch already checked out elsewhere" {
-    git branch other
-    git -C "$REPO" worktree add --quiet "$TEST_DIR/manual" other
-    run wt_create other
-    [[ "$status" -ne 0 ]]
-    # git's own message, which names the worktree already holding the branch
-    [[ "$output" == *"already used by worktree at"* ]]
-    [[ "$output" == *"$TEST_DIR/manual"* ]]
-}
-
-@test "wt_create: tracks an existing remote branch" {
-    git push --quiet origin main:feature/remote
-    git fetch --quiet origin
-    path=$(wt_create 'feature/remote')
-    run git -C "$path" rev-parse --abbrev-ref '@{upstream}'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "origin/feature/remote" ]]
-}
-
-@test "wt_create: a new branch gets no upstream, so push cannot go to the default" {
-    path=$(wt_create 'feat/brand-new')
-    run git -C "$path" rev-parse --abbrev-ref '@{upstream}'
-    [[ "$status" -ne 0 ]]
-}
-
-@test "wt_create: new branch starts from the remote default" {
-    path=$(wt_create 'feat/brand-new')
-    run git -C "$path" rev-parse HEAD
-    [[ "$output" == "$(git -C "$REPO" rev-parse origin/main)" ]]
-}
-
-@test "wt_create: names the ref a new branch was cut from" {
-    run --separate-stderr wt_create 'feat/thing'
-    [[ "$stderr" == *"Branching feat/thing from origin/main"* ]]
-    # The hook contract: stdout stays the created directory and nothing else
-    [[ "$output" == "$WT/feat-thing" ]]
-}
-
-@test "wt_create: shouts when the base is not the branch the session is on" {
-    cd "$(wt_create 'feat/outer')"
-    run --separate-stderr wt_create 'feat/inner'
-    [[ "$stderr" == *"feat/inner is cut from origin/main"* ]]
-    [[ "$stderr" == *"NOT the checked-out feat/outer"* ]]
-    # worktreeBaseRef cannot reach this hook, so point at the override that works
-    [[ "$stderr" == *"worktreeBaseRef does not apply"* ]]
-    [[ "$stderr" == *"git config worktree.base"* ]]
-    [[ "$output" == "$WT/feat-inner" ]]
-}
-
-@test "wt_create: the worktree.base override names itself in the message" {
-    git push --quiet origin main:trunk
-    git -C "$REPO" config worktree.base trunk
-    run --separate-stderr wt_create 'feat/thing'
-    [[ "$stderr" == *"from origin/trunk"* ]]
-}
-
-@test "wt_create: git entry is a file, so the repo scan cannot see it" {
-    path=$(wt_create 'feat/thing')
-    [[ -f "$path/.git" ]]
-    run fd --type d --hidden '^\.git$' "$WTROOT"
-    [[ -z "$output" ]]
-}
-
-@test "wt_create: copies gitignored local config into the worktree" {
-    printf 'SECRET=1\n' >"$REPO/.env"
-    path=$(wt_create 'feat/thing')
-    [[ -f "$path/.env" ]]
-    run cat "$path/.env"
-    [[ "$output" == "SECRET=1" ]]
-}
-
-@test "wt_create: fails outside the mirror" {
-    mkdir -p "$TEST_DIR/elsewhere"
-    cd "$TEST_DIR/elsewhere"
-    git init --quiet .
-    run wt_create 'feat/thing'
-    [[ "$status" -ne 0 ]]
-    [[ "$output" == *"~/work mirror"* ]]
-}
-
-# ============================================
-# wt_remove
-# ============================================
-
-@test "wt_remove: removes the worktree, branch and empty parents" {
-    wt_create 'feat/thing' >/dev/null
-    run wt_remove 'feat/thing'
-    [[ "$status" -eq 0 ]]
-    [[ ! -d "$WT/feat-thing" ]]
-    run git -C "$REPO" show-ref --verify --quiet refs/heads/feat/thing
-    [[ "$status" -ne 0 ]]
-    [[ ! -d "$WTROOT/backend" ]]
-}
-
-@test "wt_remove: keeps the worktree root itself" {
-    wt_create 'feat/thing' >/dev/null
-    wt_remove 'feat/thing'
-    [[ -d "$WTROOT" ]]
-}
-
-@test "wt_remove: warns about uncommitted changes but still removes" {
-    path=$(wt_create 'feat/thing')
-    echo change >>"$path/README.md"
-    run wt_remove 'feat/thing'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Discarding uncommitted changes"* ]]
-    [[ ! -d "$path" ]]
-}
-
-@test "wt_remove: warns about unpushed commits but still removes" {
-    path=$(wt_create 'feat/thing')
-    echo more >"$path/new.txt"
-    git -C "$path" add new.txt
-    git -C "$path" commit --quiet -m 'work'
-    run wt_remove 'feat/thing'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Discarding 1 unpushed commit"* ]]
-    [[ ! -d "$path" ]]
-}
-
-@test "wt_remove: reports a missing worktree" {
-    run wt_remove 'feat/nope'
-    [[ "$status" -ne 0 ]]
-    [[ "$output" == *"No worktree at"* ]]
-}
-
-# ============================================
-# listing
-# ============================================
-
-@test "wt_list_all: says so when there are none" {
-    run wt_list_all
-    [[ "$output" == "No worktrees." ]]
-}
-
-@test "wt_list_all: lists the mirrored path and branch" {
-    wt_create 'feat/thing' >/dev/null
-    run wt_list_all
-    [[ "$output" == *"backend/pocs/demo/feat-thing"* ]]
-    [[ "$output" == *"feat/thing"* ]]
-}
-
-@test "wt_list_all: marks a dirty worktree" {
-    path=$(wt_create 'feat/thing')
-    echo change >>"$path/README.md"
-    run wt_list_all
-    [[ "$output" == *"[dirty]"* ]]
-}
-
-@test "wt_list_all: marks unpushed commits on a branch with no upstream" {
-    path=$(wt_create 'feat/thing')
-    echo more >"$path/new.txt"
-    git -C "$path" add new.txt
-    git -C "$path" commit --quiet -m 'work'
-    run wt_list_all
-    [[ "$output" == *"[+1]"* ]]
-    [[ "$output" != *"[dirty]"* ]]
-}
-
-# ============================================
-# WorktreeCreate / WorktreeRemove hooks
-# ============================================
-
-@test "hook create: relocates Claude Code worktrees into the mirror" {
-    run --separate-stderr _hook_create 'feat/agent'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$WT/feat-agent" ]]
-    [[ -d "$WT/feat-agent" ]]
-}
-
-@test "hook create: resolves the repo from cwd, not the launch directory" {
-    cd "$TEST_DIR"
-    run --separate-stderr _hook_create 'feat/agent'
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$WT/feat-agent" ]]
-}
-
-@test "hook create: a subagent launched inside a worktree is not nested under it" {
-    # Observed for real with isolation: worktree — the agent worktree landed at
-    # .worktrees/.worktrees/<rel>/<slug>/<agent>, underneath the branch worktree
-    outer=$(wt_create 'feat/outer')
-    run --separate-stderr _hook_create 'agent-abc123' "$outer"
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$WT/agent-abc123" ]]
-    [[ -d "$WT/agent-abc123" ]]
-    [[ ! -d "$WTROOT/.worktrees" ]]
-    # ...and one GitLab path still resolves to exactly one local repo path
-    run fd --hidden --no-ignore --max-depth 6 --type f '^\.git$' "$WTROOT"
-    [[ "${#lines[@]}" -eq 2 ]]
-}
-
-@test "hook create: falls back in-repo for repos outside the mirror" {
-    outside="$TEST_DIR/outside"
-    mkdir -p "$outside"
-    cd "$outside"
-    git init --quiet .
-    echo x >f.txt
-    git add f.txt
-    git commit --quiet -m 'initial'
-    run --separate-stderr _hook_create 'solo' "$outside"
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == "$outside/.claude/worktrees/solo" ]]
-}
-
-@test "hook create: fails outside a git repository" {
-    plain="$TEST_DIR/plain"
-    mkdir -p "$plain"
-    run _hook_create 'solo' "$plain"
-    [[ "$status" -ne 0 ]]
-}
-
-@test "hook remove: removes the worktree and prunes parents" {
-    path=$(wt_create 'feat/agent')
-    run _hook_remove "$path"
-    [[ "$status" -eq 0 ]]
-    [[ ! -d "$path" ]]
-    [[ ! -d "$WTROOT/backend" ]]
-}
-
-@test "hook remove: reaps a branch holding nothing the remote lacks" {
-    path=$(wt_create 'feat/agent')
-    _hook_remove "$path"
-    run git -C "$REPO" show-ref --verify --quiet refs/heads/feat/agent
-    [[ "$status" -ne 0 ]]
-}
-
-@test "hook remove: keeps a branch with unpushed commits" {
-    path=$(wt_create 'feat/agent')
-    echo more >"$path/new.txt"
-    git -C "$path" add new.txt
-    git -C "$path" commit --quiet -m 'unpushed work'
-    run _hook_remove "$path"
-    [[ "$status" -eq 0 ]]
-    [[ "$output" == *"Kept branch feat/agent"* ]]
-    run git -C "$REPO" show-ref --verify --quiet refs/heads/feat/agent
-    [[ "$status" -eq 0 ]]
-}
-
-@test "hook remove: refuses paths outside the worktree root" {
-    run _hook_remove "$REPO"
-    [[ "$status" -eq 0 ]]
-    [[ -d "$REPO" ]]
-    [[ -f "$REPO/README.md" ]]
-}
-
-@test "hook remove: tolerates a path that no longer exists" {
-    run _hook_remove "$WT/ghost"
-    [[ "$status" -eq 0 ]]
-}
-
-# ============================================
 # sync parity
 # ============================================
 
@@ -444,7 +178,7 @@ _orphan_upstream() {
 }
 
 @test "sync_repo: reports a live worktree as active work" {
-    path=$(wt_create 'feat/live')
+    path=$(mk_worktree 'feat/live')
     stale_dir="$TEST_DIR/stale"
     active_dir="$TEST_DIR/active"
     mkdir -p "$stale_dir" "$active_dir"
@@ -457,7 +191,7 @@ _orphan_upstream() {
 }
 
 @test "sync_repo: a stale worktree branch records its worktree path" {
-    path=$(wt_create 'feat/dead')
+    path=$(mk_worktree 'feat/dead')
     _orphan_upstream "$path"
     stale_dir="$TEST_DIR/stale"
     active_dir="$TEST_DIR/active"
@@ -471,7 +205,7 @@ _orphan_upstream() {
 }
 
 @test "sync_repo: a stale worktree is not also listed as active" {
-    path=$(wt_create 'feat/dead')
+    path=$(mk_worktree 'feat/dead')
     _orphan_upstream "$path"
     stale_dir="$TEST_DIR/stale"
     active_dir="$TEST_DIR/active"
@@ -515,7 +249,7 @@ _advance_main() {
 }
 
 @test "sync_repo: a merged worktree is offered for deletion" {
-    path=$(wt_create 'feat/done')
+    path=$(mk_worktree 'feat/done')
     echo work >"$path/work.txt"
     git -C "$path" add work.txt
     git -C "$path" commit --quiet -m 'work'
@@ -529,7 +263,7 @@ _advance_main() {
 }
 
 @test "sync_repo: a worktree the base moved past is offered as having no commits" {
-    path=$(wt_create 'feat/idle')
+    path=$(mk_worktree 'feat/idle')
     _advance_main idle
     _sync_repo
     run _reported "$stale_wt_dir"
@@ -539,7 +273,7 @@ _advance_main() {
 @test "sync_repo: an untouched worktree at the base is left alone" {
     # A worktree cut from the current base and not used yet is waiting for work,
     # not finished with it
-    path=$(wt_create 'feat/fresh')
+    path=$(mk_worktree 'feat/fresh')
     _sync_repo
     run _reported "$stale_wt_dir"
     [[ -z "$output" ]]
@@ -548,7 +282,7 @@ _advance_main() {
 }
 
 @test "sync_repo: a dirty worktree is reported, never offered" {
-    path=$(wt_create 'feat/dirty')
+    path=$(mk_worktree 'feat/dirty')
     echo work >"$path/work.txt"
     git -C "$path" add work.txt
     git -C "$path" commit --quiet -m 'work'
@@ -562,7 +296,7 @@ _advance_main() {
 }
 
 @test "sync_repo: an unpushed worktree is reported, never offered" {
-    path=$(wt_create 'feat/unpushed')
+    path=$(mk_worktree 'feat/unpushed')
     echo work >"$path/work.txt"
     git -C "$path" add work.txt
     git -C "$path" commit --quiet -m 'work'
@@ -574,7 +308,7 @@ _advance_main() {
 }
 
 @test "sync_repo: a worktree with nothing to measure against is flagged, not offered" {
-    path=$(wt_create 'feat/unmeasurable')
+    path=$(mk_worktree 'feat/unmeasurable')
     echo work >"$path/work.txt"
     git -C "$path" add work.txt
     git -C "$path" commit --quiet -m 'work'
@@ -600,7 +334,7 @@ _advance_main() {
 }
 
 @test "sync_repo: prunes worktrees whose directory was deleted by hand" {
-    path=$(wt_create 'feat/gone')
+    path=$(mk_worktree 'feat/gone')
     # The whole point is a directory removed outside git's knowledge, so this one
     # test really does need rm. /bin/rm skips the PATH wrapper; the target is
     # inside $BATS_TEST_TMPDIR, which the sandbox allows.
@@ -655,7 +389,7 @@ _advance_main() {
 
 @test "_stale_worktree_dirs: leaves a live worktree alone" {
     source "$REPO_ROOT/sync/repos.sh"
-    wt_create 'feat/live' >/dev/null
+    mk_worktree 'feat/live' >/dev/null
     run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
     [[ -z "$output" ]]
 }
@@ -679,7 +413,7 @@ _advance_main() {
     echo d >"$REPO/docs/readme.md"
     git -C "$REPO" add docs
     git -C "$REPO" commit --quiet -m 'add docs'
-    path=$(wt_create 'docs')
+    path=$(mk_worktree 'docs')
     mkdir "$path/emptydir"
     run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
     [[ -z "$output" ]]
@@ -694,7 +428,7 @@ _advance_main() {
     nested="$TEST_DIR/work/backend/pocs/demo/vendor"
     git clone --quiet "$ORIGIN" "$nested" 2>/dev/null
     cd "$nested"
-    wt_create 'feat/vendored' >/dev/null
+    mk_worktree 'feat/vendored' >/dev/null
     run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
     [[ -z "$output" ]]
 }
@@ -711,7 +445,7 @@ _advance_main() {
 
 @test "_stale_worktree_dirs: a live worktree keeps its repo directory" {
     source "$REPO_ROOT/sync/repos.sh"
-    wt_create 'feat/live' >/dev/null
+    mk_worktree 'feat/live' >/dev/null
     echo notes >"$WT/demo.code-workspace"
     run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
     [[ -z "$output" ]]
@@ -768,7 +502,7 @@ _advance_main() {
 }
 
 @test "repo scan: excludes the worktree tree" {
-    wt_create 'feat/thing' >/dev/null
+    mk_worktree 'feat/thing' >/dev/null
     # Mirrors the _find_repos pipeline in sync/repos.sh, so a worktree can never
     # be mistaken for a repo GitLab has never heard of and offered for deletion
     run bash -c 'fd --type d --hidden "^\.git\$" "$1" --exclude .worktrees | sed -E "s|/\.git/?\$||"' _ "$TEST_DIR/work"
@@ -776,10 +510,50 @@ _advance_main() {
 }
 
 @test "stale deletion order: branch is deletable only after the worktree goes" {
-    path=$(wt_create 'feat/thing')
+    path=$(mk_worktree 'feat/thing')
     run git -C "$REPO" branch -D 'feat/thing'
     [[ "$status" -ne 0 ]]
     git -C "$REPO" worktree remove --force "$path"
     run git -C "$REPO" branch -D 'feat/thing'
     [[ "$status" -eq 0 ]]
+}
+
+# ============================================
+# GIT_DIR leakage
+# ============================================
+
+@test "sourcing clears GIT_DIR so git -C is not overridden" {
+    # A `!` git alias runs with GIT_DIR exported. Inside a linked worktree that
+    # value is absolute, and GIT_DIR in the environment beats `git -C` — so
+    # every `git -C "$other" ...` in this file acted on the invoking worktree
+    # instead of the directory named. `git wt-diff trunk` then answered about
+    # the wrong repository while printing the right path.
+    GIT_DIR=/some/absolute/.git/worktrees/whatever
+    GIT_WORK_TREE=/some/absolute
+    GIT_INDEX_FILE=/some/absolute/.git/index
+    export GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+
+    # shellcheck source=/dev/null
+    source "$REPO_ROOT/linked/git_functions.sh"
+
+    [[ -z "${GIT_DIR:-}" ]]
+    [[ -z "${GIT_WORK_TREE:-}" ]]
+    [[ -z "${GIT_INDEX_FILE:-}" ]]
+}
+
+@test "git -C reaches the directory named once GIT_DIR is cleared" {
+    # The observable consequence: with GIT_DIR set to one repo, asking another
+    # for its branch returned the first one's.
+    other="$BATS_TEST_TMPDIR/other"
+    mkdir -p "$other"
+    git -C "$other" init -q -b other-branch .
+    git -C "$other" -c user.email=a@b -c user.name=a commit -q --allow-empty -m x
+
+    GIT_DIR="$REPO/.git"
+    export GIT_DIR
+    # shellcheck source=/dev/null
+    source "$REPO_ROOT/linked/git_functions.sh"
+
+    run git -C "$other" branch --show-current
+    [[ "$output" == "other-branch" ]]
 }

@@ -1,49 +1,17 @@
 # Confidence
 
-### When to Score Confidence
-
-You MUST calculate and explicitly state your confidence score (0-100%) for:
-
-- Any code modification or suggestion
-- Architecture decisions
-- API endpoint usage
-- Data structure interpretations
-- Bug fixes or feature implementations
-
-### Confidence Calculation Factors
-
-Consider these factors when calculating confidence:
-
-- API documentation availability and clarity (30%)
-- Similar patterns in existing codebase (25%)
-- Understanding of data flow and dependencies (20%)
-- Complexity of the requested change (15%)
-- Potential impact on other systems (10%)
-
-### Confidence Thresholds
-
-- 95-100%: Proceed with implementation
-- 90-94%: Implement but explicitly note uncertainties
-- Below 90%: STOP and ask clarifying questions
+State a confidence score (0-100%) for any code change, architecture decision,
+API usage, data-structure interpretation or bug fix. Below 90%, stop and ask
+rather than guess; at 90-94%, implement and say what is uncertain.
 
 # Tradeoffs
 
 State any tradeoffs to approaches and if you think they are acceptable.
 
-# Sandbox
+# Comments
 
-**Write zones:** `~/projects/`, `~/work/`, `~/.Trash/`, `~/.cache/`,
-`~/Library/Application Support/glab-cli/`, `~/Library/Caches/`, `/tmp/`,
-`/dev/null`
-
-**Blocked:** System dirs, `.git/` folders (platform-enforced, not overridable),
-`rm` command (use `trash` instead)
-
-**Git caveat:** `git push -u` silently fails to set tracking (`.git/config`
-write blocked). Always use `git push origin <branch>` explicitly.
-
-**Network:** GET/HEAD requests allowed anywhere. POST/PUT/DELETE require
-approval.
+Comment only what the code cannot say — why, not what. Where a comment explains
+what the code is doing, restructure until it needs none. Say it once. Examples are good - long explanations are bad.
 
 # Leave Things Working
 
@@ -54,12 +22,27 @@ Only leave things broken if explicitly told to.
 # Backwards compatibility
 
 Assume everything is greenfield unless otherwise stated. Don't worry about
-breaking changes. What matters is quality.
+breaking changes. What matters is quality. Do not comment on past states.
 
-# Claude.md
+# Worktrees
 
-Optimize CLAUDE.md so that Claude is less likely to forget instructions, while
-simultaneously not overloading context.
+Use worktrees for larger changes, and for
+any subagent doing independent work (`isolation: worktree`). Use
+`EnterWorktree`, not `git worktree add`.
+
+Leave the work uncommitted unless asked.
+
+# Sandbox
+
+**The boundary is the kernel**, applied per command, and the unsandboxed retry
+is disabled. A denial on a path, host or credential the task does not involve is
+the boundary working — report it rather than looking for another route.
+
+Prefer `trash` over `rm`.
+
+# Claude.md and skills
+
+Update Claude.md and skills to prevent making the same mistake twice. Claude.md must be keep as small as possible to save context.
 
 # Device-Specific Instructions
 

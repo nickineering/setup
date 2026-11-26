@@ -140,9 +140,9 @@ godir() {
 # OVERRIDES:
 #   root         - cd to repository root
 #   start [REF]  - cd to root, checkout REF (default: master/main), pull
-#   wt [BRANCH]  - cd to a worktree for BRANCH, creating it if needed
+#   wt [NAME]    - cd to a worktree for NAME, creating it if needed
 git() {
-	# git wt [branch] - create/reuse a worktree and cd into it; no args lists them
+	# git wt NAME - create or reuse a worktree and cd into it; bare wt lists
 	if [[ "$1" == "wt" ]]; then
 		if [[ -z "${2:-}" ]]; then
 			command git worktree list

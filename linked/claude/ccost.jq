@@ -5,14 +5,18 @@
 # when a total looks too low.
 #
 # Fable before opus: tier order is cost order, highest first.
-# Sonnet and haiku rates are 4.x-generation and have not been re-checked.
+#
+# Rates are this account's billed rates, from Cost Explorer over Aug-Nov 2026
+# (usage types EUC1-MP:EUC1_*_tokens_*). eu.* profiles bill 1.1x the list rate;
+# global.* profiles, which is all Fable has, bill list. Hence Fable at 10/50
+# rather than 11/55.
 def cost(model; i; o; cw; cr):
   if model | contains("claude-fable") then
-    (i * 11.0 + cw * 13.75 + cr * 1.1 + o * 55.0) / 1e6
+    (i * 10.0 + cw * 12.5 + cr * 1.0 + o * 50.0) / 1e6
   elif model | contains("claude-opus") then
     (i * 5.5 + cw * 6.875 + cr * 0.55 + o * 27.5) / 1e6
   elif model | contains("claude-sonnet") then
-    (i * 3.2976 + cw * 4.0982 + cr * 0.3272 + o * 16.4015) / 1e6
+    (i * 2.2 + cw * 2.75 + cr * 0.22 + o * 11.0) / 1e6
   elif model | contains("claude-haiku") then
     (i * 1.1 + cw * 1.375 + cr * 0.11 + o * 5.5) / 1e6
   else 0 end;

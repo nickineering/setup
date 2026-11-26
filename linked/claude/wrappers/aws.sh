@@ -50,4 +50,4 @@ Do NOT suggest `aws sso login`. To verify, ask the user to run:
 EOF
 fi
 
-exit $status
+exit "$status"

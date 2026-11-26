@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # PATH wrapper for terraform in Claude sessions.
 #
-# Injects AWS profile from session state (claude-aws), cleans up env vars
-# that would override it, and gates write commands behind CLAUDE_APPROVED.
-# See git.sh header for the CLAUDE_APPROVED design rationale.
+# Injects the AWS profile from session state (claude-aws) and cleans up the env
+# vars that would override it. That credential scoping is the whole job: the
+# approval side moved to permissions.ask rules, which cover apply, destroy,
+# import and the state-rewriting subcommands, and which — unlike the
+# CLAUDE_APPROVED flag this used to check — match inside chains and subshells.
 #
 # Read-only subcommands run with or without a profile, so `fmt`, `version` and
-# friends work in a session that has never called claude-aws. The AWS gate now
+# friends work in a session that has never called claude-aws. The AWS gate
 # applies only to commands that can change state or infrastructure.
 
 set -euo pipefail
@@ -121,18 +123,12 @@ if [[ -z "$subcmd" ]] || is_readonly; then
 fi
 
 # --- Everything below can change state or infrastructure ---
+# The only requirement left here is the credential one: no granted profile, no
+# write. Whether the user wants this particular write to happen is decided by
+# the permissions.ask rules before the command ever reaches the wrapper.
 if [[ ! -f "${CLAUDE_AWS_STATE:-}" ]]; then
 	echo "No AWS access granted. Run: claude-aws <profile> | off" >&2
 	exit 1
 fi
 
-# --- Write commands require CLAUDE_APPROVED flag (not inherited by children) ---
-if [[ "${CLAUDE_APPROVED:-}" == "1" ]]; then
-	unset CLAUDE_APPROVED
-	run_terraform "$real_terraform" "$@"
-fi
-
-# Name the action too: "state requires approval" would be wrong when `state list`
-# is allowed and only `state rm` is not.
-echo "BLOCKED (wrapper): terraform $subcmd${subaction:+ $subaction} requires approval. Not called directly by Claude." >&2
-exit 1
+run_terraform "$real_terraform" "$@"

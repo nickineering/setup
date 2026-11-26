@@ -61,6 +61,20 @@ export GITLAB_PLACEHOLDERS_ONLY=1
 
 # Hide Dock icons not installed or not wanted on this machine (pipe-separated)
 export DOCK_IGNORE_APPS="NordVPN|Spotify"
+
+# Optional: a Claude Code settings file layered over the one this repo installs,
+# for configuration that should not live in a dotfiles repo — an employer's
+# hostnames, internal package registries, secret-shaped environment variables,
+# and the context the auto mode classifier needs about a private environment.
+# terminator passes it with `--settings`, so it can set user-scope-only keys and
+# is read whatever directory the session starts in. List keys merge with the
+# repo's own; see linked/claude/SECURITY.md for the one caveat about "$defaults".
+export TERMINATOR_EXTRA_SETTINGS="$HOME/projects/<org>/claude-settings.json"
+
+# Required by `/cost`: the AWS profile whose account holds Cost Explorer. There
+# is deliberately no default, so without this `cost.sh` stops with a message
+# naming the variable rather than failing inside the AWS CLI.
+export CLAUDE_CE_PROFILE="your-aws-profile"
 ```
 
 Next, you will need to sign in or otherwise activate the following apps, being

@@ -139,13 +139,13 @@ fi
 
 # SUDO_PASS_FILE holds the sudo password in plain text, so it has to be *unlinked*
 # rather than trashed — a trashed secret survives until the Trash is next emptied.
-# Both paths come from mktemp and so live under $TMPDIR, which is what the rm
-# wrapper in linked/claude/wrappers/ allows.
+# Both paths come from mktemp and so live under $TMPDIR, which the sandbox allows
+# writes to. There used to be an rm PATH wrapper restricting rm to the temp
+# directories, and this call was the thing it kept breaking; it is gone now.
 # The `|| true` is what makes the check below reachable. run.sh sets -euo
 # pipefail and sources this file, so a failing rm would abort the whole run on
-# this line — exactly in the case the warning exists for. A user whose TMPDIR
-# sits outside the wrapper's allowed roots would otherwise get a silent exit
-# with the plaintext password still on disk and nothing printed.
+# this line — exactly in the case the warning exists for. Without it, a failure
+# to unlink would exit silently with the plaintext password still on disk.
 rm -f "${SUDO_PASS_FILE:-}" "${ASKPASS_SCRIPT:-}" || true
 
 # Verified rather than assumed: this removal failed silently for a while, because

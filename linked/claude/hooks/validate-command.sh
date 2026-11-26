@@ -1,551 +1,162 @@
 #!/bin/bash
-# Reads tool input from stdin, blocks dangerous patterns
-
-# Parse the JSON input
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name')
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-
-# Only validate Bash commands
-if [[ "$TOOL" != "Bash" ]]; then
-	exit 0
-fi
-
-# --- Normalize command for pattern matching ---
-# Strip leading KEY=value env assignments and resolve command to basename.
-# Catches: NO_PROXY=github.com /usr/bin/git push → git push
+# PreToolUse hook for Bash. AWS credential scoping only.
 #
-# The assignment value must not contain `$`, a backtick or `(`: those make it a
-# substitution, not a literal, and the value then runs past the first space.
-# `result=$(dd if=/dev/zero of=file)` would otherwise normalize to `of=file)`,
-# dropping the `$(dd` that every downstream check is looking for.
-if [[ -n "$COMMAND" ]]; then
-	STRIPPED=$(echo "$COMMAND" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]$`(]*[[:space:]]\)*//')
-	CMD_FIRST=$(echo "$STRIPPED" | awk '{print $1}')
-	CMD_BASE=$(basename -- "$CMD_FIRST" 2>/dev/null || echo "$CMD_FIRST")
-	if [[ "$STRIPPED" == *" "* ]]; then
-		COMMAND="$CMD_BASE ${STRIPPED#* }"
-	else
-		COMMAND="$CMD_BASE"
-	fi
-fi
+# Everything this file used to check now lives where it belongs:
+#
+#   filesystem and network boundaries  the sandbox, enforced by the kernel
+#   destructive / outbound operations  permissions.ask rules, which are
+#                                      shell-aware: they match inside &&, ||,
+#                                      subshells and $(...) substitutions
+#   judgement calls                    the auto mode classifier
+#
+# Regex over command strings was a weaker copy of the first two and no
+# substitute for the third. What is left are the two AWS rules that none of
+# those layers can express:
+#
+#   1. A --profile that does not match the profile claude-aws granted is a
+#      credential boundary violation, so it is a hard block rather than a
+#      prompt. Approving it would still be wrong.
+#   2. Whether an AWS call mutates is decided by its API action, which is a
+#      positional word. A permission rule matches on prefixes and cannot
+#      reach it, so the tiering has to happen here.
 
-# =============================================================================
-# OPERATIONS REQUIRING EXPLICIT USER APPROVAL (prompt, not block)
-# These use the "ask" decision so they prompt even from subagents.
-# Checks each segment of chained commands (&&, ||, ;) individually.
-# =============================================================================
+set -uo pipefail
 
-ask_approval() {
+INPUT=$(cat)
+[[ "$(jq -r '.tool_name' <<<"$INPUT")" == "Bash" ]] || exit 0
+COMMAND=$(jq -r '.tool_input.command // empty' <<<"$INPUT")
+[[ -n "$COMMAND" ]] || exit 0
+
+ask() {
 	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "$1"
 	exit 0
 }
 
-check_segment_approval() {
-	local seg="$1"
-	# Strip leading whitespace
-	seg=$(echo "$seg" | sed 's/^[[:space:]]*//')
-	# Normalize: strip env vars, resolve basename (same logic as top-level)
-	local stripped cmd_first cmd_base normalized
-	stripped=$(echo "$seg" | sed 's/^[[:space:]]*\([A-Za-z_][A-Za-z_0-9]*=[^[:space:]$`(]*[[:space:]]\)*//')
-	cmd_first=$(echo "$stripped" | awk '{print $1}')
-	cmd_base=$(basename -- "$cmd_first" 2>/dev/null || echo "$cmd_first")
-	if [[ "$stripped" == *" "* ]]; then
-		normalized="$cmd_base ${stripped#* }"
-	else
-		normalized="$cmd_base"
-	fi
-
-	# Git operations that modify history or shared state
-	if [[ "$normalized" =~ ^git[[:space:]]push ]]; then
-		ask_approval "git push requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]commit ]]; then
-		ask_approval "git commit requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]reset[[:space:]].*--hard ]]; then
-		ask_approval "git reset --hard requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]clean ]]; then
-		ask_approval "git clean requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]rebase ]]; then
-		ask_approval "git rebase requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]checkout[[:space:]]--[[:space:]] ]]; then
-		ask_approval "git checkout -- requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]restore[[:space:]] ]] && [[ ! "$normalized" =~ --staged ]]; then
-		ask_approval "git restore requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]stash[[:space:]]+(drop|clear) ]]; then
-		ask_approval "git stash drop/clear requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]commit[[:space:]].*--amend ]]; then
-		ask_approval "git commit --amend requires explicit approval"
-	fi
-	if [[ "$normalized" =~ ^git[[:space:]]branch[[:space:]]+-[dD] ]]; then
-		ask_approval "git branch -d/-D requires explicit approval"
-	fi
-
-	# Infrastructure operations that mutate state
-	if [[ "$normalized" =~ ^terraform[[:space:]]+(apply|destroy|import|taint|untaint) ]]; then
-		ask_approval "terraform state-mutating command requires explicit approval"
-	fi
-	# `state rm` and friends rewrite state without touching infrastructure, so
-	# they read as harmless subcommands but are as destructive as a destroy.
-	if [[ "$normalized" =~ ^terraform[[:space:]]+state[[:space:]]+(rm|mv|push|replace-provider) ]]; then
-		ask_approval "terraform state mutation requires explicit approval"
-	fi
-	# bootstrap provisions a CDK toolkit stack, so it is a deploy by another name
-	if [[ "$normalized" =~ ^cdk[[:space:]]+(deploy|destroy|bootstrap) ]]; then
-		ask_approval "cdk deploy/destroy/bootstrap requires explicit approval"
-	fi
-	# sync pushes code straight to a live stack, bypassing a reviewed deploy
-	if [[ "$normalized" =~ ^sam[[:space:]]+(deploy|delete|sync) ]]; then
-		ask_approval "sam deploy/delete/sync requires explicit approval"
-	fi
+block() {
+	echo "BLOCKED: $1" >&2
+	exit 2
 }
 
-# Split command on chain operators and check each segment
-APPROVAL_SEGMENTS=$(echo "$COMMAND" | sed 's/[[:space:]]&&[[:space:]]/\n/g; s/[[:space:]]||[[:space:]]/\n/g; s/;[[:space:]]*/\n/g')
-while IFS= read -r APPROVAL_SEG; do
-	[[ -z "$APPROVAL_SEG" ]] && continue
-	check_segment_approval "$APPROVAL_SEG"
-done <<<"$APPROVAL_SEGMENTS"
+# Action prefixes that only read. Anything unrecognised falls through to the
+# approval prompt, so a new mutating verb fails closed rather than open.
+# The hyphenated entries are prefixes; `wait` and `help` are whole actions.
+# `export-` is deliberately absent: `ec2 export-image` writes.
+READONLY_ACTION='^(describe-|list-|get-|filter-|head-|batch-get-|check-|decode-|estimate-|lookup-|preview-|query-|scan-|search-|select-|simulate-|test-|validate-|download-)|^(wait|help)$'
 
-# =============================================================================
-# HIGH-PRIORITY BYPASS PREVENTION
-# =============================================================================
+# S3's high-level commands are verbs, not API actions, so they need their own
+# list. `s3api` is action-based and goes through READONLY_ACTION.
+S3_WRITE_VERBS=' cp mv rm sync mb rb website presign '
 
-# --- Relative path traversal detection ---
-# Block writes that use .. to escape the sandbox
-# Pattern: write commands with paths containing .. that could escape
-WRITE_CMDS_PATTERN='^(cp|mv|tar|unzip|mkdir|touch|tee|ln)[[:space:]]'
-if [[ "$COMMAND" =~ $WRITE_CMDS_PATTERN ]]; then
-	# Check for .. in any path argument (not just absolute paths)
-	if [[ "$COMMAND" =~ (^|[[:space:]])\.\.[/[:space:]] ]] || [[ "$COMMAND" =~ [[:space:]]\.\.\$ ]]; then
-		echo "BLOCKED: Relative path traversal (..) not allowed in write commands" >&2
-		exit 2
-	fi
-fi
+# Global flags that take a separate value. Their value must not be mistaken
+# for the service or the action: in `aws --region eu-west-1 ec2 describe-x`
+# the service is ec2, not eu-west-1.
+#
+# Only flags that really take a value belong here. `--cli-auto-prompt` is a
+# boolean and was listed by mistake, which made the parser skip the word after
+# it: `aws --cli-auto-prompt iam delete-user` lost `iam`, left `delete-user` as
+# the service with no action, and was waved through as a usage message. Boolean
+# flags need no entry — the generic `-*` branch already ignores them.
+VALUE_FLAGS=' --profile --region --output --endpoint-url --query --ca-bundle --cli-read-timeout --cli-connect-timeout --color --cli-binary-format '
 
-# --- Subshell execution validation ---
-# Extract and validate commands inside $() and backticks
-# This catches: echo $(rm -rf /), `dangerous command`
+# Wrappers that run their argument as a command, peeled so the aws call behind
+# them is still examined. Deliberately not including `timeout`/`nice`/`time`:
+# those take a value of their own, so peeling only the word leaves the value as
+# the command. The classifier remains the backstop for those.
+EXEC_WRAPPERS=' env command builtin nohup stdbuf '
 
-# Check for dangerous commands inside $(...) - match the pattern directly
-# Pattern matches: $( followed by optional space, then dangerous cmd, then space
-SUBSHELL_DANGER='\$\([[:space:]]*(rm|dd|eval)[[:space:]]'
-if [[ "$COMMAND" =~ $SUBSHELL_DANGER ]]; then
-	echo "BLOCKED: Dangerous command in subshell" >&2
-	exit 2
-fi
+check_aws() {
+	local cmd="$1" first requested granted service action w i skip=0
+	local -a words positional=()
 
-# Check for dangerous commands inside backticks
-BACKTICK_DANGER='`[[:space:]]*(rm|dd|eval)[[:space:]]'
-if [[ "$COMMAND" =~ $BACKTICK_DANGER ]]; then
-	echo "BLOCKED: Dangerous command in backticks" >&2
-	exit 2
-fi
-
-# --- Command chaining validation ---
-# Split on &&, ||, ; and validate each segment
-# This catches: cd /tmp && touch file, safe; dangerous
-validate_chained_commands() {
-	local cmd="$1"
-	local segment
-	local dangerous_pattern='^[[:space:]]*(rm|dd|eval|bash[[:space:]]+-c|sh[[:space:]]+-c)[[:space:]]'
-
-	# Simple split on command separators (outside quotes - approximation)
-	# Replace separators with newline, then check each line
-	local segments
-	segments=$(echo "$cmd" | sed 's/[[:space:]]&&[[:space:]]/\n/g; s/[[:space:]]||[[:space:]]/\n/g; s/;[[:space:]]*/\n/g')
-
-	while IFS= read -r segment; do
-		# Skip empty segments
-		[[ -z "$segment" ]] && continue
-		# Check if segment starts with a dangerous command
-		if [[ "$segment" =~ $dangerous_pattern ]]; then
-			echo "BLOCKED: Dangerous command in chain: $segment" >&2
-			exit 2
+	# Peel leading whitespace, VAR=value assignments and exec wrappers until the
+	# real command is the first word, repeating because they combine:
+	# `env AWS_PAGER= aws …` needs all three passes.
+	#
+	# Leading whitespace matters because splitting a chain leaves it on every
+	# segment after the first, and without trimming it ` aws …` reads as an
+	# empty command. The assignment stripping is done in bash rather than sed
+	# because the sed form needed `\+`, a GNU extension that this platform's sed
+	# reads as a literal plus — leaving the assignment in place and the call
+	# unexamined.
+	while :; do
+		cmd="${cmd#"${cmd%%[![:space:]]*}"}"
+		if [[ "$cmd" =~ ^[A-Za-z_][A-Za-z_0-9]*=[^[:space:]]*[[:space:]] ]]; then
+			cmd="${cmd#"${BASH_REMATCH[0]}"}"
+			continue
 		fi
-	done <<<"$segments"
-}
-validate_chained_commands "$COMMAND"
-
-# =============================================================================
-# SANDBOX: Restrict file modifications to allowed directories
-# =============================================================================
-
-# git commit/tag -m content is just a message string, not a filesystem operation.
-# System paths or redirects mentioned in commit messages trigger false positives.
-if [[ "$COMMAND" =~ git[[:space:]]+(commit|tag)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*m[[:space:]] ]]; then
-	exit 0
-fi
-
-# API-only CLIs (glab, gh) pass arguments to remote servers, not the filesystem.
-# Their arguments (MR descriptions, PR bodies) can contain paths, redirects, etc.
-# that trigger false positives in filesystem-protection rules below.
-if [[ "$COMMAND" =~ ^(glab|gh)[[:space:]] ]]; then
-	# Block destructive remote operations
-	if [[ "$COMMAND" =~ [[:space:]](delete|archive)[[:space:]] ]] ||
-		[[ "$COMMAND" =~ api[[:space:]].*(--method|-X)[[:space:]]*(DELETE|PUT|PATCH) ]] ||
-		[[ "$COMMAND" =~ (repo|project)[[:space:]]+(delete|archive|rename) ]] ||
-		[[ "$COMMAND" =~ (mr|pr|issue)[[:space:]]+(close|delete|merge) ]] ||
-		[[ "$COMMAND" =~ (variable|secret)[[:space:]]+set ]] ||
-		[[ "$COMMAND" =~ workflow[[:space:]]+disable ]]; then
-		echo "BLOCKED: Destructive glab/gh operation. Confirm with user first." >&2
-		exit 2
-	fi
-	exit 0
-fi
-
-# Block any direct access to .git directories (except via git commands)
-if [[ ! "$COMMAND" =~ ^git[[:space:]] ]]; then
-	# Match .git as a path component (not in the middle of a word)
-	if [[ "$COMMAND" =~ (^|[[:space:]]|/)\.git(/|[[:space:]]|$) ]]; then
-		echo "BLOCKED: Cannot access .git directory directly. Use git commands instead." >&2
-		exit 2
-	fi
-fi
-
-# Block writes to system directories
-# Match these paths anywhere in the command (as they shouldn't appear in safe commands)
-# Exception: /var/folders is macOS user temp ($TMPDIR)
-SYSTEM_PATHS='(^|[[:space:]]|"|'"'"')/((etc|usr|System|Library|bin|sbin|opt|private|Applications)/)'
-if [[ "$COMMAND" =~ $SYSTEM_PATHS ]]; then
-	echo "BLOCKED: Cannot write to system directories" >&2
-	exit 2
-fi
-# Block /var except /var/folders
-if [[ "$COMMAND" =~ (^|[[:space:]]|\"|\')\/var\/ ]] && [[ ! "$COMMAND" =~ \/var\/folders\/ ]]; then
-	echo "BLOCKED: Cannot write to system directories" >&2
-	exit 2
-fi
-
-# For file-writing commands, block absolute paths outside allowed directories
-# Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp, /var/folders ($TMPDIR), /dev/null
-# ~/.claude is deliberately absent: it holds the settings and hooks that enforce
-# all of this, and its tracked contents live in ~/projects/setup/linked/claude.
-WRITE_COMMANDS='^(cp|mv|tar|unzip|mkdir|touch|tee)[[:space:]]'
-if [[ "$COMMAND" =~ $WRITE_COMMANDS ]]; then
-	# Extract absolute paths that are complete arguments (preceded by space)
-	# This avoids matching embedded paths like templates/_shared/.gitignore or }}/.gitignore
-	# Prepend space to handle paths at start of arguments
-	PATHS_IN_CMD=$(printf ' %s' "$COMMAND" | grep -oE '[[:space:]]['"'"'"]?(/[^[:space:]'"'"'"]+|~[^[:space:]'"'"'"]+)' | sed "s/^[[:space:]]['\"]*//" || true)
-
-	while IFS= read -r path; do
-		# Skip empty lines
-		[[ -z "$path" ]] && continue
-		# Expand ~ to $HOME
-		expanded_path="${path/#\~/$HOME}"
-
-		# Skip /dev/null and temp directories
-		[[ "$expanded_path" == "/dev/null" ]] && continue
-		[[ "$expanded_path" =~ ^/tmp(/|$) ]] && continue
-		[[ "$expanded_path" =~ ^/var/folders/ ]] && continue
-
-		# Check if path is within allowed directories: projects, work, .Trash, .cache, Library/Caches
-		if [[ "$expanded_path" =~ ^/ ]]; then
-			if [[ ! "$expanded_path" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|Library/Caches)(/?|/.*)$ ]]; then
-				# shellcheck disable=SC2088 # Tilde is intentional in user-facing message
-				echo "BLOCKED: Cannot write to $path. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/Library/Caches, /tmp" >&2
-				exit 2
-			fi
+		first=${cmd%% *}
+		if [[ "$first" != "$cmd" && "$EXEC_WRAPPERS" == *" ${first##*/} "* ]]; then
+			cmd="${cmd#"$first"}"
+			continue
 		fi
-	done <<<"$PATHS_IN_CMD"
-fi
-
-# AWS: block --profile flag that doesn't match granted access
-if [[ "$COMMAND" =~ ^aws[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ (--profile[[:space:]]+|--profile=)([^[:space:]]+) ]]; then
-		REQUESTED_PROFILE="${BASH_REMATCH[2]}"
-		GRANTED_PROFILE=""
-		if [[ -n "$CLAUDE_AWS_STATE" && -f "$CLAUDE_AWS_STATE" ]]; then
-			GRANTED_PROFILE=$(cat "$CLAUDE_AWS_STATE")
-		fi
-		if [[ "$REQUESTED_PROFILE" != "$GRANTED_PROFILE" ]]; then
-			echo "BLOCKED: AWS profile '$REQUESTED_PROFILE' not granted. Current access: ${GRANTED_PROFILE:-none}" >&2
-			exit 2
-		fi
-	fi
-fi
-
-# AWS: only allow read-only commands
-if [[ "$COMMAND" =~ ^aws[[:space:]] ]]; then
-	# S3 has different command structure - handle separately
-	if [[ "$COMMAND" =~ ^aws[[:space:]]s3[[:space:]] ]]; then
-		# S3: allow ls, deny cp/mv/rm/sync/mb/rb/website
-		if [[ "$COMMAND" =~ [[:space:]](cp|mv|rm|sync|mb|rb|website)[[:space:]] ]]; then
-			echo "BLOCKED: Only read-only AWS S3 commands allowed (ls)" >&2
-			exit 2
-		fi
-	# S3API uses standard get-*/list-*/head-* patterns
-	elif [[ "$COMMAND" =~ ^aws[[:space:]]s3api[[:space:]] ]]; then
-		if ! [[ "$COMMAND" =~ [[:space:]](get-|list-|head-) ]]; then
-			echo "BLOCKED: Only read-only AWS S3API commands allowed (get-*, list-*, head-*)" >&2
-			exit 2
-		fi
-	# All other AWS services: describe-*, list-*, get-*
-	else
-		if ! [[ "$COMMAND" =~ [[:space:]](describe-|list-|get-|help) ]]; then
-			echo "BLOCKED: Only read-only AWS commands allowed (describe-*, list-*, get-*)" >&2
-			exit 2
-		fi
-	fi
-fi
-
-# Block destructive curl operations (allow only GET/HEAD)
-if [[ "$COMMAND" =~ ^curl[[:space:]] ]]; then
-	# Block explicit write methods
-	if [[ "$COMMAND" =~ (-X|--request)[[:space:]]*(POST|PUT|DELETE|PATCH) ]] ||
-		[[ "$COMMAND" =~ (-d|--data|--data-raw|--data-binary|--data-urlencode)[[:space:]] ]] ||
-		[[ "$COMMAND" =~ (--upload-file|-T)[[:space:]] ]]; then
-		echo "BLOCKED: Only read-only curl requests allowed (GET/HEAD)" >&2
-		exit 2
-	fi
-fi
-
-# Block destructive wget operations
-if [[ "$COMMAND" =~ ^wget[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ (--post-data|--post-file|--method)(=|[[:space:]]) ]]; then
-		echo "BLOCKED: Only read-only wget requests allowed" >&2
-		exit 2
-	fi
-fi
-
-# Block destructive docker commands
-if [[ "$COMMAND" =~ ^docker[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ (prune|rm[[:space:]]|rmi[[:space:]]|kill[[:space:]]) ]]; then
-		echo "BLOCKED: Destructive docker command not allowed" >&2
-		exit 2
-	fi
-fi
-
-# Block docker volume mounts outside allowed directories
-if [[ "$COMMAND" =~ ^docker[[:space:]].*(run|create)[[:space:]] ]]; then
-	# Extract all -v and --volume arguments
-	while [[ "$COMMAND" =~ (-v|--volume)[[:space:]]+([^[:space:]]+) ]]; do
-		VOLUME_ARG="${BASH_REMATCH[2]}"
-		# Get the host path (before the first colon)
-		HOST_PATH="${VOLUME_ARG%%:*}"
-		# Expand ~ to $HOME
-		HOST_PATH="${HOST_PATH/#\~/$HOME}"
-
-		if [[ "$HOST_PATH" =~ ^/ ]]; then
-			if [[ ! "$HOST_PATH" =~ ^"$HOME"/(projects|work)(/?|/.*)$ ]]; then
-				echo "BLOCKED: Docker volume mount $HOST_PATH outside allowed directories" >&2
-				exit 2
-			fi
-		fi
-		# Remove matched portion to find next volume arg
-		COMMAND="${COMMAND#*"${BASH_REMATCH[0]}"}"
+		break
 	done
-fi
 
-# Block npm run/exec (can execute arbitrary scripts)
-if [[ "$COMMAND" =~ ^npm[[:space:]]+(run|exec)[[:space:]] ]]; then
-	echo "BLOCKED: npm run/exec can execute arbitrary scripts. Review package.json first." >&2
-	exit 2
-fi
+	# A path on the command itself is fine to leave in place: the word loop
+	# below starts at index 1, so only the basename comparison needs it off.
+	first=${cmd%% *}
+	[[ "${first##*/}" == "aws" ]] || return 0
 
-# Block npx (downloads and executes arbitrary packages)
-if [[ "$COMMAND" =~ ^npx[[:space:]] ]]; then
-	echo "BLOCKED: npx can download and execute arbitrary code" >&2
-	exit 2
-fi
-
-# Block rm - use trash instead
-if [[ "$COMMAND" =~ ^rm[[:space:]] ]]; then
-	echo "BLOCKED: Use 'trash FILE' instead of rm" >&2
-	exit 2
-fi
-
-# Block cp/mv without -n/--no-clobber flag to prevent accidental overwrites
-# Exception: allow without -n when destination is temp directory (/tmp or /var/folders)
-if [[ "$COMMAND" =~ ^cp[[:space:]] ]]; then
-	if ! [[ "$COMMAND" =~ [[:space:]](-[a-zA-Z]*n|--no-clobber) ]]; then
-		if ! [[ "$COMMAND" =~ [[:space:]](/tmp/|/var/folders/) ]]; then
-			echo "BLOCKED: Use 'cp -n' to prevent overwriting existing files" >&2
-			exit 2
+	# 1. Credential boundary. Checked first, and on the raw text, so it applies
+	#    even to a call this script would otherwise consider read-only.
+	if [[ "$cmd" =~ (--profile[[:space:]]+|--profile=)([^[:space:]]+) ]]; then
+		requested="${BASH_REMATCH[2]}"
+		granted=""
+		if [[ -n "${CLAUDE_AWS_STATE:-}" && -f "$CLAUDE_AWS_STATE" ]]; then
+			granted=$(cat "$CLAUDE_AWS_STATE")
+		fi
+		if [[ "$requested" != "$granted" ]]; then
+			block "AWS profile '$requested' not granted. Current access: ${granted:-none}"
 		fi
 	fi
-fi
-if [[ "$COMMAND" =~ ^mv[[:space:]] ]]; then
-	if ! [[ "$COMMAND" =~ [[:space:]](-[a-zA-Z]*n|--no-clobber) ]]; then
-		if ! [[ "$COMMAND" =~ [[:space:]](/tmp/|/var/folders/) ]]; then
-			echo "BLOCKED: Use 'mv -n' to prevent overwriting existing files" >&2
-			exit 2
+
+	# 2. Find the service and action positionally, skipping flags and values.
+	read -r -a words <<<"$cmd"
+	for ((i = 1; i < ${#words[@]}; i++)); do
+		w="${words[i]}"
+		if ((skip)); then
+			skip=0
+			continue
 		fi
+		case "$w" in
+		--*=*) continue ;;
+		-*)
+			[[ "$VALUE_FLAGS" == *" $w "* ]] && skip=1
+			continue
+			;;
+		*) positional+=("$w") ;;
+		esac
+	done
+
+	service="${positional[0]:-}"
+	action="${positional[1]:-}"
+
+	# No action means a usage message: bare `aws`, `aws ec2`, `aws help`.
+	[[ -z "$action" || "$service" == "help" ]] && return 0
+	[[ "$action" == "help" ]] && return 0
+
+	if [[ "$service" == "s3" ]]; then
+		[[ "$S3_WRITE_VERBS" == *" $action "* ]] && ask "AWS S3 write operation: s3 $action"
+		return 0
 	fi
-fi
 
-# Block output redirection that could clobber files (allow /dev/null)
-# Patterns: "cmd > file" (space before) or "2>file" (fd redirect, but not 2>&1)
-if [[ "$COMMAND" =~ [[:space:]]'>'[^'>'] ]] || [[ "$COMMAND" =~ [0-9]'>'[^'>&'] ]]; then
-	if ! [[ "$COMMAND" =~ '>/dev/null' ]] && ! [[ "$COMMAND" =~ [0-9]'>/dev/null' ]]; then
-		echo "BLOCKED: Output redirection '>' can overwrite files" >&2
-		exit 2
-	fi
-fi
+	[[ "$action" =~ $READONLY_ACTION ]] && return 0
+	ask "AWS mutating operation: $service $action"
+}
 
-# Block >> append redirection outside allowed directories
-if [[ "$COMMAND" =~ '>>'[[:space:]]*([^[:space:]]+) ]]; then
-	APPEND_TARGET="${BASH_REMATCH[1]}"
-	# Remove quotes if present
-	APPEND_TARGET="${APPEND_TARGET#\"}"
-	APPEND_TARGET="${APPEND_TARGET%\"}"
-	APPEND_TARGET="${APPEND_TARGET#\'}"
-	APPEND_TARGET="${APPEND_TARGET%\'}"
-	# Expand ~ to $HOME
-	APPEND_TARGET="${APPEND_TARGET/#\~/$HOME}"
-
-	# Skip /dev/null and temp directories
-	if [[ "$APPEND_TARGET" != "/dev/null" ]] &&
-		[[ ! "$APPEND_TARGET" =~ ^/tmp(/|$) ]] &&
-		[[ ! "$APPEND_TARGET" =~ ^/var/folders/ ]]; then
-		# Check if path is absolute and outside allowed directories
-		if [[ "$APPEND_TARGET" =~ ^/ ]]; then
-			if [[ ! "$APPEND_TARGET" =~ ^"$HOME"/(projects|work|\.Trash|\.cache|\.claude|Library/Caches)(/?|/.*)$ ]]; then
-				# shellcheck disable=SC2088 # Tilde is intentional in user-facing message
-				echo "BLOCKED: Cannot append to $APPEND_TARGET. Allowed: ~/projects, ~/work, ~/.Trash, ~/.cache, ~/.claude, ~/Library/Caches, /tmp" >&2
-				exit 2
-			fi
-		fi
-	fi
-fi
-
-# Block piped rm (bypasses rm block)
-if [[ "$COMMAND" =~ \|[[:space:]]*xargs[[:space:]].*rm ]] ||
-	[[ "$COMMAND" =~ \|[[:space:]]*rm([[:space:]]|$) ]]; then
-	echo "BLOCKED: Piped rm command not allowed" >&2
-	exit 2
-fi
-
-# Block xargs with shell/interpreter execution
-if [[ "$COMMAND" =~ xargs[[:space:]].*(bash|sh|zsh|python|node|ruby|perl) ]]; then
-	echo "BLOCKED: xargs with shell/interpreter not allowed" >&2
-	exit 2
-fi
-
-# Block bash -c (inline shell execution)
-if [[ "$COMMAND" =~ (bash|sh|zsh)[[:space:]]+-c ]]; then
-	echo "BLOCKED: bash -c can execute arbitrary code" >&2
-	exit 2
-fi
-
-# Block eval
-if [[ "$COMMAND" =~ (^|[;&|])[[:space:]]*eval[[:space:]] ]]; then
-	echo "BLOCKED: eval can execute arbitrary code" >&2
-	exit 2
-fi
-
-# Block source/dot from non-file sources
-source_proc_subst='(source|\.)[[:space:]]+[<(]'
-source_dev='(source|\.)[[:space:]]+/dev/(stdin|fd)'
-if [[ "$COMMAND" =~ $source_proc_subst ]] || [[ "$COMMAND" =~ $source_dev ]]; then
-	echo "BLOCKED: source from stdin/process substitution not allowed" >&2
-	exit 2
-fi
-
-# Block piped shell/interpreter execution (arbitrary command execution)
-if [[ "$COMMAND" =~ \|[[:space:]]*(bash|sh|zsh|python|python3|node|ruby|perl|php)([[:space:]]|$) ]]; then
-	echo "BLOCKED: Piped shell/interpreter execution not allowed" >&2
-	exit 2
-fi
-
-# Block interpreter inline execution flags (direct or via uv run)
-if [[ "$COMMAND" =~ (^|uv[[:space:]]run[[:space:]]+)(python|python3)[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](-c[[:space:]]|-)([[:space:]]|$|\") ]]; then
-	echo "BLOCKED: python -c/-stdin can execute arbitrary code" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ (^|uv[[:space:]]run[[:space:]]+)node[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](-e[[:space:]]|--eval[[:space:]]|-p[[:space:]]|--print[[:space:]]|-)([[:space:]]|$|\") ]]; then
-	echo "BLOCKED: node -e/--eval/-stdin can execute arbitrary code" >&2
-	exit 2
-fi
-
-# Block awk/gawk system() and getline (shell execution)
-if [[ "$COMMAND" =~ ^[gm]?awk[[:space:]] ]] && [[ "$COMMAND" =~ (system|getline|cmd\|) ]]; then
-	echo "BLOCKED: awk system()/getline can execute shell commands" >&2
-	exit 2
-fi
-
-# Block sed/perl in-place editing (bypasses Write hook)
-if [[ "$COMMAND" =~ ^sed[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](-i|--in-place) ]]; then
-	echo "BLOCKED: sed -i modifies files in-place" >&2
-	exit 2
-fi
-if [[ "$COMMAND" =~ ^perl[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*i[a-zA-Z]*([[:space:]]|$) ]]; then
-	echo "BLOCKED: perl -i modifies files in-place" >&2
-	exit 2
-fi
-
-# Block find with destructive actions
-if [[ "$COMMAND" =~ ^find[[:space:]] ]]; then
-	if [[ "$COMMAND" =~ -delete ]] || [[ "$COMMAND" =~ -exec[[:space:]]+(rm|rmdir)[[:space:]] ]]; then
-		echo "BLOCKED: find with -delete or -exec rm not allowed" >&2
-		exit 2
-	fi
-fi
-
-# Block dd (direct disk/file writes)
-if [[ "$COMMAND" =~ ^dd[[:space:]] ]]; then
-	echo "BLOCKED: dd can overwrite disks and files directly" >&2
-	exit 2
-fi
-
-# Block install (copies files with permissions, bypasses Write hook)
-if [[ "$COMMAND" =~ ^install[[:space:]] ]]; then
-	echo "BLOCKED: install copies files. Use cp -n instead" >&2
-	exit 2
-fi
-
-# Block destructive commands in docker exec
-if [[ "$COMMAND" =~ ^docker[[:space:]]exec[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]](rm|dd)[[:space:]] ]]; then
-	echo "BLOCKED: Destructive command in docker exec" >&2
-	exit 2
-fi
-
-# Block heredoc redirection to file (can overwrite files)
-# Only match heredoc followed by actual file redirection (space before >), not > inside heredoc content
-if [[ "$COMMAND" =~ '<<'[a-zA-Z\'\"_]+[[:space:]]+'>'[^'>'] ]] && ! [[ "$COMMAND" =~ '>/dev/null' ]]; then
-	echo "BLOCKED: Heredoc with redirection can overwrite files" >&2
-	exit 2
-fi
-
-# Block piped tee (can overwrite files mid-pipeline)
-if [[ "$COMMAND" =~ \|[[:space:]]*tee[[:space:]] ]]; then
-	echo "BLOCKED: Piped tee not allowed" >&2
-	exit 2
-fi
-
-# =============================================================================
-# MEDIUM-PRIORITY: Additional protections (would prompt anyway, extra safety)
-# =============================================================================
-
-# Block force symlinks (can overwrite via symlink)
-if [[ "$COMMAND" =~ ^ln[[:space:]] ]] && [[ "$COMMAND" =~ [[:space:]]-[a-zA-Z]*f|--force ]]; then
-	echo "BLOCKED: ln -f/--force can overwrite files via symlink" >&2
-	exit 2
-fi
-
-# Block rsync --delete (mass deletion)
-if [[ "$COMMAND" =~ ^rsync[[:space:]] ]] && [[ "$COMMAND" =~ --delete ]]; then
-	echo "BLOCKED: rsync --delete can cause mass deletion" >&2
-	exit 2
-fi
-
-# Block launchctl (system service control)
-if [[ "$COMMAND" =~ ^launchctl[[:space:]] ]]; then
-	echo "BLOCKED: launchctl controls system services" >&2
-	exit 2
-fi
-
-# Block defaults write (macOS preferences)
-if [[ "$COMMAND" =~ ^defaults[[:space:]]write ]]; then
-	echo "BLOCKED: defaults write modifies macOS system preferences" >&2
-	exit 2
-fi
+# Split on shell separators so `ls && aws ec2 terminate-instances` is still
+# seen. Over-splitting is harmless: a segment that is not an aws call is
+# ignored, and the permission layer handles everything that is not aws.
+#
+# Command substitutions and subshells are boundaries too, and that is the
+# important part. Without them, `out=$(aws --profile other-account …)` arrived
+# as one segment beginning `out=$(aws`, the assignment stripper could not make
+# sense of it, and the call went unexamined — so wrapping a call in `$( )` was
+# enough to walk past the credential boundary this file exists to enforce. The
+# direct form was blocked and the substituted form was allowed, which is the
+# worst shape a security check can have: it looks like it works.
+while IFS= read -r segment; do
+	[[ -n "$segment" ]] && check_aws "$segment"
+done <<<"$(sed 's/&&/\n/g; s/||/\n/g; s/[;|]/\n/g; s/\$(/\n/g; s/[`(){}]/\n/g' <<<"$COMMAND")"
 
 exit 0

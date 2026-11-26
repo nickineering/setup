@@ -120,6 +120,20 @@
   },
   "github.copilot.nextEditSuggestions.enabled": true,
   "gitlens.gitCommands.closeOnFocusOut": true,
+  "gitlens.graph.details.location": "auto",
+  "gitlens.views.scm.grouped.views": {
+    "branches": true,
+    "commits": true,
+    "contributors": true,
+    "fileHistory": false,
+    "launchpad": true,
+    "remotes": true,
+    "repositories": true,
+    "searchAndCompare": false,
+    "stashes": true,
+    "tags": true,
+    "worktrees": true
+  },
   "go.toolsManagement.autoUpdate": true,
   "js/ts.updateImportsOnFileMove.enabled": "always",
   "json.schemas": [

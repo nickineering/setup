@@ -1,212 +1,103 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {},
   "attribution": {
     "commit": "",
     "pr": ""
   },
   "permissions": {
-    "allow": [
-      "Bash(~/.claude/skills/cost/cost.sh*)",
-      "Bash(awk *)",
-      "Bash(aws *)",
-      "Bash(base64 *)",
-      "Bash(cat *)",
-      "Bash(ccusage*)",
-      "Bash(cdk context*)",
-      "Bash(cdk diff*)",
-      "Bash(cdk docs*)",
-      "Bash(cdk doctor*)",
-      "Bash(cdk list*)",
-      "Bash(cdk synth*)",
-      "Bash(cp *)",
-      "Bash(curl *)",
-      "Bash(date*)",
-      "Bash(diff *)",
-      "Bash(docker *)",
-      "Bash(docker-compose *)",
-      "Bash(dprint*)",
-      "Bash(echo *)",
-      "Bash(env)",
-      "Bash(eslint*)",
-      "Bash(fd *)",
-      "Bash(file *)",
-      "Bash(find *)",
-      "Bash(git blame*)",
-      "Bash(git branch --contains*)",
-      "Bash(git branch --list*)",
-      "Bash(git branch --merged*)",
-      "Bash(git branch --no-merged*)",
-      "Bash(git branch --show-current*)",
-      "Bash(git branch -a*)",
-      "Bash(git branch -r*)",
-      "Bash(git branch -v*)",
-      "Bash(git branch)",
-      "Bash(git checkout -B *)",
-      "Bash(git checkout -b *)",
-      "Bash(git config --get*)",
-      "Bash(git config --list*)",
-      "Bash(git describe*)",
-      "Bash(git diff*)",
-      "Bash(git fetch*)",
-      "Bash(git log*)",
-      "Bash(git ls-files*)",
-      "Bash(git pull*)",
-      "Bash(git reflog*)",
-      "Bash(git remote*)",
-      "Bash(git rev-parse*)",
-      "Bash(git shortlog*)",
-      "Bash(git show*)",
-      "Bash(git stash list*)",
-      "Bash(git status*)",
-      "Bash(git switch *)",
-      "Bash(git tag -l*)",
-      "Bash(glab alias list*)",
-      "Bash(glab auth status*)",
-      "Bash(glab check-update*)",
-      "Bash(glab ci artifact*)",
-      "Bash(glab ci config compile*)",
-      "Bash(glab ci get*)",
-      "Bash(glab ci lint*)",
-      "Bash(glab ci list*)",
-      "Bash(glab ci status*)",
-      "Bash(glab ci trace*)",
-      "Bash(glab ci view*)",
-      "Bash(glab completion *)",
-      "Bash(glab config get*)",
-      "Bash(glab help*)",
-      "Bash(glab incident list*)",
-      "Bash(glab incident view*)",
-      "Bash(glab issue board view*)",
-      "Bash(glab issue list*)",
-      "Bash(glab issue view*)",
-      "Bash(glab iteration list*)",
-      "Bash(glab job artifact*)",
-      "Bash(glab label get*)",
-      "Bash(glab label list*)",
-      "Bash(glab milestone get*)",
-      "Bash(glab milestone list*)",
-      "Bash(glab mr approvers*)",
-      "Bash(glab mr diff*)",
-      "Bash(glab mr issues*)",
-      "Bash(glab mr list*)",
-      "Bash(glab mr view*)",
-      "Bash(glab release download*)",
-      "Bash(glab release list*)",
-      "Bash(glab release view*)",
-      "Bash(glab repo archive*)",
-      "Bash(glab repo clone*)",
-      "Bash(glab repo contributors*)",
-      "Bash(glab repo list*)",
-      "Bash(glab repo search*)",
-      "Bash(glab repo view*)",
-      "Bash(glab runner list*)",
-      "Bash(glab schedule list*)",
-      "Bash(glab token list*)",
-      "Bash(glab user events*)",
-      "Bash(glab variable export*)",
-      "Bash(glab variable get*)",
-      "Bash(glab variable list*)",
-      "Bash(glab version*)",
-      "Bash(grep *)",
-      "Bash(head *)",
-      "Bash(jq *)",
-      "Bash(ls *)",
-      "Bash(ls)",
-      "Bash(make *)",
-      "Bash(make)",
-      "Bash(mkdir *)",
-      "Bash(mmdc *)",
-      "Bash(mv *)",
-      "Bash(mypy *)",
-      "Bash(node*)",
-      "Bash(npm *)",
-      "Bash(printenv*)",
-      "Bash(pwd)",
-      "Bash(pytest*)",
-      "Bash(python*)",
-      "Bash(ruff *)",
-      "Bash(sam build*)",
-      "Bash(sam list*)",
-      "Bash(sam local*)",
-      "Bash(sam logs*)",
-      "Bash(sam validate*)",
-      "Bash(sed *)",
-      "Bash(shellcheck *)",
-      "Bash(sort *)",
-      "Bash(tail *)",
-      "Bash(tar *)",
-      "Bash(terraform fmt*)",
-      "Bash(terraform init*)",
-      "Bash(terraform output*)",
-      "Bash(terraform plan*)",
-      "Bash(terraform show*)",
-      "Bash(terraform state list*)",
-      "Bash(terraform state show*)",
-      "Bash(terraform validate*)",
-      "Bash(test *)",
-      "Bash(touch *)",
-      "Bash(trash *)",
-      "Bash(tree *)",
-      "Bash(tsc *)",
-      "Bash(unzip*)",
-      "Bash(uv *)",
-      "Bash(wc *)",
-      "Bash(wget *)",
-      "Bash(which *)",
-      "Bash(whoami)",
-      "Bash(xargs *)",
-      "Bash(yq *)",
-      "Bash(zip *)",
-      "Edit(./**)",
-      "Grep(./**)",
-      "Grep(~/projects/**)",
-      "Grep(~/work/**)",
-      "mcp__kraken-mcp__*",
-      "mcp__plugin_twilio-developer-kit_twilio-docs__*",
-      "Read(./**)",
-      "Read(/opt/homebrew/**)",
-      "Read(~/.aws/config)",
-      "Read(~/.bashrc)",
-      "Read(~/.claude/**)",
-      "Read(~/.env.sh)",
-      "Read(~/.gitconfig)",
-      "Read(~/.gitignore)",
-      "Read(~/.profile)",
-      "Read(~/.zshrc)",
-      "Read(~/projects/**)",
-      "Read(~/work/**)",
-      "WebFetch(*)",
-      "WebSearch(*)"
-    ],
     "deny": [
-      "Bash(* > /Library/*)",
-      "Bash(* > /System/*)",
-      "Bash(* > /etc/*)",
-      "Bash(* > /usr/*)",
-      "Bash(* > /var/*)",
       "Edit(**/.git/**)",
       "Read(**/*.key)",
       "Read(**/*.pem)",
-      "Read(**/*secret*)",
-      "Read(**/credentials*)",
-      "Read(**/token*)",
+      "Read(**/.credentials.json)",
+      "Read(**/.env)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.local)",
+      "Read(**/.env.production)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.test)",
+      "Read(**/credentials)",
+      "Read(**/credentials.json)",
+      "Read(**/id_ed25519*)",
+      "Read(**/id_rsa*)",
       "Read(~/.aws/credentials)",
       "Read(~/.aws/sso/**)",
+      "Read(~/.config/gh/**)",
       "Read(~/.netrc)",
       "Read(~/.npmrc)",
       "Read(~/.ssh/*)"
     ],
     "ask": [
+      "Bash(cdk bootstrap*)",
+      "Bash(cdk deploy*)",
+      "Bash(cdk destroy*)",
+      "Bash(docker push*)",
+      "Bash(gh api*)",
+      "Bash(gh gist create*)",
+      "Bash(git push*)",
+      "Bash(glab api*)",
+      "Bash(glab snippet create*)",
+      "Bash(npm publish*)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(sam delete*)",
+      "Bash(sam deploy*)",
+      "Bash(sam sync*)",
+      "Bash(terraform apply*)",
+      "Bash(terraform destroy*)",
+      "Bash(terraform import*)",
+      "Bash(terraform state mv*)",
+      "Bash(terraform state push*)",
+      "Bash(terraform state rm*)",
       "Edit(**/*settings*.json)",
       "Edit(**/CLAUDE.md)",
       "Edit(**/hooks/**)",
       "Edit(**/policy.conf)",
       "Edit(**/terminator.sh)",
       "Edit(**/wrappers/**)"
+    ],
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git worktree *)",
+      "Bash(git wt *)",
+      "Bash(git wt-rm *)",
+      "Bash(open *)"
     ]
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -222,42 +113,117 @@
         ]
       },
       {
-        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/validate-write.sh"
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
           }
         ]
       }
     ],
-    "WorktreeCreate": [
+    "SessionEnd": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/worktree-create.sh"
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
           }
         ]
       }
     ],
-    "WorktreeRemove": [
+    "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "~/projects/setup/linked/claude/hooks/worktree-remove.sh"
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/nicholas.ferrara/.config/iterm2/cc-status"
           }
         ]
       }
     ]
+  },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/projects/setup/linked/claude/statusline.sh",
+    "refreshInterval": 10
   },
   "enabledPlugins": {
     "twilio-developer-kit@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": true,
     "network": {
+      "allowedDomains": [
+        "*.amazonaws.com",
+        "*.github.com",
+        "auth.docker.io",
+        "code.claude.com",
+        "codeload.github.com",
+        "docs.anthropic.com",
+        "docs.aws.amazon.com",
+        "docs.claude.com",
+        "files.pythonhosted.org",
+        "formulae.brew.sh",
+        "ghcr.io",
+        "github.com",
+        "gitlab.com",
+        "json.schemastore.org",
+        "objects.githubusercontent.com",
+        "plugins.dprint.dev",
+        "production.cloudflare.docker.com",
+        "pypi.org",
+        "raw.githubusercontent.com",
+        "registry-1.docker.io",
+        "registry.npmjs.org",
+        "registry.terraform.io",
+        "releases.hashicorp.com",
+        "www.schemastore.org"
+      ],
       "allowUnixSockets": [
         "~/.gnupg/S.gpg-agent"
       ]
@@ -272,8 +238,127 @@
         "~/Library/Caches",
         "~/projects",
         "~/work"
+      ],
+      "denyWrite": [
+        "~/projects/setup/linked/claude/hooks",
+        "~/projects/setup/linked/claude/wrappers",
+        "~/projects/setup/linked/claude/policy.conf",
+        "~/projects/setup/linked/claude/statusline.sh",
+        "~/projects/setup/linked/claude/terminator.sh",
+        "~/projects/setup/linked/claude/claude-aws.sh",
+        "~/projects/setup/linked/git_functions.sh"
       ]
-    }
+    },
+    "credentials": {
+      "files": [
+        {
+          "path": "~/.aws/credentials",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.aws/sso",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.config/gh",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.netrc",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.npmrc",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.ssh",
+          "mode": "deny"
+        },
+        {
+          "path": "**/*.key",
+          "mode": "deny"
+        },
+        {
+          "path": "**/*.pem",
+          "mode": "deny"
+        },
+        {
+          "path": "**/id_ed25519*",
+          "mode": "deny"
+        },
+        {
+          "path": "**/id_rsa*",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.local",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.*.local",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.development",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.production",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.staging",
+          "mode": "deny"
+        },
+        {
+          "path": "**/.env.test",
+          "mode": "deny"
+        }
+      ],
+      "envVars": [
+        {
+          "name": "CLOUDSDK_PROXY_PASSWORD",
+          "mode": "deny"
+        },
+        {
+          "name": "GH_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "GITHUB_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "GITLAB_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "GLAB_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "NPM_TOKEN",
+          "mode": "deny"
+        }
+      ]
+    },
+    "allowAppleEvents": true,
+    "excludedCommands": [
+      "git *"
+    ]
   },
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "This machine normally has substantial uncommitted work in ~/work and ~/projects. Treat anything that discards uncommitted changes as high-risk even when it looks routine.",
+      "~/projects/setup is the configuration repo for this machine. Changes to its linked/claude tree alter the permissions, hooks and sandbox that govern this session."
+    ],
+    "classifyAllShell": true
+  }
 }

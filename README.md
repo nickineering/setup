@@ -38,17 +38,30 @@ Symlinked from `linked/` so edits sync automatically:
 
 Pre-configured Claude Code environment:
 
-- **Permissions** - Pre-approved commands for git, docker, terraform, aws, glab,
-  python, node, ruff, pytest, mypy, and many more
-- **Hooks** - Auto-format before commits, block dangerous commands, prevent
-  accidental file overwrites
-- **Skills** - `/commit`, `/pr`, `/mr`, `/summary` for git workflows
-- **Instructions** - `CLAUDE.md` with confidence scoring, sandbox rules, and
-  coding preferences
-- **Security** - Blocked access to secrets, credentials, SSH keys, and system
-  directories
+- **Sandbox** - The kernel decides which files and hosts shell commands can
+  reach. That boundary replaces a permission allowlist rather than supplementing
+  one, so there is no list of pre-approved commands to maintain. See
+  [SECURITY.md](linked/claude/SECURITY.md) for why, and what still prompts
+- **Auto mode** - On by default, with the classifier given context about this
+  machine through `autoMode.environment`. Prompts are reserved for operations
+  that are irreversible or leave the machine
+- **Hooks** - Auto-format before commits, AWS profile scoping, and a block on
+  committing mid-merge
+- **Status line** - Context remaining, session cost, the granted AWS profile,
+  branch with dirty and unpushed markers, and an alert when a merge or rebase is
+  left unresolved. The absolute path gets its own row so a deep worktree path is
+  never truncated
+- **Skills** - `/commit`, `/pr`, `/mr`, `/summary` for git workflows, plus
+  `worktrees` and `git-recovery` as reference Claude loads only when needed
+- **Instructions** - `CLAUDE.md` with confidence scoring, the worktree and
+  git-write rules, and coding preferences
+- **Credentials** - Credential files and secret-shaped environment variables are
+  hidden from shell commands, and denied to the file tools separately
 - **Cost tracking** - `ccusage` with Bedrock pricing overrides (see
   [manual steps](MANUAL_STEPS.md#post-install-checks))
+- **Employer config** - Kept out of this repo. `TERMINATOR_EXTRA_SETTINGS`
+  points at a settings file layered on at launch, so internal hostnames and
+  registries live with the environment they belong to
 
 ### Git Workflow
 
@@ -92,6 +105,133 @@ Aliases and functions for common operations:
 | `git credit`           | Add co-author to last commit             |
 
 See `git-aliases` and `git-functions` for the full list.
+
+### Worktrees and reviewing agent work
+
+There is one worktree layout here, Claude Code's:
+`<main-clone>/.claude/worktrees/<name>` (gitignored), on branch `<name>`, cut
+from the remote's default branch. `claude --worktree <name>`, the
+`EnterWorktree` tool, subagents declaring `isolation: worktree`, and `git wt`
+all produce it, so anything that reads a worktree can assume it. Working in one
+is what makes `.git` writable: in the main checkout the sandbox makes it
+read-only.
+
+Lifecycle belongs to Claude Code — the exit prompt and a periodic sweep remove
+worktrees holding no work, `git worktree list` shows them, and a
+`.worktreeinclude` file copies gitignored files such as `.env` into each new
+one. `git wt` exists so the same thing can be started **without** Claude and
+handed over afterwards: `claude --worktree <name>` opens an existing worktree of
+that name rather than creating another, so there is nothing to move.
+
+What Claude Code has no answer for is reviewing a worktree **without pushing
+it**, which is what the rest of these do.
+
+| Command                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| `git wt <name>`          | Create or reuse one by hand, and cd into it            |
+| `git wt-open [branch]`   | Add a worktree to the open editor window as a root     |
+| `git wt-close [branch]`  | Drop it back out of the window                         |
+| `git wt-review [branch]` | Commits, diffstat and what changed since the last look |
+| `git wt-diff [branch]`   | The branch's diff, in an editor tab, against the base  |
+| `git wt-browse [branch]` | Read a committed branch as uncommitted work            |
+
+A Claude session must use `EnterWorktree` rather than `git wt`:
+`git worktree
+add` writes `.git/worktrees`, which the sandbox makes read-only,
+and fails halfway through.
+
+#### Tracking several agents at once
+
+Each conversation is its own session: **Open in New Tab** or **New Window** from
+the Command Palette starts another. The sidebar lists them all — filter to
+`Active` for the ones working or waiting on you, right-click to group related
+ones under a name, and watch the dots: blue wants a permission decision, orange
+finished while hidden. When a conversation has subagents an `N agents` count
+appears by the prompt box, and clicking it draws them as a tree with each one's
+status, elapsed time and token count. `/tasks` opens the same view, and
+`claude agents` is the terminal equivalent for background sessions.
+
+#### Reviewing what they did
+
+Agents leave their work uncommitted, which is the state the editor reads best,
+so reviewing is just making it visible: `git wt-open` adds the worktree to the
+window you already have open as an extra root. Its changes then get their own
+section in the source-control view, with gutters, inline diffs and editing in
+place. Add one per agent after a fan-out and they sit side by side.
+
+Do not open a worktree as a folder. It is a directory the editor has never seen,
+so the first open activates every installed extension from cold — a minute or so
+regardless of whether the branch changed three lines or three hundred. Reopening
+the same one is fast, which is how that was tracked down. Added as a root to a
+running window it costs nothing and keeps every extension you have loaded.
+
+When an agent has committed anyway, `git status` is empty and the question is no
+longer "what changed" but "what does this branch do that its base does not".
+`worktree.baseRef` is `fresh`, so branches are cut from `origin/<default>` and
+that comparison is well defined. `git wt-review` prints it — base, commits,
+diffstat, plus anything still uncommitted — and stamps `refs/review/<branch>` at
+the tip it showed you. Run it again after the agent has done more and it adds a
+`range-diff` against that stamp, so you see only what is new, including commits
+that were amended or rebased rather than added. That is the part a web UI
+handles worst, and none of it needs a push.
+
+Adding that worktree as a root shows nothing for the same reason: the tree is
+clean, so the source-control view has nothing to display. `git wt-diff` is the
+answer. By default it writes one unified diff and opens it in a single tab, with
+a diffstat header, deletions and renames included.
+
+`--tabs` gives side-by-side diffs instead, one per file, base version on the
+left and the real file on the right so fixes can be made while reading. It is
+for a handful of files, not a branch: `code --diff` takes two files and reuses
+the window and editor group, so a run of more than a couple of invocations
+collapses into one visible diff — the loop runs, only the last pair shows. That
+is why one patch is the default rather than the other way round. `WT_DIFF_MAX`
+(default 25) caps the tabs.
+
+The base defaults to **whatever the main clone has checked out**, since that is
+the branch the work merges into — so the usual case is a bare `git wt-diff` with
+no flags, and it follows the main clone when you move it. If the main clone is
+detached, or is itself the checkout being asked about, it falls back to
+`origin/HEAD`. `--base <ref>` overrides it.
+
+Either way the comparison is against the _merge base_, not the ref's tip, so it
+shows this branch's work and not everything the base gained since the branch was
+cut. The patch filename and header both name the base that was used, so which
+one it picked is never a guess.
+
+To browse a branch the way you would browse uncommitted work — the whole file
+tree, with the editor's own source-control view and gutter decorations marking
+what changed — use `git wt-browse` instead. It moves `HEAD` to the base with a
+mixed reset and leaves the working tree untouched, so every change the branch
+made reads as uncommitted. That is the one thing a patch in a tab cannot give
+you, and it is editable in place.
+
+`git wt-browse --end` puts the commits back, keeping anything you fixed while
+reading as an uncommitted change on top. The original tip is written to
+`refs/wt-browse/<branch>` before the reset, which is what makes it reversible —
+a real ref rather than a reflog entry, so it survives expiry.
+
+It refuses to start if the worktree already has uncommitted changes, because
+after the reset those could not be told apart from the branch's own, and ending
+review mode would be guesswork. While review mode is on, the status line shows
+`⚠ BROWSE`: a branch in that state looks like one with no commits, and a
+`git commit -a` there would flatten its history into a single commit.
+
+Run in a main checkout with no branch named, it says so instead of quietly
+diffing the checkout against its own upstream and reporting nothing.
+
+With GitLens installed, **Command Palette → `GitLens: Compare References…`**
+does the same thing through the UI, against real files rather than copies.
+
+**Nothing opens an editor on its own.** `code` takes window focus with no flag
+to avoid it, so an automatic open steals the keyboard from the terminal the
+session is running in — and after a fan-out it would do that once per agent,
+including the ones that only read and left nothing behind.
+
+Opening an editor is therefore always something you ask for: `git wt-open` adds
+a worktree to the window, `git wt-review` and `git wt-diff` open what they
+produce. Set `WT_OPEN_CMD` to use a different editor, or to the empty string so
+they only print paths.
 
 ### Shell Commands
 

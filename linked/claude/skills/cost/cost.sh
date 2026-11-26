@@ -6,7 +6,9 @@ SESSION_META_DIR="$HOME/.claude/usage-data/session-meta"
 PROJECTS_DIR="$HOME/.claude/projects"
 SESSIONS_DIR="$HOME/.claude/sessions"
 REGION="eu-central-1"
-CE_PROFILE="${CLAUDE_CE_PROFILE:-eon-dev}"
+# Cost Explorer lives in one account; which one is not this repo's business, so
+# there is no default. Set CLAUDE_CE_PROFILE in ~/.env.sh.
+CE_PROFILE="${CLAUDE_CE_PROFILE:-}"
 
 usage() {
 	cat <<EOF
@@ -41,7 +43,12 @@ refresh_rates() {
 	start=$(date -v-30d +%Y-%m-%d 2>/dev/null || date -d '30 days ago' +%Y-%m-%d)
 	end=$(date +%Y-%m-%d)
 
-	aws --profile "$CE_PROFILE" sts get-caller-identity >/dev/null 2>&1 || die "No AWS access with profile '$CE_PROFILE'. Run: ! claude-aws dev"
+	# Named before it is used: an empty --profile fails inside the AWS CLI with
+	# an error about the profile not existing, which reads as a broken grant
+	# rather than a missing setting.
+	[[ -n "$CE_PROFILE" ]] || die "CLAUDE_CE_PROFILE is not set — it names the AWS profile holding Cost Explorer. Set it in ~/.env.sh."
+
+	aws --profile "$CE_PROFILE" sts get-caller-identity >/dev/null 2>&1 || die "No AWS access with profile '$CE_PROFILE'. Run: ! claude-aws <profile>"
 
 	local services=(
 		"Claude Opus 4.6 (Amazon Bedrock Edition)"
