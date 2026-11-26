@@ -12,6 +12,10 @@ set -euo pipefail
 #   TERMINATOR_MODEL_OPUS          - Opus model ID (session default + opus alias)
 #   TERMINATOR_MODEL_SONNET        - Sonnet model ID (sonnet alias)
 #   TERMINATOR_MODEL_HAIKU         - Haiku model ID (background queries + haiku alias)
+#   TERMINATOR_MODEL_FABLE         - Fable model ID (fable alias)
+#   TERMINATOR_EXTRA_SETTINGS      - Path to a settings.json layered over the
+#                                    user's own, for configuration that must not
+#                                    live in this repo (see below)
 
 # Resolve through symlinks to find the real script directory
 _source="${BASH_SOURCE[0]}"
@@ -81,7 +85,6 @@ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_CREDENTIAL_E
 
 declare -a env_vars=(
 	"CLAUDE_SESSION=1"
-	"CLAUDE_APPROVED=1" # consumed by wrappers on first write; blocks subprocess chains
 
 	"CLAUDE_AWS_STATE=$state_file"
 	"AWS_PROFILE=$TERMINATOR_AWS_BEDROCK_PROFILE"
@@ -100,11 +103,46 @@ if [[ -n "${TERMINATOR_MODEL_HAIKU:-}" ]]; then
 	env_vars+=("ANTHROPIC_SMALL_FAST_MODEL=$TERMINATOR_MODEL_HAIKU")
 	env_vars+=("ANTHROPIC_DEFAULT_HAIKU_MODEL=$TERMINATOR_MODEL_HAIKU")
 fi
+# Only the id: leaving _NAME and _SUPPORTED_CAPABILITIES unset keeps the
+# built-in label and capability set, as the three aliases above do.
+if [[ -n "${TERMINATOR_MODEL_FABLE:-}" ]]; then
+	env_vars+=("ANTHROPIC_DEFAULT_FABLE_MODEL=$TERMINATOR_MODEL_FABLE")
+fi
 
-# Prepend bin/ for PATH wrappers (Layer 1)
+# Prepend bin/ so the aws and terraform wrappers shadow the real binaries and
+# can inject the session's granted profile. Nothing else lives in bin/ now.
 export PATH="$SELF_DIR/bin:$PATH"
 
-env "${env_vars[@]}" claude "${claude_args[@]}"
+# An optional settings layer held outside this repo. Employer hostnames, internal
+# registries and classifier context about a private environment belong with that
+# environment's own configuration, not in a public dotfiles repo, so the repo
+# carries the mechanism and the values live wherever the var points.
+#
+# `--settings` rather than a project `.claude/settings.json` for two reasons: it
+# can set the keys that only user-scope settings may set, such as
+# permissions.defaultMode and autoMode.classifyAllShell, and it is read whatever
+# directory the session starts in. Project settings are read from the session's
+# own working directory without walking up, so a session deep inside a repo
+# would silently miss a file placed at the tree's root. List keys merge across
+# the precedence stack, so this file adds to the user's lists rather than
+# replacing them — but note that an `autoMode` list which includes "$defaults"
+# should include it in exactly one of the two files.
+declare -a extra_settings=()
+if [[ -n "${TERMINATOR_EXTRA_SETTINGS:-}" ]]; then
+	if [[ -f "$TERMINATOR_EXTRA_SETTINGS" ]]; then
+		extra_settings=(--settings "$TERMINATOR_EXTRA_SETTINGS")
+		echo "🗂  Extra settings: $TERMINATOR_EXTRA_SETTINGS"
+	else
+		# A warning rather than an abort: losing the extra hosts is an
+		# inconvenience, and failing to start a session over it is worse.
+		echo "⚠️  TERMINATOR_EXTRA_SETTINGS is not a file, continuing without it:" >&2
+		echo "    $TERMINATOR_EXTRA_SETTINGS" >&2
+	fi
+fi
+
+env "${env_vars[@]}" claude \
+	"${extra_settings[@]+"${extra_settings[@]}"}" \
+	"${claude_args[@]+"${claude_args[@]}"}"
 
 # Cleanup
 rm -f "$state_file"
