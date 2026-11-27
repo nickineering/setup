@@ -6,6 +6,7 @@
 # their package managers being available.
 : "${removed_npm?}"
 
+source configure/certs.sh
 source configure/git.sh
 source configure/zsh.sh
 source configure/firefox.sh
@@ -28,5 +29,5 @@ else
 	warn "nvm not found, skipping Node configuration"
 fi
 
-info "Checked: Git, Zsh, Firefox, Ruff, Claude, Python, Node"
+info "Checked: Certs, Git, Zsh, Firefox, Ruff, Claude, Python, Node"
 echo ""

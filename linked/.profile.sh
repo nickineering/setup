@@ -42,6 +42,12 @@ export SETUP=~/projects/setup
 # Easy access to the dotfiles folder
 export DOTFILES=~/projects/setup/linked
 
+# shellcheck disable=SC1091
+source "$SETUP/lib/certs.sh"
+if [ -f "$KEYCHAIN_CA_BUNDLE" ]; then
+	export NODE_EXTRA_CA_CERTS="$KEYCHAIN_CA_BUNDLE"
+fi
+
 # Load handy aliases
 # shellcheck disable=SC1090 # Can't follow dynamic source path
 source "$DOTFILES/shell_aliases.sh"

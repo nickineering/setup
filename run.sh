@@ -135,8 +135,13 @@ cd "$SETUP"
 
 # Utilities
 source lib/backup.sh
+source lib/certs.sh
 source lib/links.sh
 source lib/packages.sh
+
+CA_BUNDLE_STALE=""
+# shellcheck disable=SC2034 # consumed by configure/certs.sh
+export_keychain_ca_bundle || CA_BUNDLE_STALE=1
 
 # Trap handler for cleanup on interruption
 CURRENT_STEP=""
