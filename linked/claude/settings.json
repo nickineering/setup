@@ -6,20 +6,26 @@
     "pr": ""
   },
   "permissions": {
+    "allow": [
+      "Bash(git worktree *)",
+      "Bash(git wt *)",
+      "Bash(git wt-rm *)",
+      "Bash(open *)"
+    ],
     "deny": [
       "Edit(**/.git/**)",
-      "Read(**/*.key)",
-      "Read(**/*.pem)",
       "Read(**/.credentials.json)",
-      "Read(**/.env)",
       "Read(**/.env.*.local)",
       "Read(**/.env.development)",
       "Read(**/.env.local)",
       "Read(**/.env.production)",
       "Read(**/.env.staging)",
       "Read(**/.env.test)",
-      "Read(**/credentials)",
+      "Read(**/.env)",
+      "Read(**/*.key)",
+      "Read(**/*.pem)",
       "Read(**/credentials.json)",
+      "Read(**/credentials)",
       "Read(**/id_ed25519*)",
       "Read(**/id_rsa*)",
       "Read(~/.aws/credentials)",
@@ -58,13 +64,7 @@
       "Edit(**/terminator.sh)",
       "Edit(**/wrappers/**)"
     ],
-    "defaultMode": "auto",
-    "allow": [
-      "Bash(git worktree *)",
-      "Bash(git wt *)",
-      "Bash(git wt-rm *)",
-      "Bash(open *)"
-    ]
+    "defaultMode": "auto"
   },
   "model": "opus[1m]",
   "hooks": {
@@ -189,9 +189,6 @@
     "type": "command",
     "command": "~/projects/setup/linked/claude/statusline.sh",
     "refreshInterval": 10
-  },
-  "enabledPlugins": {
-    "twilio-developer-kit@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,
