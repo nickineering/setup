@@ -230,30 +230,6 @@ wipe_local() {
 # shellcheck source=../lib/git.sh
 source "${SETUP:-$HOME/projects/setup}/lib/git.sh"
 
-# origin/HEAD: where Claude Code's "fresh" baseRef cut this worktree from.
-_wt_base() {
-	local dir="${1:-.}" head
-	head=$(git -C "$dir" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)
-	if [[ -n "$head" ]]; then
-		printf '%s' "${head#origin/}"
-	else
-		git_default_branch "$dir"
-	fi
-}
-
-# Prefers origin/ because the merge happens there; fails if neither resolves.
-_wt_base_ref() {
-	local dir="${1:-.}" base
-	base=$(_wt_base "$dir")
-	if git -C "$dir" rev-parse --verify --quiet "origin/$base" >/dev/null; then
-		printf 'origin/%s' "$base"
-	elif git -C "$dir" rev-parse --verify --quiet "$base" >/dev/null; then
-		printf '%s' "$base"
-	else
-		return 1
-	fi
-}
-
 # Creates what `claude --worktree NAME` would, so Claude Code adopts it rather
 # than making another. A session must use EnterWorktree instead: `git worktree
 # add` writes .git/worktrees, which the sandbox makes read-only.
@@ -281,7 +257,7 @@ wt_create() {
 		return 0
 	fi
 
-	startref=$(_wt_base_ref "$root") || {
+	startref=$(git_worktree_base_ref "$root") || {
 		echo "Cannot resolve a base to cut from." >&2
 		return 1
 	}
@@ -323,7 +299,7 @@ _wt_path_for_branch() {
 # Stamps refs/review/<branch> at the reviewed tip, so a second run range-diffs
 # only what changed since the last look, amends and rebases included.
 wt_review() {
-	local want="${1:-}" wtdir branch base basref mb stamp prev
+	local want="${1:-}" wtdir branch basref wtbase mb stamp prev
 	local -a open_cmd=()
 
 	local here target arg_base
@@ -349,8 +325,9 @@ wt_review() {
 		return 1
 	}
 
-	basref=$(_wt_base_ref "$wtdir") || {
-		echo "No ref to compare against: neither origin/$(_wt_base) nor $(_wt_base) exists." >&2
+	basref=$(git_worktree_base_ref "$wtdir") || {
+		wtbase=$(git_worktree_base "$wtdir" || echo "<unset>")
+		echo "No ref to compare against: neither origin/$wtbase nor $wtbase exists." >&2
 		return 1
 	}
 	mb=$(git -C "$wtdir" merge-base "$basref" HEAD 2>/dev/null) || {
@@ -402,7 +379,7 @@ wt_review() {
 # carries deletions and renames.
 wt_diff() {
 	local want="" baseref="" mode="patch"
-	local wtdir branch base mb tmp list count f dir cmd out untracked
+	local wtdir branch mb tmp list count f dir cmd out untracked
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
@@ -482,7 +459,7 @@ wt_diff() {
 		if [[ -n "$main_branch" && "$main_branch" != "HEAD" && "$main_branch" != "$branch" ]]; then
 			baseref="$main_branch"
 		else
-			baseref=$(_wt_base_ref "$wtdir")
+			baseref=$(git_worktree_base_ref "$wtdir")
 		fi
 	fi
 	git -C "$wtdir" rev-parse --verify --quiet "$baseref" >/dev/null || {
@@ -719,7 +696,7 @@ wt_browse() {
 		if [[ -n "${main_branch:-}" && "$main_branch" != "HEAD" && "$main_branch" != "$branch" ]]; then
 			baseref="$main_branch"
 		else
-			baseref=$(_wt_base_ref "$wtdir")
+			baseref=$(git_worktree_base_ref "$wtdir")
 		fi
 	fi
 	git -C "$wtdir" rev-parse --verify --quiet "$baseref" >/dev/null || {

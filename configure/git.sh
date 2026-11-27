@@ -81,6 +81,18 @@ configure_gitlab_url_aliases() {
 
 configure_gitlab_url_aliases
 
+configure_remote_head_tracking() {
+	local key="remote.origin.followRemoteHEAD" want="always"
+	if [[ "$(git config --global --get "$key" 2>/dev/null)" == "$want" ]]; then
+		info "origin/HEAD already follows the remote default branch"
+		return 0
+	fi
+	git config --global "$key" "$want"
+	info "origin/HEAD now follows the remote default branch on every fetch"
+}
+
+configure_remote_head_tracking
+
 if ! git config --global user.name &>/dev/null; then
 	echo -e "${bold}Git identity not configured. Setting up...${reset}"
 	prompt "Enter your full name for git commits:"

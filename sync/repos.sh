@@ -22,6 +22,44 @@ _count_lines() {
 	if [[ -z "$1" ]]; then echo 0; else echo "$1" | wc -l | tr -d ' '; fi
 }
 
+_record_delete_answer() {
+	case "$1" in
+	[Aa])
+		_delete_all=true
+		return 0
+		;;
+	[Yy]) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
+_confirm_delete() {
+	local reply=""
+	printf '%s' "$1"
+	if [[ "${_delete_all:-false}" == true ]]; then
+		echo "y"
+		return 0
+	fi
+	read -r -n 1 reply </dev/tty
+	echo ""
+	_record_delete_answer "$reply"
+}
+
+_delete_all_hint() {
+	info "${bold}y${reset}${dim} delete, ${bold}n${reset}${dim} keep, ${bold}a${reset}${dim} delete all remaining"
+}
+
+# What a yes costs. A reconstructible worktree holds nothing origin lacks, so
+# `git wt` makes it again; an unreadable directory goes to the Trash with its
+# contents unexamined. The prompts are sorted and "a" reset on this, so one
+# keypress can never carry from the cheap group into the expensive one.
+_delete_risk_class() {
+	case "$1" in
+	merged | no-commits) printf 'reconstructible' ;;
+	*) printf 'unreadable' ;;
+	esac
+}
+
 # The API takes a namespace as one path segment, so a nested group
 # ("parent/child") has to arrive with its slashes escaped or it reads as a
 # deeper route. Only the API needs this — clone paths stay literal.
@@ -84,7 +122,7 @@ _scan_worktree_slots() {
 		# Empty scaffolding: nothing to lose, so take it without asking.
 		# rmdir succeeding is itself the proof that it held nothing.
 		rmdir "$slot" 2>/dev/null && continue
-		printf 'orphan:::%s\n' "$slot"
+		printf 'orphan::::%s\n' "$slot"
 	done
 }
 
@@ -104,7 +142,7 @@ _scan_worktree_tree() {
 			# Still standing with no worktree of any kind left in it: whatever is
 			# in there is what blocked the tidy-up — the real case being an editor
 			# workspace file sitting next to a removed worktree
-			_worktree_has_subdir "$child" || printf 'leftover:::%s\n' "$child"
+			_worktree_has_subdir "$child" || printf 'leftover::::%s\n' "$child"
 		elif [[ -d "$repos/$crel" ]] && ! _is_placeholder "$repos/$crel"; then
 			# A group on the way to a clone. A placeholder directory is not one, even
 			# though it is a directory with no clone in it: the repo it stands for is
@@ -113,7 +151,7 @@ _scan_worktree_tree() {
 			rmdir "$child" 2>/dev/null || true
 		else
 			# Nothing is cloned at this path any more, so nothing below it is live
-			printf 'repo-gone:::%s\n' "$child"
+			printf 'repo-gone::::%s\n' "$child"
 		fi
 	done
 }
@@ -132,10 +170,11 @@ _scan_worktree_tree() {
 # deletion.
 #
 # Usage: _stale_worktree_dirs <worktrees_root> <repos_dir>
-# Output: <reason>:::<path> — reason "orphan" (git cannot resolve it), "repo-gone"
+# Output: <reason>::::<path> — reason "orphan" (git cannot resolve it), "repo-gone"
 # (nothing is cloned there any more) or "leftover" (a repo's worktree directory
-# with no worktree left in it), with the repo and branch fields left empty so
-# callers can read these and the sync's own stale worktree lines alike.
+# with no worktree left in it), with the repo, branch and ignored-count fields
+# left empty so callers can read these and the sync's own stale worktree lines
+# alike.
 _stale_worktree_dirs() {
 	local root="$1" repos="$2"
 	[[ -d "$root" ]] || return 0
@@ -223,6 +262,7 @@ _reconcile_placeholders() {
 }
 
 sync_repos() {
+	local _delete_all=false question
 	local repos_dir="${HOME:?}/work"
 	# Parallel worktree tree — see the Worktrees section in linked/git_functions.sh
 	local worktrees_dir="$repos_dir/.worktrees"
@@ -466,17 +506,17 @@ sync_repos() {
 		local stale_count
 		stale_count=$(wc -l <"$stale_branches_file" | tr -d ' ')
 		info "Found ${bold}${yellow}${stale_count}${reset}${dim} stale branch(es)"
+		_delete_all=false
+		((stale_count > 1)) && _delete_all_hint
 		echo ""
 		# Third field is the worktree holding the branch, empty for mainline branches
 		while IFS=: read -r repo branch wt; do
 			if [[ -n "$wt" ]]; then
-				printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(worktree)${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
+				printf -v question "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(worktree)${reset}${bold}? [y/N/a]:${reset} " "$branch" "$repo"
 			else
-				printf "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset}${bold}? [y/N]:${reset} " "$branch" "$repo"
+				printf -v question "${bold}Delete ${yellow}%s${reset}${bold} from ${coral}%s${reset}${bold}? [y/N/a]:${reset} " "$branch" "$repo"
 			fi
-			read -r -n 1 confirm </dev/tty
-			echo ""
-			if [[ "$confirm" =~ ^[Yy]$ ]]; then
+			if _confirm_delete "$question"; then
 				# The worktree has to go first: git refuses `branch -D` for a branch
 				# that is checked out anywhere. Upstream is gone, so nothing to push.
 				if [[ -n "$wt" && "$wt" == "$worktrees_dir"/* ]]; then
@@ -502,53 +542,57 @@ sync_repos() {
 	{
 		cat "$stale_worktrees_dir"/* 2>/dev/null || true
 		_stale_worktree_dirs "$worktrees_dir" "$repos_dir"
-	} | while IFS=: read -r reason repo branch wt; do
+	} | while IFS=: read -r reason repo branch ignored wt; do
 		[[ "$wt" == "$worktrees_dir"/* && -d "$wt" ]] || continue
-		printf '%s:%s:%s:%s\n' "$reason" "$repo" "$branch" "$wt"
-	done >"$stale_worktrees_file"
+		printf '%s\t%s:%s:%s:%s:%s\n' "$(_delete_risk_class "$reason")" \
+			"$reason" "$repo" "$branch" "$ignored" "$wt"
+	done | sort | cut -f2- >"$stale_worktrees_file"
 	if [[ -s "$stale_worktrees_file" ]]; then
 		echo -e "${bold}› Stale worktrees (merged/orphaned)${reset}"
-		local stale_wt_count
+		local stale_wt_count risk_class last_risk_class=""
 		stale_wt_count=$(wc -l <"$stale_worktrees_file" | tr -d ' ')
 		info "Found ${bold}${yellow}${stale_wt_count}${reset}${dim} stale worktree(s)"
+		((stale_wt_count > 1)) && _delete_all_hint
 		echo ""
 		# Path last so a colon in it cannot shift the fields that steer deletion
-		while IFS=: read -r reason repo branch wt; do
+		while IFS=: read -r reason repo branch ignored wt; do
 			# Safety: only ever touch the mirror's own worktree tree
 			[[ "$wt" == "$worktrees_dir"/* && -d "$wt" ]] || continue
+			risk_class=$(_delete_risk_class "$reason")
+			if [[ "$risk_class" != "$last_risk_class" ]]; then
+				_delete_all=false
+				last_risk_class="$risk_class"
+			fi
 			case "$reason" in
 			merged | no-commits)
-				local note ignored
+				local note
 				note="merged"
 				[[ "$reason" == "no-commits" ]] && note="no commits of its own"
 				# git's own clean/dirty test says nothing about ignored files, and
 				# worktrees are created with .env and friends copied in, so say what
 				# else goes. They are reproducible — `git wt` copies them again —
 				# which is why this warns rather than holding the worktree back.
-				ignored=$(git -C "$wt" status --porcelain --ignored 2>/dev/null |
-					grep -c '^!!' || true)
-				[[ "${ignored:-0}" -gt 0 ]] && note="$note, ${ignored} ignored file(s) go too"
-				printf "${bold}Delete worktree ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(%s)${reset}${bold}? [y/N]:${reset} " \
+				[[ -n "$ignored" && "$ignored" != 0 ]] &&
+					note="$note, ${ignored} ignored file(s) go too"
+				printf -v question "${bold}Delete worktree ${yellow}%s${reset}${bold} from ${coral}%s${reset} ${dim}(%s)${reset}${bold}? [y/N/a]:${reset} " \
 					"$branch" "$repo" "$note"
 				;;
 			repo-gone)
-				printf "${bold}Trash worktrees at ${yellow}%s${reset} ${dim}(repo no longer cloned, contents unknown to git)${reset}${bold}? [y/N]:${reset} " \
+				printf -v question "${bold}Trash worktrees at ${yellow}%s${reset} ${dim}(repo no longer cloned, contents unknown to git)${reset}${bold}? [y/N/a]:${reset} " \
 					"${wt#"$worktrees_dir"/}"
 				;;
 			leftover)
-				printf "${bold}Trash leftovers at ${yellow}%s${reset} ${dim}(no worktrees left in it)${reset}${bold}? [y/N]:${reset} " \
+				printf -v question "${bold}Trash leftovers at ${yellow}%s${reset} ${dim}(no worktrees left in it)${reset}${bold}? [y/N/a]:${reset} " \
 					"${wt#"$worktrees_dir"/}"
 				;;
 			*)
 				# orphan: the directory is still there, but git cannot resolve it —
 				# which also means nothing can be said about what is in it
-				printf "${bold}Trash worktree ${yellow}%s${reset} ${dim}(no longer a git worktree, contents unknown to git)${reset}${bold}? [y/N]:${reset} " \
+				printf -v question "${bold}Trash worktree ${yellow}%s${reset} ${dim}(no longer a git worktree, contents unknown to git)${reset}${bold}? [y/N/a]:${reset} " \
 					"${wt#"$worktrees_dir"/}"
 				;;
 			esac
-			read -r -n 1 confirm </dev/tty
-			echo ""
-			if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+			if ! _confirm_delete "$question"; then
 				echo -e "  ${dim}– Skipped${reset}"
 				continue
 			fi
@@ -599,13 +643,11 @@ sync_repos() {
 		# Flags mark work a delete prompt would lose, which is why these are only
 		# ever reported: dirty for uncommitted changes, +N for unpushed commits
 		while IFS=: read -r repo branch flags wt; do
-			local mark=""
-			[[ -n "$flags" ]] && mark=" ${yellow}[$flags]${reset}"
-			if [[ -n "$wt" ]]; then
-				printf "  ${coral}%s${reset} → ${coral}%s${reset} ${dim}(worktree)${reset}%s\n" "$repo" "$branch" "$mark"
-			else
-				printf "  ${coral}%s${reset} → ${coral}%s${reset}%s\n" "$repo" "$branch" "$mark"
-			fi
+			local kind="" mark=""
+			[[ -n "$wt" ]] && printf -v kind " ${dim}(worktree)${reset}"
+			[[ -n "$flags" ]] && printf -v mark " ${yellow}[%s]${reset}" "$flags"
+			printf "  ${coral}%s${reset} → ${coral}%s${reset}%s%s\n" \
+				"$repo" "$branch" "$kind" "$mark"
 		done < <(sort "$active_branches_file")
 		echo ""
 	fi

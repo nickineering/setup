@@ -1,6 +1,6 @@
 #!/opt/homebrew/bin/bash
 
-# Sync a single git repo: fetch, pull main+develop, checkout preferred branch.
+# Sync a single git repo: fetch, pull every trunk branch, checkout preferred branch.
 # Called by sync_repos via xargs for parallel execution.
 #
 # Usage: sync_repo.sh <repo_dir> <base_dir> [stale_branches_dir] [active_branches_dir] [stale_worktrees_dir]
@@ -22,13 +22,56 @@ source "$SETUP/lib/colors.sh"
 # shellcheck source=SCRIPTDIR/../lib/git.sh
 source "$SETUP/lib/git.sh"
 
-_retry() {
+fetch_error=""
+
+_fetch_all() {
+	fetch_error=$(git fetch --all --prune --prune-tags --force --quiet 2>&1)
+}
+
+_fetch_failed_on_locked_ref() {
+	[[ "$fetch_error" == *"cannot lock ref"* ]]
+}
+
+_fetch_failure_is_transient() {
+	! _fetch_failed_on_locked_ref
+}
+
+_case_colliding_remote_refs() {
+	git for-each-ref --format='%(refname)' refs/remotes/origin |
+		grep -v '^refs/remotes/origin/HEAD$' |
+		awk '{
+			folded = tolower($0)
+			count[folded]++
+			group[folded] = group[folded] $0 "\n"
+		}
+		END { for (folded in count) if (count[folded] > 1) printf "%s", group[folded] }'
+}
+
+_branch_refs_on_origin() {
+	git ls-remote --heads origin 2>/dev/null |
+		sed 's|.*[[:space:]]refs/heads/|refs/remotes/origin/|'
+}
+
+_drop_colliding_refs_gone_from_origin() {
+	local colliding on_origin ref
+	local -i dropped=0
+	colliding=$(_case_colliding_remote_refs)
+	on_origin=$(_branch_refs_on_origin)
+	[[ -n "$colliding" && -n "$on_origin" ]] || return 1
+	while IFS= read -r ref; do
+		[[ -n "$ref" ]] || continue
+		grep -qxF "$ref" <<<"$on_origin" && continue
+		git update-ref -d "$ref" 2>/dev/null && ((dropped++)) || true
+	done <<<"$colliding"
+	((dropped))
+}
+
+_fetch_with_retries() {
 	local attempts=3 delay=5 i
 	for ((i = 1; i <= attempts; i++)); do
-		if "$@"; then
-			return 0
-		fi
-		[[ $i -lt $attempts ]] && sleep "$delay"
+		_fetch_all && return 0
+		_fetch_failure_is_transient || return 1
+		if ((i < attempts)); then sleep "$delay"; fi
 	done
 	return 1
 }
@@ -40,25 +83,6 @@ _worktree_holding() {
 		awk -v b="branch refs/heads/$1" '
 			/^worktree /{wt = substr($0, 10)}
 			$0 == b {print wt; exit}'
-}
-
-# Ref that worktree branches are cut from and merge back into, mirroring _wt_base
-# in linked/git_functions.sh: a repo whose real trunk is not what
-# git_default_branch guesses sets worktree.base locally. Prefers origin/<base>,
-# because a merge happens on the remote. Fails when there is no base to compare
-# against, which leaves every worktree counted as active work.
-_worktree_base_ref() {
-	local base
-	base=$(git config --get worktree.base 2>/dev/null || true)
-	base="${base:-${preferred_default:-}}"
-	[[ -n "$base" ]] || return 1
-	if git show-ref --verify --quiet "refs/remotes/origin/$base"; then
-		printf 'origin/%s' "$base"
-	elif git show-ref --verify --quiet "refs/heads/$base"; then
-		printf '%s' "$base"
-	else
-		return 1
-	fi
 }
 
 # Commits in worktree $1 that origin does not have, mirroring _wt_unpushed_count in
@@ -73,6 +97,10 @@ _worktree_unpushed() {
 		count=$(git -C "$dir" rev-list --count "$base_ref..HEAD" 2>/dev/null || true)
 	fi
 	printf '%s' "$count"
+}
+
+_worktree_ignored_count() {
+	git -C "$1" status --porcelain --ignored 2>/dev/null | grep -c '^!!' || true
 }
 
 # Sync a branch to match its remote. Sets $branch_status with colored output.
@@ -101,7 +129,11 @@ sync_branch() {
 		fi
 	fi
 	after=$(git rev-parse "$branch" 2>/dev/null || echo "none")
-	if [[ "$before" == "$after" ]]; then
+	local unpushed
+	unpushed=$(git rev-list --count "origin/$branch..$branch" 2>/dev/null || echo 0)
+	if [[ "$unpushed" != 0 ]]; then
+		branch_status="${yellow}${branch} +${unpushed}${reset}"
+	elif [[ "$before" == "$after" ]]; then
 		branch_status="${dim}${branch}${reset}"
 	else
 		branch_status="${green}${branch} ✅${reset}"
@@ -113,7 +145,17 @@ cd "$repo_dir" || exit 1
 # Track original branch to warn user if we switch away from it
 original_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 
-_retry git fetch --all --prune --prune-tags --force --quiet
+if ! _fetch_with_retries; then
+	if _fetch_failed_on_locked_ref && _drop_colliding_refs_gone_from_origin; then
+		_fetch_with_retries || {
+			printf '%s\n' "$fetch_error" >&2
+			exit 1
+		}
+	else
+		printf '%s\n' "$fetch_error" >&2
+		exit 1
+	fi
+fi
 
 # Forget worktrees whose directory was deleted by hand, so their branches stop
 # looking checked-out. The shared object store means the fetch above has already
@@ -140,30 +182,31 @@ if [[ -n "$stale_dir" ]]; then
 	fi
 fi
 
-# Check which branches exist on remote
-has_develop=$(git show-ref --verify --quiet refs/remotes/origin/develop && echo yes || echo no)
-has_main=$(git show-ref --verify --quiet refs/remotes/origin/main && echo yes || echo no)
+mapfile -t synced_branches < <(git_synced_branches)
+preferred_default=$(git_default_branch)
 
-main_status=""
-develop_status=""
+_is_synced_branch() {
+	local candidate="$1" branch
+	for branch in "${synced_branches[@]}"; do
+		[[ "$branch" == "$candidate" ]] && return 0
+	done
+	return 1
+}
 
-if [[ "$has_main" == "yes" ]]; then
-	sync_branch main
-	main_status="$branch_status"
-fi
-
-if [[ "$has_develop" == "yes" ]]; then
-	sync_branch develop
-	develop_status="$branch_status"
-fi
+branch_statuses=()
+for synced_branch in "${synced_branches[@]}"; do
+	sync_branch "$synced_branch"
+	branch_statuses+=("$branch_status")
+done
 
 # Determine if we should return to the original feature branch.
 # Stay on feature branch if it has unmerged commits.
 # Never pull the feature branch — local history rewrites may not be pushed yet.
 _should_keep_feature_branch() {
 	local branch="$1"
-	# Not a feature branch (also excludes detached HEAD)
-	[[ "$branch" != "main" && "$branch" != "develop" && "$branch" != "HEAD" && -n "$branch" ]] || return 1
+	# Excludes detached HEAD
+	[[ "$branch" != "HEAD" && -n "$branch" ]] || return 1
+	[[ -n "${preferred_default:-}" ]] || return 1
 	# Branch must still exist locally
 	git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null || return 1
 	# Stale: upstream was deleted
@@ -177,15 +220,10 @@ _should_keep_feature_branch() {
 	return 0
 }
 
-# Determine preferred default branch. develop and main are already synced above,
-# so only a fallback default still needs it.
-preferred_default=$(git_default_branch)
-if [[ "$has_develop" != "yes" && "$has_main" != "yes" && -n "$preferred_default" ]]; then
-	sync_branch "$preferred_default"
-fi
-
 # Decide which branch to end on
-if _should_keep_feature_branch "$original_branch"; then
+if _is_synced_branch "$original_branch"; then
+	final_branch="$original_branch"
+elif _should_keep_feature_branch "$original_branch"; then
 	git checkout "$original_branch" --quiet 2>/dev/null || true
 	final_branch="$original_branch"
 	# Record active feature branch for end-of-sync summary
@@ -196,6 +234,8 @@ if _should_keep_feature_branch "$original_branch"; then
 elif [[ -n "${preferred_default:-}" ]]; then
 	git checkout "$preferred_default" --quiet 2>/dev/null || true
 	final_branch="$preferred_default"
+else
+	final_branch="$original_branch"
 fi
 
 # Classify linked worktrees: finished ones go to repos.sh for the same delete
@@ -205,7 +245,7 @@ fi
 if [[ -n "$active_branches_dir" || -n "$stale_worktrees_dir" ]]; then
 	[[ -n "$active_branches_dir" ]] && active_file="$active_branches_dir/$(echo "$repo_name" | tr '/' '_')"
 	[[ -n "$stale_worktrees_dir" ]] && stale_wt_file="$stale_worktrees_dir/$(echo "$repo_name" | tr '/' '_')"
-	base_ref=$(_worktree_base_ref || true)
+	base_ref=$(git_worktree_base_ref || true)
 	# Tab-separated because worktree paths contain "/" but never a tab
 	while IFS=$'\t' read -r wt ref; do
 		[[ -z "$wt" || "$wt" == "$repo_dir" ]] && continue
@@ -239,7 +279,8 @@ if [[ -n "$active_branches_dir" || -n "$stale_worktrees_dir" ]]; then
 		# Only the mirror's own tree is ever offered for deletion — a worktree added
 		# by hand elsewhere is reported as active work and left alone.
 		if [[ -n "$reason" && -n "$stale_worktrees_dir" && "$wt" == "$worktrees_root"/* ]]; then
-			printf '%s:%s:%s:%s\n' "$reason" "$repo_name" "$wt_branch" "$wt" >>"$stale_wt_file"
+			printf '%s:%s:%s:%s:%s\n' "$reason" "$repo_name" "$wt_branch" \
+				"$(_worktree_ignored_count "$wt")" "$wt" >>"$stale_wt_file"
 			continue
 		fi
 
@@ -260,22 +301,17 @@ if [[ -n "$active_branches_dir" || -n "$stale_worktrees_dir" ]]; then
 fi
 
 # Single printf at the end avoids interleaving with other parallel xargs jobs
-output=""
-if [[ "$has_develop" == "yes" ]] && [[ "$has_main" == "yes" ]]; then
-	output="$repo_name: $(printf '%b, %b' "$develop_status" "$main_status")"
-elif [[ "$has_develop" == "yes" ]]; then
-	output="$repo_name: $(printf '%b' "$develop_status")"
-elif [[ "$has_main" == "yes" ]]; then
-	output="$repo_name: $(printf '%b' "$main_status")"
-elif [[ -n "${preferred_default:-}" ]]; then
-	output="$repo_name: $(printf '%b' "$branch_status")"
+if ((${#branch_statuses[@]} > 0)); then
+	joined=$(printf '%b, ' "${branch_statuses[@]}")
+	output="$repo_name: ${joined%, }"
 else
 	output="$repo_name: $(printf '%b' "${yellow}no default branch${reset}")"
 fi
 
-if [[ -n "${final_branch:-}" && "$final_branch" != "${preferred_default:-}" ]]; then
+if [[ -n "${final_branch:-}" ]] && ! _is_synced_branch "$final_branch"; then
 	output+=" $(printf "${dim}(staying on ${sky}%s${dim})${reset}" "$final_branch")"
-elif [[ -n "$original_branch" && "$original_branch" != "${final_branch:-}" && "$original_branch" != "develop" && "$original_branch" != "main" ]]; then
+elif [[ -n "$original_branch" && "$original_branch" != "${final_branch:-}" ]] &&
+	! _is_synced_branch "$original_branch"; then
 	output+=" $(printf "${yellow}(left %s)${reset}" "$original_branch")"
 fi
 

@@ -63,20 +63,38 @@ mk_worktree() {
 # base refs and creation
 # ============================================
 
-@test "_wt_base: follows origin/HEAD, the ref Claude Code cuts from" {
+@test "git_worktree_base: follows origin/HEAD, the ref Claude Code cuts from" {
 	git push --quiet origin main:develop
 	git fetch --quiet origin
 	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
-	run _wt_base
+	run git_worktree_base
 	[[ "$output" == "main" ]]
 }
 
-@test "_wt_base: falls back to the guess when origin/HEAD is unset" {
+@test "git_worktree_base: falls back to the guess when origin/HEAD is unset" {
 	git push --quiet origin main:develop
 	git fetch --quiet origin
 	git symbolic-ref -d refs/remotes/origin/HEAD 2>/dev/null || true
-	run _wt_base
+	run git_worktree_base
 	[[ "$output" == "develop" ]]
+}
+
+@test "git_worktree_base: worktree.base beats origin/HEAD and the guess" {
+	git push --quiet origin main:develop
+	git push --quiet origin main:trunk
+	git fetch --quiet origin
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/develop
+	git config worktree.base trunk
+	run git_worktree_base
+	[[ "$output" == "trunk" ]]
+	run git_worktree_base_ref
+	[[ "$output" == "origin/trunk" ]]
+}
+
+@test "git_worktree_base_ref: fails when the base resolves to no ref at all" {
+	git config worktree.base never-fetched
+	run git_worktree_base_ref
+	[[ "$status" -ne 0 ]]
 }
 
 @test "wt_create: uses Claude Code's layout" {
@@ -106,6 +124,27 @@ mk_worktree() {
 	[[ "$output" == "$(git -C "$REPO" rev-parse origin/main)" ]]
 	run git -C "$path" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'
 	[[ "$status" -ne 0 ]]
+}
+
+@test "wt_create: cuts from worktree.base, the ref the sync measures against" {
+	git push --quiet origin main:develop
+	git push --quiet origin main:trunk
+	git fetch --quiet origin
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/develop
+	git config worktree.base trunk
+	# Move origin/trunk on so cutting from it is distinguishable from origin/HEAD
+	git clone --quiet "$ORIGIN" "$TEST_DIR/scratch-trunk" 2>/dev/null
+	git -C "$TEST_DIR/scratch-trunk" checkout --quiet trunk
+	echo t >"$TEST_DIR/scratch-trunk/t.txt"
+	git -C "$TEST_DIR/scratch-trunk" add t.txt
+	git -C "$TEST_DIR/scratch-trunk" commit --quiet -m 'advance trunk'
+	git -C "$TEST_DIR/scratch-trunk" push --quiet origin trunk
+	git fetch --quiet origin
+
+	path=$(wt_create agent-one)
+	run git -C "$path" rev-parse HEAD
+	[[ "$output" == "$(git -C "$REPO" rev-parse origin/trunk)" ]]
+	[[ "$output" != "$(git -C "$REPO" rev-parse origin/develop)" ]]
 }
 
 @test "wt_create: reuse is idempotent" {
@@ -163,6 +202,40 @@ mk_worktree() {
 @test "git_default_branch: accepts a directory argument" {
 	run git_default_branch "$REPO"
 	[[ "$output" == "main" ]]
+}
+
+@test "git_synced_branches: lists the trunk names the remote has" {
+	git push --quiet origin main:develop
+	git push --quiet origin main:trunk
+	git fetch --quiet origin
+	run git_synced_branches
+	[[ "${lines[0]}" == "develop" ]]
+	[[ "${lines[1]}" == "main" ]]
+	[[ "${lines[2]}" == "trunk" ]]
+	[[ "${#lines[@]}" -eq 3 ]]
+}
+
+@test "git_synced_branches: adds the branch origin/HEAD points at" {
+	git push --quiet origin main:develop
+	git push --quiet origin main:staging
+	git fetch --quiet origin
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/staging
+	run git_synced_branches
+	[[ "${lines[2]}" == "staging" ]]
+}
+
+@test "git_synced_branches: names origin/HEAD's branch only once" {
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+	run git_synced_branches
+	[[ "$output" == "main" ]]
+}
+
+@test "git_remote_head_branch: fails when it points at a branch the remote dropped" {
+	git update-ref refs/remotes/origin/ghost HEAD
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/ghost
+	git update-ref -d refs/remotes/origin/ghost
+	run git_remote_head_branch
+	[[ "$status" -ne 0 ]]
 }
 
 # ============================================
@@ -231,6 +304,122 @@ _reported() {
 	cat "$1"/* 2>/dev/null || true
 }
 
+# Put origin's own default branch somewhere the org convention does not name,
+# with a commit develop has not seen, and leave the clone sitting on it
+_land_on_host_default() {
+	git push --quiet origin main:develop
+	git checkout --quiet -b staging
+	echo s >staging.txt
+	git add staging.txt
+	git commit --quiet -m 'work by someone else'
+	git push --quiet -u origin staging
+	git fetch --quiet origin
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/staging
+}
+
+@test "sync_repo: the branch origin/HEAD names is not work of yours" {
+	_land_on_host_default
+	_sync_repo
+	run _reported "$active_dir"
+	[[ -z "$output" ]]
+	run git -C "$REPO" branch --show-current
+	[[ "$output" == "staging" ]]
+}
+
+@test "sync_repo: the branch origin/HEAD names is reported as synced, not stayed on" {
+	_land_on_host_default
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" "$REPO" "$TEST_DIR/work"
+	[[ "$output" != *"staying on"* ]]
+	[[ "$output" != *"left"* ]]
+	[[ "$output" == *"staging"* ]]
+}
+
+@test "sync_repo: unpushed commits on a trunk branch are reported, not hidden" {
+	_land_on_host_default
+	# Diverge: a commit of mine on staging, and one of someone else's on origin
+	git commit --quiet --allow-empty -m 'my unpushed work'
+	git clone --quiet "$ORIGIN" "$TEST_DIR/scratch-div" 2>/dev/null
+	git -C "$TEST_DIR/scratch-div" checkout --quiet staging
+	git -C "$TEST_DIR/scratch-div" commit --quiet --allow-empty -m 'someone else'
+	git -C "$TEST_DIR/scratch-div" push --quiet origin staging
+
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" "$REPO" "$TEST_DIR/work"
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"staging +1"* ]]
+}
+
+@test "sync_repo: a trunk branch level with origin is not flagged as unpushed" {
+	_land_on_host_default
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" "$REPO" "$TEST_DIR/work"
+	[[ "$output" != *"+"* ]]
+}
+
+@test "sync_repo: a repo with nothing on origin reports no default branch" {
+	fresh="$TEST_DIR/work/backend/pocs/fresh"
+	git init --bare --quiet "$TEST_DIR/origin/fresh.git"
+	git clone --quiet "$TEST_DIR/origin/fresh.git" "$fresh" 2>/dev/null
+	git -C "$fresh" commit --quiet --allow-empty -m 'not pushed'
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" "$fresh" "$TEST_DIR/work"
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"no default branch"* ]]
+}
+
+@test "sync_repo: a feature branch of yours is still reported as active work" {
+	git push --quiet origin main:develop
+	git fetch --quiet origin
+	git checkout --quiet -b feat/mine
+	echo m >mine.txt
+	git add mine.txt
+	git commit --quiet -m 'mine'
+	git push --quiet -u origin feat/mine
+	_sync_repo
+	run _reported "$active_dir"
+	[[ "$output" == "backend/pocs/demo:feat/mine" ]]
+}
+
+@test "sync_repo: trunk is synced rather than counted as work of yours" {
+	git push --quiet origin main:develop
+	git checkout --quiet -b trunk
+	echo t >trunk.txt
+	git add trunk.txt
+	git commit --quiet -m 'trunk moves on'
+	git push --quiet -u origin trunk
+	git fetch --quiet origin
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" \
+		"$REPO" "$TEST_DIR/work" "$TEST_DIR/stale" "$TEST_DIR/active"
+	[[ "$output" == *"trunk"* ]]
+	[[ "$output" != *"staying on"* ]]
+	run bash -c 'cat "$1"/* 2>/dev/null || true' _ "$TEST_DIR/active"
+	[[ -z "$output" ]]
+}
+
+# Two remote-tracking refs whose names differ only in case. macOS folds case in
+# path names, so packing between the writes is the only way they coexist — which
+# is how a clone of a repo with both branch spellings ends up here.
+_pack_colliding_refs() {
+	git update-ref "refs/remotes/origin/$1" HEAD
+	git pack-refs --all
+	git update-ref "refs/remotes/origin/$2" HEAD
+	git pack-refs --all
+}
+
+@test "sync_repo: prunes colliding refs the remote dropped, keeping the one it has" {
+	git push --quiet origin main:SquidRes/live
+	git fetch --quiet origin
+	git pack-refs --all
+	git update-ref refs/remotes/origin/Squidres/live HEAD
+	_pack_colliding_refs Squidres/dead SquidRes/dead
+	SETUP="$REPO_ROOT" run "$REPO_ROOT/sync/sync_repo.sh" "$REPO" "$TEST_DIR/work"
+	[[ "$status" -eq 0 ]]
+	run git -C "$REPO" for-each-ref --format='%(refname)' refs/remotes/origin
+	[[ "$output" == *"refs/remotes/origin/SquidRes/live"* ]]
+	[[ "$output" != *"dead"* ]]
+	[[ "$output" != *"Squidres/live"* ]]
+	# The repair must never take origin/HEAD, which no remote branch is named for
+	run git -C "$REPO" symbolic-ref refs/remotes/origin/HEAD
+	[[ "$status" -eq 0 ]]
+}
+
 # Land $1=BRANCH on origin/main the way a fast-forward merge request would,
 # leaving the remote branch in place so it is merged rather than gone
 _merge_upstream() {
@@ -255,7 +444,7 @@ _advance_main() {
 	_merge_upstream "$path"
 	_sync_repo
 	run _reported "$stale_wt_dir"
-	[[ "$output" == "merged:backend/pocs/demo:feat/done:$path" ]]
+	[[ "$output" == "merged:backend/pocs/demo:feat/done:0:$path" ]]
 	# ...and not also reported as work still in progress
 	run _reported "$active_dir"
 	[[ "$output" != *"feat/done"* ]]
@@ -266,7 +455,7 @@ _advance_main() {
 	_advance_main idle
 	_sync_repo
 	run _reported "$stale_wt_dir"
-	[[ "$output" == "no-commits:backend/pocs/demo:feat/idle:$path" ]]
+	[[ "$output" == "no-commits:backend/pocs/demo:feat/idle:0:$path" ]]
 }
 
 @test "sync_repo: an untouched worktree at the base is left alone" {
@@ -366,6 +555,41 @@ _advance_main() {
 # repos.sh helpers
 # ============================================
 
+@test "_record_delete_answer: y deletes one, n keeps one, a deletes the rest" {
+	source "$REPO_ROOT/sync/repos.sh"
+	_delete_all=false
+	_record_delete_answer y
+	[[ "$_delete_all" == false ]]
+	_record_delete_answer Y
+	run ! _record_delete_answer n
+	run ! _record_delete_answer ""
+	run ! _record_delete_answer x
+	[[ "$_delete_all" == false ]]
+	_record_delete_answer a
+	[[ "$_delete_all" == true ]]
+	_delete_all=false
+	_record_delete_answer A
+	[[ "$_delete_all" == true ]]
+}
+
+@test "_delete_risk_class: a reconstructible worktree and an unreadable one differ" {
+	source "$REPO_ROOT/sync/repos.sh"
+	[[ "$(_delete_risk_class merged)" == "$(_delete_risk_class no-commits)" ]]
+	[[ "$(_delete_risk_class orphan)" == "$(_delete_risk_class repo-gone)" ]]
+	[[ "$(_delete_risk_class orphan)" == "$(_delete_risk_class leftover)" ]]
+	[[ "$(_delete_risk_class merged)" != "$(_delete_risk_class orphan)" ]]
+	# Sorting on the class puts the reconstructible run first
+	[[ "$(_delete_risk_class merged)" < "$(_delete_risk_class orphan)" ]]
+}
+
+@test "_confirm_delete: once 'a' is chosen the rest are shown, not asked" {
+	source "$REPO_ROOT/sync/repos.sh"
+	_delete_all=true
+	run _confirm_delete 'Delete thing? '
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == "Delete thing? y" ]]
+}
+
 @test "_prune_empty_parents: stops at the worktree root" {
 	source "$REPO_ROOT/sync/repos.sh"
 	mkdir -p "$WT/feat-thing"
@@ -400,7 +624,7 @@ _advance_main() {
 	mkdir -p "$WT/feat-leftover"
 	echo notes >"$WT/feat-leftover/scratch.code-workspace"
 	run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
-	[[ "$output" == "orphan:::$WT/feat-leftover" ]]
+	[[ "$output" == "orphan::::$WT/feat-leftover" ]]
 }
 
 @test "_stale_worktree_dirs: a slug that matches a directory in the clone is safe" {
@@ -439,7 +663,7 @@ _advance_main() {
 	mkdir -p "$WT"
 	echo notes >"$WT/demo.code-workspace"
 	run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
-	[[ "$output" == "leftover:::$WT" ]]
+	[[ "$output" == "leftover::::$WT" ]]
 }
 
 @test "_stale_worktree_dirs: a live worktree keeps its repo directory" {
@@ -457,7 +681,7 @@ _advance_main() {
 	mkdir -p "$WT/feat-broken"
 	printf 'gitdir: %s\n' "$REPO/.git/worktrees/feat-broken" >"$WT/feat-broken/.git"
 	run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
-	[[ "$output" == "orphan:::$WT/feat-broken" ]]
+	[[ "$output" == "orphan::::$WT/feat-broken" ]]
 }
 
 @test "_stale_worktree_dirs: reports a repo that is no longer cloned" {
@@ -466,7 +690,7 @@ _advance_main() {
 	echo stuff >"$WTROOT/backend/pocs/deleted/feat-x/file.txt"
 	run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
 	# One prompt for the whole subtree, and never a walk into its contents
-	[[ "$output" == "repo-gone:::$WTROOT/backend/pocs/deleted" ]]
+	[[ "$output" == "repo-gone::::$WTROOT/backend/pocs/deleted" ]]
 }
 
 @test "_stale_worktree_dirs: a placeholder is not a group on the way to a clone" {
@@ -478,7 +702,7 @@ _advance_main() {
 	mkdir -p "$WTROOT/backend/pocs/shelved/feat-x"
 	echo stuff >"$WTROOT/backend/pocs/shelved/feat-x/file.txt"
 	run _stale_worktree_dirs "$WTROOT" "$TEST_DIR/work"
-	[[ "$output" == "repo-gone:::$WTROOT/backend/pocs/shelved" ]]
+	[[ "$output" == "repo-gone::::$WTROOT/backend/pocs/shelved" ]]
 }
 
 @test "_stale_worktree_dirs: removes empty scaffolding without asking" {
