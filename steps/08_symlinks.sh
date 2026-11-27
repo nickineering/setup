@@ -40,7 +40,16 @@ if [[ -d "$VSCODE_USER_DIR" ]]; then
 	create_link "$DOTFILES/settings.json" "$VSCODE_USER_DIR/settings.json" "settings.json -> VSCode"
 fi
 
+# Two links to one config. The ~ copy is found by the CLI's ancestor search, so
+# `dprint fmt` works in any directory under home. The VSCode extension does not
+# search ancestors outside the open workspace and reads the global config
+# instead, which is what dprint.useGlobalConfig in settings.json turns on.
 create_link "$SETUP/dprint.jsonc" ~/dprint.jsonc
+
+# Path per dirs::config_dir, the same convention ruff uses above
+DPRINT_DIR="$HOME/Library/Application Support/dprint"
+mkdir -p "$DPRINT_DIR"
+create_link "$SETUP/dprint.jsonc" "$DPRINT_DIR/dprint.json" "dprint.json -> global config"
 
 # Helper scripts: linked into ~/.local/bin (on PATH via .profile.sh) without the
 # .py extension, so scripts/awake.py is run by typing `awake`. Each script

@@ -36,6 +36,9 @@
   "css.lint.duplicateProperties": "warning",
   "diffEditor.ignoreTrimWhitespace": false,
   "diffEditor.wordWrap": "on",
+  // Without this the extension only reads a config inside the open workspace, so
+  // a file opened from anywhere else saves unformatted.
+  "dprint.useGlobalConfig": true,
   "editor.accessibilitySupport": "off",
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",

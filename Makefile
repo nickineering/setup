@@ -18,11 +18,13 @@ fix:
 	git ls-files -z '*.py' | xargs -0 ruff format
 	dprint fmt
 
+# Formatters run in write mode here too: nothing should fail for a reason a tool
+# can fix by itself. CI gates on the --check forms directly, not on this target.
 check:
 	git ls-files -z '*.sh' '*.bats' | xargs -0 shellcheck -S warning
-	git ls-files -z '*.py' | xargs -0 ruff format --check
+	git ls-files -z '*.py' | xargs -0 ruff format
 	git ls-files -z '*.py' | xargs -0 ruff check
-	dprint check
+	dprint fmt
 
 update-formatters:
 	dprint config update
