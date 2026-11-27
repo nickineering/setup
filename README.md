@@ -26,6 +26,12 @@ After running, complete the [manual steps](MANUAL_STEPS.md).
 - **VS Code extensions** - Synced from version control
 - Detects additions/removals from state files and prompts to install/uninstall
 
+Node and Electron carry their own trust store and never read the macOS one, so
+behind a TLS-intercepting proxy every Node tool fails with "unable to get local
+issuer certificate". Each run exports the CA roots macOS has been given to
+`~/.config/certs/keychain-ca.pem`, and `NODE_EXTRA_CA_CERTS` points at it for
+the run and, via `.profile.sh`, for every shell afterwards.
+
 ### Dotfiles
 
 Symlinked from `linked/` so edits sync automatically:
@@ -318,6 +324,16 @@ The `devenv` command will:
   is in them they go to the Trash rather than being deleted
 - Run in parallel for speed
 
+Delete prompts take one keypress: `y` to delete, anything else to keep, `a` to
+accept the rest of that group. Deleting a worktree and trashing a directory git
+cannot read are separate groups, so `a` never crosses between them.
+
+The branches kept level with origin are `develop`, `main` and `trunk` wherever
+the remote has them, plus whatever `origin/HEAD` points at — which is where a
+clone lands, so for a repo whose default is `master` or `staging` that branch is
+a trunk too, not work of yours. Only a branch outside that set, holding commits
+the default has not seen, is Active work.
+
 #### Cloning only some of them
 
 A group too big to hold on one machine — disk, or the time every update takes —
@@ -461,7 +477,7 @@ valid step list printed for reference.
 make dev        # lint + test
 make test       # run bats tests
 make fix        # auto-fix formatting
-make check      # lint without fixing
+make check      # lint, and let the formatters fix what they can
 ```
 
 ## Troubleshooting
@@ -470,3 +486,8 @@ make check      # lint without fixing
 
 **Package failed?** Warnings are printed but setup continues. Re-run or install
 manually with `brew install <package>`.
+
+**A repo fetches the same refs every run?** It has a remote-tracking ref whose
+name differs from origin's only in case, so git deletes and re-creates it
+forever. Harmless, and `git pack-refs --all` then `git update-ref -d` on the
+mis-cased ref clears it.
