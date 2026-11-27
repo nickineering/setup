@@ -11,7 +11,8 @@ State any tradeoffs to approaches and if you think they are acceptable.
 # Comments
 
 Comment only what the code cannot say — why, not what. Where a comment explains
-what the code is doing, restructure until it needs none. Say it once. Examples are good - long explanations are bad.
+what the code is doing, restructure until it needs none. Examples are good -
+long explanations are bad.
 
 # Leave Things Working
 
@@ -26,9 +27,8 @@ breaking changes. What matters is quality. Do not comment on past states.
 
 # Worktrees
 
-Use worktrees for larger changes, and for
-any subagent doing independent work (`isolation: worktree`). Use
-`EnterWorktree`, not `git worktree add`.
+Use worktrees for larger changes, and for any subagent doing independent work
+(`isolation: worktree`). Use `EnterWorktree`, not `git worktree add`.
 
 Leave the work uncommitted unless asked.
 
@@ -38,11 +38,13 @@ Leave the work uncommitted unless asked.
 is disabled. A denial on a path, host or credential the task does not involve is
 the boundary working — report it rather than looking for another route.
 
-Prefer `trash` over `rm`.
+Prefer `trash` over `rm`. Run git unchained — a bare `git ...` is exempt from
+the sandbox, a `&&` chain is not, and `.git` writes then fail.
 
 # Claude.md and skills
 
-Update Claude.md and skills to prevent making the same mistake twice. Claude.md must be keep as small as possible to save context.
+Update Claude.md and skills to prevent making the same mistake twice. Claude.md
+must be kept as small as possible to save context.
 
 # Device-Specific Instructions
 

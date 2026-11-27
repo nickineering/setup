@@ -8,28 +8,21 @@ retried or approved around.
 
 ## A git write is refused
 
-Whether a git write succeeds depends on **where the session is rooted**, not on
-worktrees as such:
+**Check the command's shape first.** `sandbox.excludedCommands` exempts a bare
+`git ...` from the sandbox, but a line chained with `&&` cannot be matched
+against that pattern, so the whole thing runs sandboxed and the write fails with
+`Unable to create '.../.git/index.lock': Operation not permitted`. Re-run the
+git command on its own and it succeeds. This is the usual cause, and it is not a
+permission problem.
 
-- A session **cannot** write the `.git` of its **primary** working directory.
-  That includes reaching into that repo's worktrees with `git -C`, because a
-  linked worktree's index lives under the main clone's `.git`.
-- A session **can** write the `.git` of any other repo in a write zone,
-  including a directory added with `--add-dir`.
-- `.git/hooks` and `.git/config` are denied everywhere, always — a git hook runs
-  outside the sandbox, which is the actual risk.
+`.git/hooks` and `.git/config` are denied whatever the shape — a git hook runs
+outside the sandbox, which is the actual risk.
 
-Test it rather than predicting it. When the write is refused, **do not write a
-script and do not paste a sequence of commands.** The retry outside the sandbox
-is refused by the classifier, so there is no gated path either — which means the
-refusal is not a permission question and no amount of approving will help.
-
-Say in one line that the write is blocked because the session is rooted in that
-repo, and that **restarting from the parent directory removes the problem for
-the whole session** — the repo is then not the primary working directory, git
-runs normally, and operations that should be confirmed (`git push`) produce a
-real permission prompt instead. Hand over a single command only when the user
-wants this one thing done without restarting.
+If an unchained command is still refused, the write is genuinely blocked. **Do
+not write a script and do not paste a sequence of commands**; the retry outside
+the sandbox is refused by the classifier, so no amount of approving will help.
+Say in one line that it is blocked and that **restarting from the parent
+directory removes the problem for the whole session**.
 
 A script is for work that is genuinely long, re-runnable and worth gating, not
 for a commit and a push. If you do write one, run it with `sh <path>`: the Write

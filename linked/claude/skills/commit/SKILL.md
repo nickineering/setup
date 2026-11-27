@@ -69,10 +69,14 @@ to each commit.
 
 ### 5. Commit and push
 
-**Single commit** — combine into one command:
+Run each line below as a separate Bash call.
+
+**Single commit** — one git command per Bash call, never chained:
 
 ```bash
-git add <claude-modified-files> && git commit -m "<title>" -m "<body>" && git push
+git add <claude-modified-files>
+git commit -m "<title>" -m "<body>"
+git push origin <branch>
 ```
 
 **Multiple commits** — commit each group separately, push once at the end.
@@ -81,15 +85,18 @@ Already-staged files go in whichever commit they logically belong to. Use
 index per commit — this avoids sweeping all staged files into the first commit:
 
 ```bash
-git add <claude-files-for-commit-1> && git commit <all-paths-for-commit-1> -m "<title-1>" && \
-git add <claude-files-for-commit-2> && git commit <all-paths-for-commit-2> -m "<title-2>" && \
-git push
+git add <claude-files-for-commit-1>
+git commit <all-paths-for-commit-1> -m "<title-1>"
+git add <claude-files-for-commit-2>
+git commit <all-paths-for-commit-2> -m "<title-2>"
+git push origin <branch>
 ```
 
 If Claude did not modify any files, just commit what is already staged:
 
 ```bash
-git commit -m "<title>" && git push
+git commit -m "<title>"
+git push origin <branch>
 ```
 
 ## Rules
@@ -98,8 +105,12 @@ git commit -m "<title>" && git push
   them (unless Claude staged everything itself)
 - Never unstage files that were already staged
 - Never use `git add .`, `git add -A`, or wildcard patterns
-- All adds, the commit, and the push must be a single `&&`-chained Bash command
-  per commit
+- Run every git command as its own Bash call. Never chain them with `&&`:
+  `sandbox.excludedCommands` exempts a bare `git ...` from the sandbox, but a
+  chained line cannot be matched against that pattern, so it runs sandboxed and
+  the commit fails with `.git/index.lock: Operation not permitted`
+- Push with `git push origin <branch>`, never `git push -u`, which cannot write
+  `.git/config`
 - When splitting, order commits so dependencies come first
 - When splitting, use explicit pathspecs in `git commit` to control which staged
   files go into each commit
