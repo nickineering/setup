@@ -30,30 +30,6 @@
   "chat.editing.confirmEditRequestRemoval": false,
   "chat.editing.confirmEditRequestRetry": false,
   "chat.editor.wordWrap": "on",
-  "claudeCode.disableLoginPrompt": true,
-  "claudeCode.environmentVariables": [
-    {
-      "name": "ANTHROPIC_MODEL",
-      "value": "eu.anthropic.claude-opus-4-5-20251101-v1:0"
-    },
-    {
-      "name": "ANTHROPIC_SMALL_FAST_MODEL",
-      "value": "eu.anthropic.claude-haiku-4-5-20251001-v1:0"
-    },
-    {
-      "name": "AWS_PROFILE",
-      "value": "eon-dev"
-    },
-    {
-      "name": "AWS_REGION",
-      "value": "eu-central-1"
-    },
-    {
-      "name": "CLAUDE_CODE_USE_BEDROCK",
-      "value": "1"
-    }
-  ],
-  "claudeCode.useTerminal": false,
   "codesnap.boxShadow": "rgba(0, 0, 0, 0.55) 0px 10px 22px",
   "codesnap.transparentBackground": true,
   "comment-divider.shouldLengthIncludeIndent": true,
@@ -112,13 +88,6 @@
   "git.enableSmartCommit": true,
   "git.fetchOnPull": true,
   "git.openRepositoryInParentFolders": "never",
-  "github.copilot.enable": {
-    "*": true,
-    "markdown": true,
-    "plaintext": true,
-    "yaml": true
-  },
-  "github.copilot.nextEditSuggestions.enabled": true,
   "gitlens.gitCommands.closeOnFocusOut": true,
   "gitlens.graph.details.location": "auto",
   "gitlens.views.scm.grouped.views": {
