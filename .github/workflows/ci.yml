@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.3
-      - run: shellcheck -S warning **/*.sh
+      # git ls-files rather than **/*.sh: bash leaves globstar off, so a plain
+      # glob skips every nested file
+      - run: git ls-files -z '*.sh' '*.bats' | xargs -0 shellcheck -S warning
 
   format:
     name: Format
@@ -30,4 +32,4 @@ jobs:
       - run: |
           curl -fsSL https://github.com/anordal/shellharden/releases/download/v4.3.1/shellharden-x86_64-unknown-linux-gnu.tar.gz | tar -xz
           sudo mv shellharden /usr/local/bin/
-      - run: shellharden --check **/*.sh
+      - run: git ls-files -z '*.sh' '*.bats' | xargs -0 shellharden --check

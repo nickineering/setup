@@ -78,6 +78,9 @@
   "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
   "explorer.excludeGitIgnore": true,
+  "files.associations": {
+    "*.bats": "shellscript"
+  },
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,

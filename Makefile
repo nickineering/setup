@@ -10,12 +10,18 @@ test:
 setup:
 	./run.sh
 
+# git ls-files rather than **/*.sh: make runs these under sh, where ** is not
+# recursive, so a plain glob reached 40 of the 52 shell files and silently
+# skipped every nested one.
 fix:
-	shellharden --replace **/*.sh
+	git ls-files -z '*.sh' '*.bats' | xargs -0 shellharden --replace
+	git ls-files -z '*.py' | xargs -0 ruff format
 	dprint fmt
 
 check:
-	shellcheck -S warning **/*.sh
+	git ls-files -z '*.sh' '*.bats' | xargs -0 shellcheck -S warning
+	git ls-files -z '*.py' | xargs -0 ruff format --check
+	git ls-files -z '*.py' | xargs -0 ruff check
 	dprint check
 
 update-formatters:

@@ -27,9 +27,9 @@ export PATH="$HOME/.local/bin:$PATH"
 case $- in
 *i*)
 	if command -v pay-respects >/dev/null 2>&1; then
-		if [ -n "${ZSH_VERSION:-}" ]; then
+		if [ "${ZSH_VERSION:-}" != "" ]; then
 			eval "$(pay-respects zsh --alias fuck)"
-		elif [ -n "${BASH_VERSION:-}" ]; then
+		elif [ "${BASH_VERSION:-}" != "" ]; then
 			eval "$(pay-respects bash --alias fuck)"
 		fi
 	fi

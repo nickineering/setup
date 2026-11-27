@@ -79,8 +79,9 @@ setup() {
 	unset CLAUDE_AWS_STATE
 	source "$REPO_ROOT/linked/claude/policy.conf"
 	for pair in "${TERRAFORM_READONLY_ACTIONS[@]}"; do
-		# shellcheck disable=SC2086  # deliberate split into subcmd + action
-		run "$WRAPPERS/terraform.sh" $pair
+		# Each entry is "subcmd action" and has to arrive as two arguments
+		read -r subcmd action <<<"$pair"
+		run "$WRAPPERS/terraform.sh" "$subcmd" "$action"
 		[ "$status" -eq 0 ] || {
 			echo "read-only pair '$pair' was refused: $output"
 			return 1
@@ -204,8 +205,8 @@ setup() {
 	export CLAUDE_AWS_STATE
 	run "$WRAPPERS/terraform.sh" plan
 	[ "$status" -eq 1 ]
-	[[ "$output" == *"Error loading SSO Token"* ]]      # original preserved
-	[[ "$output" == *"unreadable"* ]]                   # correction appended
+	[[ "$output" == *"Error loading SSO Token"* ]] # original preserved
+	[[ "$output" == *"unreadable"* ]]              # correction appended
 	[[ "$output" == *"aws sts get-caller-identity"* ]]
 }
 

@@ -212,11 +212,11 @@ blocks() { [[ "$(decide "$1")" == "block" ]]; }
 @test "a non-Bash tool is ignored" {
 	run bash -c "printf '%s' '{\"tool_name\":\"Edit\",\"tool_input\":{}}' | \"$HOOK\""
 	[ "$status" -eq 0 ]
-	[ -z "$output" ]
+	[ "$output" = "" ]
 }
 
 @test "an empty command is ignored" {
 	run bash -c "printf '%s' '{\"tool_name\":\"Bash\",\"tool_input\":{}}' | \"$HOOK\""
 	[ "$status" -eq 0 ]
-	[ -z "$output" ]
+	[ "$output" = "" ]
 }

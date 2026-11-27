@@ -44,6 +44,13 @@
           ".zshrc",
         ],
       },
+      {
+        // `@test "name" { }` needs the bats dialect; the default parser rejects it
+        "command": "shfmt --language-dialect bats",
+        "exts": [
+          "bats",
+        ],
+      },
     ],
   },
   // LF line endings for cross-platform consistency
