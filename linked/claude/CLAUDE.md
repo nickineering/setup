@@ -38,8 +38,10 @@ Leave the work uncommitted unless asked.
 is disabled. A denial on a path, host or credential the task does not involve is
 the boundary working — report it rather than looking for another route.
 
-Prefer `trash` over `rm`. Run git unchained — a bare `git ...` is exempt from
-the sandbox, a `&&` chain is not, and `.git` writes then fail.
+Prefer `trash` over `rm`. Run git as a plain unchained `git ...` — the `git *`
+exemption cannot match a chain or a command substitution, and `.git` writes then
+fail. Matching it is not sufficient either: `add`, `commit -F` and `push` land,
+`config --local` and `tag` do not.
 
 # Claude.md and skills
 

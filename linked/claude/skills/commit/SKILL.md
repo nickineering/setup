@@ -71,11 +71,17 @@ to each commit.
 
 Run each line below as a separate Bash call.
 
+Pass the message in a file, not on the command line: run `mktemp` to get a path,
+`Write` the message into it, then `git commit -F <that literal path>`. Shell
+variables do not survive between Bash calls, so use the path `mktemp` printed
+rather than `$msg`. Never reuse a fixed filename — scratch files outlive the
+session and a stale one gets committed as the message.
+
 **Single commit** — one git command per Bash call, never chained:
 
 ```bash
 git add <claude-modified-files>
-git commit -m "<title>" -m "<body>"
+git commit -F /path/from/mktemp
 git push origin <branch>
 ```
 
@@ -86,16 +92,16 @@ index per commit — this avoids sweeping all staged files into the first commit
 
 ```bash
 git add <claude-files-for-commit-1>
-git commit <all-paths-for-commit-1> -m "<title-1>"
+git commit <all-paths-for-commit-1> -F /path/from/mktemp-1
 git add <claude-files-for-commit-2>
-git commit <all-paths-for-commit-2> -m "<title-2>"
+git commit <all-paths-for-commit-2> -F /path/from/mktemp-2
 git push origin <branch>
 ```
 
 If Claude did not modify any files, just commit what is already staged:
 
 ```bash
-git commit -m "<title>"
+git commit -F /path/from/mktemp
 git push origin <branch>
 ```
 
@@ -105,10 +111,16 @@ git push origin <branch>
   them (unless Claude staged everything itself)
 - Never unstage files that were already staged
 - Never use `git add .`, `git add -A`, or wildcard patterns
-- Run every git command as its own Bash call. Never chain them with `&&`:
-  `sandbox.excludedCommands` exempts a bare `git ...` from the sandbox, but a
-  chained line cannot be matched against that pattern, so it runs sandboxed and
-  the commit fails with `.git/index.lock: Operation not permitted`
+- Run every git command as its own Bash call, with no `&&`, no `;` and no
+  command substitution. `sandbox.excludedCommands` matches `git *`, and a line
+  that is anything other than a plain `git ...` invocation cannot match it, so
+  it runs sandboxed and fails with `.git/index.lock: Operation not permitted`
+- Matching `git *` is necessary but not sufficient: `add`, `commit -F` and
+  `push` get through, while `config --local`, `tag` and
+  `update-index --force-write-index` are refused even unchained. If a git write
+  is refused, report it — do not reshape the command hunting for one that lands
+- Build the message with `mktemp` + `Write` + `-F`. Never substitute a heredoc
+  into `-m`, and never reuse a fixed scratch filename
 - Push with `git push origin <branch>`, never `git push -u`, which cannot write
   `.git/config`
 - When splitting, order commits so dependencies come first
