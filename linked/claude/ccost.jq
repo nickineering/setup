@@ -1,15 +1,9 @@
-# Matched with contains, not equality or startswith: transcripts record both
-# "claude-opus-5" and the prefixed "eu.anthropic.claude-opus-5", and Fable is
-# "global.anthropic.claude-fable-5". An id that matches nothing still costs 0,
-# so a new tier is a silent undercount rather than an error - check here first
-# when a total looks too low.
+# Ids arrive bare ("claude-opus-5") or prefixed ("eu.anthropic.claude-opus-5",
+# "global.anthropic.claude-fable-5"), so match on contains. An id matching no
+# tier costs 0, which undercounts a total silently.
 #
-# Fable before opus: tier order is cost order, highest first.
-#
-# Rates are this account's billed rates, from Cost Explorer over Aug-Nov 2026
-# (usage types EUC1-MP:EUC1_*_tokens_*). eu.* profiles bill 1.1x the list rate;
-# global.* profiles, which is all Fable has, bill list. Hence Fable at 10/50
-# rather than 11/55.
+# Rates are this account's billed rates from Cost Explorer. The eu.* profiles
+# carry a 10% regional premium; Fable exists only as global.* and so does not.
 def cost(model; i; o; cw; cr):
   if model | contains("claude-fable") then
     (i * 10.0 + cw * 12.5 + cr * 1.0 + o * 50.0) / 1e6
